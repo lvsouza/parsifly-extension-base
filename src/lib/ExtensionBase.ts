@@ -1,11 +1,17 @@
 import workerpool from 'workerpool';
 
+import { IPlatformAction } from './PlatformAction';
+
 
 export abstract class ExtensionBase {
+  public platformActions: IPlatformAction[] = [];
+
+
   constructor() {
     workerpool.worker({
-      activate: this.activate,
-      deactivate: this.deactivate,
+      activate: this.activate.bind(this),
+      deactivate: this.deactivate.bind(this),
+      platformActions: this._platformActions.bind(this),
     })
   }
 
@@ -23,5 +29,10 @@ export abstract class ExtensionBase {
    */
   deactivate(): void {
     console.log('Extensão desativada (método base).');
+  }
+
+
+  private _platformActions(key: string): void {
+    this.platformActions.forEach(platformAction => platformAction.key === key ? platformAction.action() : {});
   }
 }

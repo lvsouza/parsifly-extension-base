@@ -1,4 +1,6 @@
+import { IPlatformAction } from './PlatformAction';
 export declare abstract class ExtensionBase {
+    platformActions: IPlatformAction[];
     constructor();
     /**
      * Método chamado automaticamente ao ativar a extensão.
@@ -10,4 +12,5 @@ export declare abstract class ExtensionBase {
      * Pode ser sobrescrito pelas classes derivadas.
      */
     deactivate(): void;
+    private _platformActions;
 }

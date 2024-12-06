@@ -4,22 +4,22 @@ function He(A) {
 }
 function Ue(A) {
   if (A.__esModule) return A;
-  var H = A.default;
-  if (typeof H == "function") {
-    var E = function x() {
-      return this instanceof x ? Reflect.construct(H, arguments, this.constructor) : H.apply(this, arguments);
+  var D = A.default;
+  if (typeof D == "function") {
+    var T = function x() {
+      return this instanceof x ? Reflect.construct(D, arguments, this.constructor) : D.apply(this, arguments);
     };
-    E.prototype = H.prototype;
-  } else E = {};
-  return Object.defineProperty(E, "__esModule", { value: !0 }), Object.keys(A).forEach(function(x) {
+    T.prototype = D.prototype;
+  } else T = {};
+  return Object.defineProperty(T, "__esModule", { value: !0 }), Object.keys(A).forEach(function(x) {
     var I = Object.getOwnPropertyDescriptor(A, x);
-    Object.defineProperty(E, x, I.get ? I : {
+    Object.defineProperty(T, x, I.get ? I : {
       enumerable: !0,
       get: function() {
         return A[x];
       }
     });
-  }), E;
+  }), T;
 }
 var X = { exports: {} };
 const Ce = {}, Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -50,10 +50,10 @@ const Ce = {}, Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-(function(A, H) {
-  (function(E, x) {
-    x(H);
-  })(Re, function(E) {
+(function(A, D) {
+  (function(T, x) {
+    x(D);
+  })(Re, function(T) {
     var x = {}, I = { exports: {} };
     (function(t) {
       var s = function(f) {
@@ -75,26 +75,26 @@ const Ce = {}, Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
           throw new SyntaxError("Function parameter handler(resolve, reject) missing");
         var O = [], k = [];
         this.resolved = !1, this.rejected = !1, this.pending = !0;
-        var T = function(r, u) {
+        var E = function(r, u) {
           O.push(r), k.push(u);
         };
         this.then = function(o, r) {
           return new t(function(u, l) {
             var w = o ? s(o, u, l) : u, j = r ? s(r, u, l) : l;
-            T(w, j);
+            E(w, j);
           }, e);
         };
         var W = function(r) {
           return e.resolved = !0, e.rejected = !1, e.pending = !1, O.forEach(function(u) {
             u(r);
-          }), T = function(l, w) {
+          }), E = function(l, w) {
             l(r);
           }, W = a = function() {
           }, e;
         }, a = function(r) {
           return e.resolved = !1, e.rejected = !0, e.pending = !1, k.forEach(function(u) {
             u(r);
-          }), T = function(l, w) {
+          }), E = function(l, w) {
             w(r);
           }, W = a = function() {
           }, e;
@@ -124,8 +124,8 @@ const Ce = {}, Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
           try {
             var k = f(O);
             k && typeof k.then == "function" && typeof k.catch == "function" ? k.then(g, e) : g(k);
-          } catch (T) {
-            e(T);
+          } catch (E) {
+            e(E);
           }
         };
       }
@@ -145,8 +145,8 @@ const Ce = {}, Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
       }, t.all = function(f) {
         return new t(function(g, e) {
           var O = f.length, k = [];
-          O ? f.forEach(function(T, W) {
-            T.then(function(a) {
+          O ? f.forEach(function(E, W) {
+            E.then(function(a) {
               k[W] = a, O--, O == 0 && g(k);
             }, function(a) {
               O = 0, e(a);
@@ -278,7 +278,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         return i === "Object" && t.constructor && (i = t.constructor.name), i === "Map" || i === "Set" ? Array.from(t) : i === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(i) ? Y(t, s) : void 0;
       }
     }
-    var D = { exports: {} }, U = {}, ee;
+    var R = { exports: {} }, U = {}, ee;
     function me() {
       return ee || (ee = 1, U.validateOptions = function(s, i, h) {
         if (s) {
@@ -304,9 +304,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
     var te;
     function we() {
-      if (te) return D.exports;
+      if (te) return R.exports;
       te = 1;
-      var t = F(), s = t.Promise, i = q, h = me(), f = h.validateOptions, g = h.forkOptsNames, e = h.workerThreadOptsNames, O = h.workerOptsNames, k = "__workerpool-terminate__", T = "__workerpool-cleanup__";
+      var t = F(), s = t.Promise, i = q, h = me(), f = h.validateOptions, g = h.forkOptsNames, e = h.workerThreadOptsNames, O = h.workerOptsNames, k = "__workerpool-terminate__", E = "__workerpool-cleanup__";
       function W() {
         var c = o();
         if (!c)
@@ -417,7 +417,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           n.options && typeof n.options.on == "function" && n.options.on(p);
         }
       }
-      function R(c, p) {
+      function H(c, p) {
         var n = this, d = p || {};
         this.script = c || r(), this.worker = u(this.script, d), this.debugPort = d.debugPort, this.forkOpts = d.forkOpts, this.forkArgs = d.forkArgs, this.workerOpts = d.workerOpts, this.workerThreadOpts = d.workerThreadOpts, this.workerTerminateTimeout = d.workerTerminateTimeout, c || (this.worker.ready = !0), this.requestQueue = [], this.worker.on("stdout", function(v) {
           N(n, {
@@ -433,7 +433,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               n.worker.ready = !0, y();
             else {
               var P = v.id, _ = n.processing[P];
-              if (_ !== void 0 && (v.isEvent ? _.options && typeof _.options.on == "function" && _.options.on(v.payload) : (delete n.processing[P], n.terminating === !0 && n.terminate(), v.error ? _.resolver.reject(M(v.error)) : _.resolver.resolve(v.result))), v.method === T) {
+              if (_ !== void 0 && (v.isEvent ? _.options && typeof _.options.on == "function" && _.options.on(v.payload) : (delete n.processing[P], n.terminating === !0 && n.terminate(), v.error ? _.resolver.reject(M(v.error)) : _.resolver.resolve(v.result))), v.method === E) {
                 var L = n.tracking[v.id];
                 L !== void 0 && (v.error ? (clearTimeout(L.timeoutId), L.resolver.reject(M(v.error))) : (n.tracking && clearTimeout(L.timeoutId), L.resolver.resolve(L.result))), delete n.tracking[P];
               }
@@ -465,9 +465,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           _ += "    exitCode: `" + v + "`\n", _ += "    signalCode: `" + P + "`\n", _ += "    workerpool.script: `" + n.script + "`\n", _ += "    spawnArgs: `" + b.spawnargs + "`\n", _ += "    spawnfile: `" + b.spawnfile + "`\n", _ += "    stdout: `" + b.stdout + "`\n", _ += "    stderr: `" + b.stderr + "`\n", m(new Error(_));
         }), this.processing = /* @__PURE__ */ Object.create(null), this.tracking = /* @__PURE__ */ Object.create(null), this.terminating = !1, this.terminated = !1, this.cleaning = !1, this.terminationHandler = null, this.lastId = 0;
       }
-      return R.prototype.methods = function() {
+      return H.prototype.methods = function() {
         return this.exec("methods");
-      }, R.prototype.exec = function(c, p, n, d) {
+      }, H.prototype.exec = function(c, p, n, d) {
         n || (n = s.defer());
         var m = ++this.lastId;
         this.processing[m] = {
@@ -500,15 +500,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               return _;
             }), b.worker.send({
               id: m,
-              method: T
+              method: E
             }), b.tracking[m].timeoutId = setTimeout(function() {
               b.tracking[m].resolver.reject(v);
             }, b.workerTerminateTimeout), b.tracking[m].resolver.promise;
           throw v;
         });
-      }, R.prototype.busy = function() {
+      }, H.prototype.busy = function() {
         return this.cleaning || Object.keys(this.processing).length > 0;
-      }, R.prototype.terminate = function(c, p) {
+      }, H.prototype.terminate = function(c, p) {
         var n = this;
         if (c) {
           for (var d in this.processing)
@@ -549,12 +549,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               throw new Error("Failed to terminate worker");
           v();
         }
-      }, R.prototype.terminateAndNotify = function(c, p) {
+      }, H.prototype.terminateAndNotify = function(c, p) {
         var n = s.defer();
         return p && n.promise.timeout(p), this.terminate(c, function(d, m) {
           d ? n.reject(d) : n.resolve(m);
         }), n.promise;
-      }, D.exports = R, D.exports._tryRequireWorkerThreads = o, D.exports._setupProcessWorker = j, D.exports._setupBrowserWorker = l, D.exports._setupWorkerThreadWorker = w, D.exports.ensureWorkerThreads = W, D.exports;
+      }, R.exports = H, R.exports._tryRequireWorkerThreads = o, R.exports._setupProcessWorker = j, R.exports._setupBrowserWorker = l, R.exports._setupWorkerThreadWorker = w, R.exports.ensureWorkerThreads = W, R.exports;
     }
     var Q, ne;
     function ke() {
@@ -716,14 +716,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         });
       };
       function O(a) {
-        if (!T(a) || !W(a) || a < 1)
+        if (!E(a) || !W(a) || a < 1)
           throw new TypeError("Option maxWorkers must be an integer number >= 1");
       }
       function k(a) {
-        if (!T(a) || !W(a) || a < 0)
+        if (!E(a) || !W(a) || a < 0)
           throw new TypeError("Option minWorkers must be an integer number >= 0");
       }
-      function T(a) {
+      function E(a) {
         return typeof a == "number";
       }
       function W(a) {
@@ -773,8 +773,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           if (k && /* if there is a parentPort, we are in a WorkerThread */
           k.parentPort !== null) {
-            var T = k.parentPort;
-            e.send = T.postMessage.bind(T), e.on = T.on.bind(T), e.exit = process.exit.bind(process);
+            var E = k.parentPort;
+            e.send = E.postMessage.bind(E), e.on = E.on.bind(E), e.exit = process.exit.bind(process);
           } else
             e.on = process.on.bind(process), e.send = function(r) {
               process.send(r);
@@ -824,9 +824,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             e.abortListeners.length || (e.abortListeners = []);
           }, w = e.abortListeners.map(function(N) {
             return N();
-          }), j, S = new i(function(N, R) {
+          }), j, S = new i(function(N, H) {
             j = setTimeout(function() {
-              R(new Error("Timeout occured waiting for abort handler, killing worker"));
+              H(new Error("Timeout occured waiting for abort handler, killing worker"));
             }, e.abortListenerTimeout);
           }), M = i.all(w).then(function() {
             clearTimeout(j), l();
@@ -932,16 +932,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       s.emit(t);
     }
     var je = x.workerEmit = We, Pe = F(), Ae = Pe.Promise, Se = x.Promise = Ae, Le = x.Transfer = se(), Me = x.platform = ge, Ne = x.isMainThread = be, De = x.cpus = Oe;
-    E.Promise = Se, E.Transfer = Le, E.cpus = De, E.default = x, E.isMainThread = Ne, E.platform = Me, E.pool = Te, E.worker = xe, E.workerEmit = je, Object.defineProperty(E, "__esModule", { value: !0 });
+    T.Promise = Se, T.Transfer = Le, T.cpus = De, T.default = x, T.isMainThread = Ne, T.platform = Me, T.pool = Te, T.worker = xe, T.workerEmit = je, Object.defineProperty(T, "__esModule", { value: !0 });
   });
 })(X, X.exports);
 var qe = X.exports;
 const $e = /* @__PURE__ */ He(qe);
 class Fe {
   constructor() {
-    $e.worker({
-      activate: this.activate,
-      deactivate: this.deactivate
+    this.platformActions = [], $e.worker({
+      activate: this.activate.bind(this),
+      deactivate: this.deactivate.bind(this),
+      platformActions: this._platformActions.bind(this)
     });
   }
   /**
@@ -957,6 +958,9 @@ class Fe {
    */
   deactivate() {
     console.log("Extensão desativada (método base).");
+  }
+  _platformActions(D) {
+    this.platformActions.forEach((T) => T.key === D ? T.action() : {});
   }
 }
 export {
