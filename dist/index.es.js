@@ -3,17 +3,17 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const P = Symbol("Comlink.proxy"), _ = Symbol("Comlink.endpoint"), L = Symbol("Comlink.releaseProxy"), x = Symbol("Comlink.finalizer"), E = Symbol("Comlink.thrown"), T = (e) => typeof e == "object" && e !== null || typeof e == "function", z = {
-  canHandle: (e) => T(e) && e[P],
+const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), x = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), M = (e) => typeof e == "object" && e !== null || typeof e == "function", F = {
+  canHandle: (e) => M(e) && e[T],
   serialize(e) {
     const { port1: t, port2: n } = new MessageChannel();
-    return M(e, t), [n, [n]];
+    return A(e, t), [n, [n]];
   },
   deserialize(e) {
     return e.start(), C(e);
   }
-}, N = {
-  canHandle: (e) => T(e) && E in e,
+}, v = {
+  canHandle: (e) => M(e) && w in e,
   serialize({ value: e }) {
     let t;
     return e instanceof Error ? t = {
@@ -29,20 +29,20 @@ const P = Symbol("Comlink.proxy"), _ = Symbol("Comlink.endpoint"), L = Symbol("C
     throw e.isError ? Object.assign(new Error(e.value.message), e.value) : e.value;
   }
 }, S = /* @__PURE__ */ new Map([
-  ["proxy", z],
-  ["throw", N]
+  ["proxy", F],
+  ["throw", v]
 ]);
-function F(e, t) {
+function H(e, t) {
   for (const n of e)
     if (t === n || n === "*" || n instanceof RegExp && n.test(t))
       return !0;
   return !1;
 }
-function M(e, t = globalThis, n = ["*"]) {
+function A(e, t = globalThis, n = ["*"]) {
   t.addEventListener("message", function f(r) {
     if (!r || !r.data)
       return;
-    if (!F(n, r.origin)) {
+    if (!H(n, r.origin)) {
       console.warn(`Invalid origin '${r.origin}' for comlink proxy`);
       return;
     }
@@ -69,7 +69,7 @@ function M(e, t = globalThis, n = ["*"]) {
         case "ENDPOINT":
           {
             const { port1: i, port2: h } = new MessageChannel();
-            M(e, h), a = j(i, [i]);
+            A(e, h), a = j(i, [i]);
           }
           break;
         case "RELEASE":
@@ -79,25 +79,25 @@ function M(e, t = globalThis, n = ["*"]) {
           return;
       }
     } catch (o) {
-      a = { value: o, [E]: 0 };
+      a = { value: o, [w]: 0 };
     }
-    Promise.resolve(a).catch((o) => ({ value: o, [E]: 0 })).then((o) => {
+    Promise.resolve(a).catch((o) => ({ value: o, [w]: 0 })).then((o) => {
       const [u, i] = p(o);
       t.postMessage(Object.assign(Object.assign({}, u), { id: s }), i), d === "RELEASE" && (t.removeEventListener("message", f), R(t), x in e && typeof e[x] == "function" && e[x]());
     }).catch((o) => {
       const [u, i] = p({
         value: new TypeError("Unserializable return value"),
-        [E]: 0
+        [w]: 0
       });
       t.postMessage(Object.assign(Object.assign({}, u), { id: s }), i);
     });
   }), t.start && t.start();
 }
-function H(e) {
+function L(e) {
   return e.constructor.name === "MessagePort";
 }
 function R(e) {
-  H(e) && e.close();
+  L(e) && e.close();
 }
 function C(e, t) {
   const n = /* @__PURE__ */ new Map();
@@ -125,13 +125,13 @@ function O(e) {
     R(e);
   });
 }
-const w = /* @__PURE__ */ new WeakMap(), b = "FinalizationRegistry" in globalThis && new FinalizationRegistry((e) => {
-  const t = (w.get(e) || 0) - 1;
-  w.set(e, t), t === 0 && O(e);
+const E = /* @__PURE__ */ new WeakMap(), b = "FinalizationRegistry" in globalThis && new FinalizationRegistry((e) => {
+  const t = (E.get(e) || 0) - 1;
+  E.set(e, t), t === 0 && O(e);
 });
 function V(e, t) {
-  const n = (w.get(t) || 0) + 1;
-  w.set(t, n), b && b.register(e, t, e);
+  const n = (E.get(t) || 0) + 1;
+  E.set(t, n), b && b.register(e, t, e);
 }
 function I(e) {
   b && b.unregister(e);
@@ -141,7 +141,7 @@ function k(e, t, n = [], f = function() {
   let r = !1;
   const s = new Proxy(f, {
     get(d, c) {
-      if (y(r), c === L)
+      if (y(r), c === N)
         return () => {
           I(s), O(e), t.clear(), r = !0;
         };
@@ -168,13 +168,13 @@ function k(e, t, n = [], f = function() {
     apply(d, c, l) {
       y(r);
       const a = n[n.length - 1];
-      if (a === _)
+      if (a === z)
         return m(e, t, {
           type: "ENDPOINT"
         }).then(g);
       if (a === "bind")
         return k(e, t, n.slice(0, -1));
-      const [o, u] = A(l);
+      const [o, u] = P(l);
       return m(e, t, {
         type: "APPLY",
         path: n.map((i) => i.toString()),
@@ -183,7 +183,7 @@ function k(e, t, n = [], f = function() {
     },
     construct(d, c) {
       y(r);
-      const [l, a] = A(c);
+      const [l, a] = P(c);
       return m(e, t, {
         type: "CONSTRUCT",
         path: n.map((o) => o.toString()),
@@ -196,16 +196,16 @@ function k(e, t, n = [], f = function() {
 function W(e) {
   return Array.prototype.concat.apply([], e);
 }
-function A(e) {
+function P(e) {
   const t = e.map(p);
   return [t.map((n) => n[0]), W(t.map((n) => n[1]))];
 }
-const v = /* @__PURE__ */ new WeakMap();
+const _ = /* @__PURE__ */ new WeakMap();
 function j(e, t) {
-  return v.set(e, t), e;
+  return _.set(e, t), e;
 }
 function D(e) {
-  return Object.assign(e, { [P]: !0 });
+  return Object.assign(e, { [T]: !0 });
 }
 function p(e) {
   for (const [t, n] of S)
@@ -225,7 +225,7 @@ function p(e) {
       type: "RAW",
       value: e
     },
-    v.get(e) || []
+    _.get(e) || []
   ];
 }
 function g(e) {
@@ -251,15 +251,11 @@ class G {
       downloadFile: async (t, n, f) => await this._mainThread.downloadFile(t, n, f),
       downloadFiles: async (t, n) => await this._mainThread.downloadFiles(t, n),
       feedback: async (t, n) => await this._mainThread.feedback(t, n)
-    }, M({
+    }, A({
       activate: this.activate.bind(this),
       deactivate: this.deactivate.bind(this),
       platformActions: this._platformActions.bind(this)
-    }), this._mainThread = C({
-      addEventListener: self.addEventListener,
-      removeEventListener: self.removeEventListener,
-      postMessage: (t, n) => self.postMessage(t, "/", n)
-    });
+    }), this._mainThread = C(self);
   }
   /**
    * Método chamado automaticamente ao ativar a extensão.

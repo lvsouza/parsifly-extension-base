@@ -5,7 +5,7 @@ import { TPlatformAction } from './types/TPlatformAction';
 
 
 export abstract class ExtensionBase {
-  private _mainThread;
+  private _mainThread: TApplicationMethods;
 
 
   public platformActions: TPlatformAction[] = [];
@@ -17,11 +17,8 @@ export abstract class ExtensionBase {
       deactivate: this.deactivate.bind(this),
       platformActions: this._platformActions.bind(this),
     });
-    this._mainThread = ComLink.wrap<TApplicationMethods>({
-      addEventListener: self.addEventListener,
-      removeEventListener: self.removeEventListener,
-      postMessage: (message, transfer) => self.postMessage(message, '/', transfer),
-    });
+
+    this._mainThread = ComLink.wrap(self as any);
   }
 
   /**
