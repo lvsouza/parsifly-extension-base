@@ -6,7 +6,7 @@ export type TApplicationMethods = {
      * @param downloadName Name of the download as zip
      * @param files List of files or folders to download
      */
-    readonly downloadFiles: (downloadName: string, files: TFileOrFolder) => Promise<void>;
+    readonly downloadFiles: (downloadName: string, files: TFileOrFolder[]) => Promise<void>;
     /**
      * Allow you to download some content in a file
      *
