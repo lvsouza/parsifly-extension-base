@@ -1,2 +1,2 @@
-export { type IPlatformAction } from './lib/PlatformAction'
-export { ExtensionBase } from './lib/ExtensionBase'
+export { type TPlatformAction as IPlatformAction } from './lib/types/TPlatformAction';
+export { ExtensionBase } from './lib/ExtensionBase';

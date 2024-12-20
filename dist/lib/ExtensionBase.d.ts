@@ -1,6 +1,8 @@
-import { IPlatformAction } from './PlatformAction';
+import { TApplicationMethods } from './types/TApplicationMethods';
+import { TPlatformAction } from './types/TPlatformAction';
 export declare abstract class ExtensionBase {
-    platformActions: IPlatformAction[];
+    private _mainThread;
+    platformActions: TPlatformAction[];
     constructor();
     /**
      * Método chamado automaticamente ao ativar a extensão.
@@ -13,4 +15,5 @@ export declare abstract class ExtensionBase {
      */
     deactivate(): void;
     private _platformActions;
+    readonly application: TApplicationMethods;
 }

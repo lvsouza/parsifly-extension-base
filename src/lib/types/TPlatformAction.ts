@@ -1,6 +1,6 @@
 
 
-export interface IPlatformAction {
+export interface TPlatformAction {
   key: string;
   action: (() => void);
 }

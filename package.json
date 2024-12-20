@@ -8,6 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "comlink": "^4.4.2",
     "workerpool": "^9.2.0"
   },
   "devDependencies": {
