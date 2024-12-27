@@ -3,73 +3,73 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), x = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), M = (e) => typeof e == "object" && e !== null || typeof e == "function", F = {
-  canHandle: (e) => M(e) && e[T],
-  serialize(e) {
-    const { port1: t, port2: n } = new MessageChannel();
-    return A(e, t), [n, [n]];
+const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), M = (t) => typeof t == "object" && t !== null || typeof t == "function", F = {
+  canHandle: (t) => M(t) && t[T],
+  serialize(t) {
+    const { port1: e, port2: r } = new MessageChannel();
+    return A(t, e), [r, [r]];
   },
-  deserialize(e) {
-    return e.start(), C(e);
+  deserialize(t) {
+    return t.start(), C(t);
   }
 }, v = {
-  canHandle: (e) => M(e) && w in e,
-  serialize({ value: e }) {
-    let t;
-    return e instanceof Error ? t = {
+  canHandle: (t) => M(t) && w in t,
+  serialize({ value: t }) {
+    let e;
+    return t instanceof Error ? e = {
       isError: !0,
       value: {
-        message: e.message,
-        name: e.name,
-        stack: e.stack
+        message: t.message,
+        name: t.name,
+        stack: t.stack
       }
-    } : t = { isError: !1, value: e }, [t, []];
+    } : e = { isError: !1, value: t }, [e, []];
   },
-  deserialize(e) {
-    throw e.isError ? Object.assign(new Error(e.value.message), e.value) : e.value;
+  deserialize(t) {
+    throw t.isError ? Object.assign(new Error(t.value.message), t.value) : t.value;
   }
 }, S = /* @__PURE__ */ new Map([
   ["proxy", F],
   ["throw", v]
 ]);
-function H(e, t) {
-  for (const n of e)
-    if (t === n || n === "*" || n instanceof RegExp && n.test(t))
+function H(t, e) {
+  for (const r of t)
+    if (e === r || r === "*" || r instanceof RegExp && r.test(e))
       return !0;
   return !1;
 }
-function A(e, t = globalThis, n = ["*"]) {
-  t.addEventListener("message", function f(r) {
-    if (!r || !r.data)
+function A(t, e = globalThis, r = ["*"]) {
+  e.addEventListener("message", function o(n) {
+    if (!n || !n.data)
       return;
-    if (!H(n, r.origin)) {
-      console.warn(`Invalid origin '${r.origin}' for comlink proxy`);
+    if (!H(r, n.origin)) {
+      console.warn(`Invalid origin '${n.origin}' for comlink proxy`);
       return;
     }
-    const { id: s, type: d, path: c } = Object.assign({ path: [] }, r.data), l = (r.data.argumentList || []).map(g);
+    const { id: s, type: d, path: l } = Object.assign({ path: [] }, n.data), u = (n.data.argumentList || []).map(h);
     let a;
     try {
-      const o = c.slice(0, -1).reduce((i, h) => i[h], e), u = c.reduce((i, h) => i[h], e);
+      const i = l.slice(0, -1).reduce((c, m) => c[m], t), f = l.reduce((c, m) => c[m], t);
       switch (d) {
         case "GET":
-          a = u;
+          a = f;
           break;
         case "SET":
-          o[c.slice(-1)[0]] = g(r.data.value), a = !0;
+          i[l.slice(-1)[0]] = h(n.data.value), a = !0;
           break;
         case "APPLY":
-          a = u.apply(o, l);
+          a = f.apply(i, u);
           break;
         case "CONSTRUCT":
           {
-            const i = new u(...l);
-            a = D(i);
+            const c = new f(...u);
+            a = D(c);
           }
           break;
         case "ENDPOINT":
           {
-            const { port1: i, port2: h } = new MessageChannel();
-            A(e, h), a = j(i, [i]);
+            const { port1: c, port2: m } = new MessageChannel();
+            A(t, m), a = j(c, [c]);
           }
           break;
         case "RELEASE":
@@ -78,168 +78,168 @@ function A(e, t = globalThis, n = ["*"]) {
         default:
           return;
       }
-    } catch (o) {
-      a = { value: o, [w]: 0 };
+    } catch (i) {
+      a = { value: i, [w]: 0 };
     }
-    Promise.resolve(a).catch((o) => ({ value: o, [w]: 0 })).then((o) => {
-      const [u, i] = p(o);
-      t.postMessage(Object.assign(Object.assign({}, u), { id: s }), i), d === "RELEASE" && (t.removeEventListener("message", f), R(t), x in e && typeof e[x] == "function" && e[x]());
-    }).catch((o) => {
-      const [u, i] = p({
+    Promise.resolve(a).catch((i) => ({ value: i, [w]: 0 })).then((i) => {
+      const [f, c] = b(i);
+      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c), d === "RELEASE" && (e.removeEventListener("message", o), R(e), k in t && typeof t[k] == "function" && t[k]());
+    }).catch((i) => {
+      const [f, c] = b({
         value: new TypeError("Unserializable return value"),
         [w]: 0
       });
-      t.postMessage(Object.assign(Object.assign({}, u), { id: s }), i);
+      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c);
     });
-  }), t.start && t.start();
+  }), e.start && e.start();
 }
-function L(e) {
-  return e.constructor.name === "MessagePort";
+function L(t) {
+  return t.constructor.name === "MessagePort";
 }
-function R(e) {
-  L(e) && e.close();
+function R(t) {
+  L(t) && t.close();
 }
-function C(e, t) {
-  const n = /* @__PURE__ */ new Map();
-  return e.addEventListener("message", function(r) {
-    const { data: s } = r;
+function C(t, e) {
+  const r = /* @__PURE__ */ new Map();
+  return t.addEventListener("message", function(n) {
+    const { data: s } = n;
     if (!s || !s.id)
       return;
-    const d = n.get(s.id);
+    const d = r.get(s.id);
     if (d)
       try {
         d(s);
       } finally {
-        n.delete(s.id);
+        r.delete(s.id);
       }
-  }), k(e, n, [], t);
+  }), x(t, r, [], e);
 }
-function y(e) {
-  if (e)
+function y(t) {
+  if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function O(e) {
-  return m(e, /* @__PURE__ */ new Map(), {
+function O(t) {
+  return g(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
-    R(e);
+    R(t);
   });
 }
-const E = /* @__PURE__ */ new WeakMap(), b = "FinalizationRegistry" in globalThis && new FinalizationRegistry((e) => {
-  const t = (E.get(e) || 0) - 1;
-  E.set(e, t), t === 0 && O(e);
+const p = /* @__PURE__ */ new WeakMap(), E = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
+  const e = (p.get(t) || 0) - 1;
+  p.set(t, e), e === 0 && O(t);
 });
-function V(e, t) {
-  const n = (E.get(t) || 0) + 1;
-  E.set(t, n), b && b.register(e, t, e);
+function V(t, e) {
+  const r = (p.get(e) || 0) + 1;
+  p.set(e, r), E && E.register(t, e, t);
 }
-function I(e) {
-  b && b.unregister(e);
+function I(t) {
+  E && E.unregister(t);
 }
-function k(e, t, n = [], f = function() {
+function x(t, e, r = [], o = function() {
 }) {
-  let r = !1;
-  const s = new Proxy(f, {
-    get(d, c) {
-      if (y(r), c === N)
+  let n = !1;
+  const s = new Proxy(o, {
+    get(d, l) {
+      if (y(n), l === N)
         return () => {
-          I(s), O(e), t.clear(), r = !0;
+          I(s), O(t), e.clear(), n = !0;
         };
-      if (c === "then") {
-        if (n.length === 0)
+      if (l === "then") {
+        if (r.length === 0)
           return { then: () => s };
-        const l = m(e, t, {
+        const u = g(t, e, {
           type: "GET",
-          path: n.map((a) => a.toString())
-        }).then(g);
-        return l.then.bind(l);
+          path: r.map((a) => a.toString())
+        }).then(h);
+        return u.then.bind(u);
       }
-      return k(e, t, [...n, c]);
+      return x(t, e, [...r, l]);
     },
-    set(d, c, l) {
-      y(r);
-      const [a, o] = p(l);
-      return m(e, t, {
+    set(d, l, u) {
+      y(n);
+      const [a, i] = b(u);
+      return g(t, e, {
         type: "SET",
-        path: [...n, c].map((u) => u.toString()),
+        path: [...r, l].map((f) => f.toString()),
         value: a
-      }, o).then(g);
+      }, i).then(h);
     },
-    apply(d, c, l) {
-      y(r);
-      const a = n[n.length - 1];
+    apply(d, l, u) {
+      y(n);
+      const a = r[r.length - 1];
       if (a === z)
-        return m(e, t, {
+        return g(t, e, {
           type: "ENDPOINT"
-        }).then(g);
+        }).then(h);
       if (a === "bind")
-        return k(e, t, n.slice(0, -1));
-      const [o, u] = P(l);
-      return m(e, t, {
+        return x(t, e, r.slice(0, -1));
+      const [i, f] = P(u);
+      return g(t, e, {
         type: "APPLY",
-        path: n.map((i) => i.toString()),
-        argumentList: o
-      }, u).then(g);
+        path: r.map((c) => c.toString()),
+        argumentList: i
+      }, f).then(h);
     },
-    construct(d, c) {
-      y(r);
-      const [l, a] = P(c);
-      return m(e, t, {
+    construct(d, l) {
+      y(n);
+      const [u, a] = P(l);
+      return g(t, e, {
         type: "CONSTRUCT",
-        path: n.map((o) => o.toString()),
-        argumentList: l
-      }, a).then(g);
+        path: r.map((i) => i.toString()),
+        argumentList: u
+      }, a).then(h);
     }
   });
-  return V(s, e), s;
+  return V(s, t), s;
 }
-function W(e) {
-  return Array.prototype.concat.apply([], e);
+function W(t) {
+  return Array.prototype.concat.apply([], t);
 }
-function P(e) {
-  const t = e.map(p);
-  return [t.map((n) => n[0]), W(t.map((n) => n[1]))];
+function P(t) {
+  const e = t.map(b);
+  return [e.map((r) => r[0]), W(e.map((r) => r[1]))];
 }
 const _ = /* @__PURE__ */ new WeakMap();
-function j(e, t) {
-  return _.set(e, t), e;
+function j(t, e) {
+  return _.set(t, e), t;
 }
-function D(e) {
-  return Object.assign(e, { [T]: !0 });
+function D(t) {
+  return Object.assign(t, { [T]: !0 });
 }
-function p(e) {
-  for (const [t, n] of S)
-    if (n.canHandle(e)) {
-      const [f, r] = n.serialize(e);
+function b(t) {
+  for (const [e, r] of S)
+    if (r.canHandle(t)) {
+      const [o, n] = r.serialize(t);
       return [
         {
           type: "HANDLER",
-          name: t,
-          value: f
+          name: e,
+          value: o
         },
-        r
+        n
       ];
     }
   return [
     {
       type: "RAW",
-      value: e
+      value: t
     },
-    _.get(e) || []
+    _.get(t) || []
   ];
 }
-function g(e) {
-  switch (e.type) {
+function h(t) {
+  switch (t.type) {
     case "HANDLER":
-      return S.get(e.name).deserialize(e.value);
+      return S.get(t.name).deserialize(t.value);
     case "RAW":
-      return e.value;
+      return t.value;
   }
 }
-function m(e, t, n, f) {
-  return new Promise((r) => {
+function g(t, e, r, o) {
+  return new Promise((n) => {
     const s = U();
-    t.set(s, r), e.start && e.start(), e.postMessage(Object.assign({ id: s }, n), f);
+    e.set(s, n), t.start && t.start(), t.postMessage(Object.assign({ id: s }, r), o);
   });
 }
 function U() {
@@ -247,13 +247,14 @@ function U() {
 }
 class G {
   constructor() {
-    this.platformActions = [], this.application = {
-      downloadFile: async (t, n, f) => await this._mainThread.downloadFile(t, n, f),
-      downloadFiles: async (t, n) => await this._mainThread.downloadFiles(t, n),
-      feedback: async (t, n) => await this._mainThread.feedback(t, n)
+    this.platformActions = [], this.parsers = [], this.application = {
+      downloadFile: async (e, r, o) => await this._mainThread.downloadFile(e, r, o),
+      downloadFiles: async (e, r) => await this._mainThread.downloadFiles(e, r),
+      feedback: async (e, r) => await this._mainThread.feedback(e, r)
     }, A({
       activate: this.activate.bind(this),
       deactivate: this.deactivate.bind(this),
+      parsers: this._parsers.bind(this),
       platformActions: this._platformActions.bind(this)
     }), this._mainThread = C(self);
   }
@@ -271,8 +272,15 @@ class G {
   deactivate() {
     console.log("Extensão desativada (método base).");
   }
-  _platformActions(t) {
-    this.platformActions.forEach((n) => n.key === t ? n.action() : {});
+  _platformActions(e) {
+    const r = this.platformActions.find((o) => o.key === e);
+    if (!r) throw new Error(`Action with key "${e}" not found`);
+    r.action();
+  }
+  _parsers(e, r) {
+    const o = this.parsers.find((n) => n.key === e);
+    if (!o) throw new Error(`Parser with key "${e}" not found`);
+    return o.parser(r);
   }
 }
 export {

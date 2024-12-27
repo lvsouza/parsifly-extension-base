@@ -2,6 +2,7 @@ import * as ComLink from 'comlink';
 
 import { TApplicationMethods } from './types/TApplicationMethods';
 import { TPlatformAction } from './types/TPlatformAction';
+import { TParser } from './types/TParser';
 
 
 export abstract class ExtensionBase {
@@ -10,11 +11,15 @@ export abstract class ExtensionBase {
 
   public platformActions: TPlatformAction[] = [];
 
+  public parsers: TParser[] = [];
+
 
   constructor() {
     ComLink.expose({
       activate: this.activate.bind(this),
       deactivate: this.deactivate.bind(this),
+
+      parsers: this._parsers.bind(this),
       platformActions: this._platformActions.bind(this),
     });
 
@@ -39,7 +44,17 @@ export abstract class ExtensionBase {
 
 
   private _platformActions(key: string): void {
-    this.platformActions.forEach(platformAction => platformAction.key === key ? platformAction.action() : {});
+    const platformAction = this.platformActions.find(platformAction => platformAction.key === key);
+    if (!platformAction) throw new Error(`Action with key "${key}" not found`);
+
+    platformAction.action();
+  }
+
+  private _parsers(key: string, data: any) {
+    const parser = this.parsers.find(parser => parser.key === key);
+    if (!parser) throw new Error(`Parser with key "${key}" not found`);
+
+    return parser.parser(data);
   }
 
 
