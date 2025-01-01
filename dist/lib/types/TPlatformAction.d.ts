@@ -1,4 +1,11 @@
-export interface TPlatformAction {
+type TBaseAction = {
     key: string;
-    action: () => void;
-}
+};
+type TSingleAction = {
+    action(): Promise<void>;
+};
+type TMultiAction = {
+    actions: (TBaseAction & TSingleAction)[];
+};
+export type TPlatformAction = TBaseAction & (TSingleAction | TMultiAction);
+export {};

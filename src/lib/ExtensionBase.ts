@@ -43,20 +43,20 @@ export abstract class ExtensionBase {
   }
 
 
-  private _platformActions(key: string) {
+  private async _platformActions(key: string) {
     const platformAction = this.platformActions
       .flatMap(platformAction => 'action' in platformAction ? [platformAction] : platformAction.actions)
       .find(platformAction => platformAction.key === key);
     if (!platformAction) throw new Error(`Action with key "${key}" not found`);
 
-    return platformAction.action();
+    return await platformAction.action();
   }
 
-  private _parsers(key: string, data: any) {
+  private async _parsers(key: string, data: any) {
     const parser = this.parsers.find(parser => parser.key === key);
     if (!parser) throw new Error(`Parser with key "${key}" not found`);
 
-    return parser.parser(data);
+    return await parser.parser(data);
   }
 
 
