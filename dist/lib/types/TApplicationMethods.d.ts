@@ -1,4 +1,5 @@
 import { TFileOrFolder } from './TFileOrFolder';
+import { TQuickPick } from './TQuickPick';
 export type TApplicationMethods = {
     /**
      * Allow you to download a lot of files and folders as zip
@@ -22,4 +23,10 @@ export type TApplicationMethods = {
      * @param type type of the feedback
      */
     readonly feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
+    /**
+     * Allow to capture user freeform text input
+     *
+     * @param props Props to configure the quick pick
+     */
+    readonly quickPick: (props: TQuickPick) => Promise<string | void>;
 };

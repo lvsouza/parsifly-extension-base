@@ -70,5 +70,8 @@ export abstract class ExtensionBase {
     feedback: async (message, type) => {
       return await this._mainThread.feedback(message, type);
     },
+    quickPick: async (props) => {
+      return await this._mainThread.quickPick(props);
+    },
   } as const
 }

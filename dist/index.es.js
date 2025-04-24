@@ -3,17 +3,17 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const M = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), T = (t) => typeof t == "object" && t !== null || typeof t == "function", F = {
-  canHandle: (t) => T(t) && t[M],
+const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), M = (t) => typeof t == "object" && t !== null || typeof t == "function", F = {
+  canHandle: (t) => M(t) && t[T],
   serialize(t) {
     const { port1: e, port2: r } = new MessageChannel();
-    return A(t, e), [r, [r]];
+    return P(t, e), [r, [r]];
   },
   deserialize(t) {
-    return t.start(), C(t);
+    return t.start(), _(t);
   }
 }, v = {
-  canHandle: (t) => T(t) && w in t,
+  canHandle: (t) => M(t) && w in t,
   serialize({ value: t }) {
     let e;
     return t instanceof Error ? e = {
@@ -38,7 +38,7 @@ function H(t, e) {
       return !0;
   return !1;
 }
-function A(t, e = globalThis, r = ["*"]) {
+function P(t, e = globalThis, r = ["*"]) {
   e.addEventListener("message", function a(n) {
     if (!n || !n.data)
       return;
@@ -46,19 +46,19 @@ function A(t, e = globalThis, r = ["*"]) {
       console.warn(`Invalid origin '${n.origin}' for comlink proxy`);
       return;
     }
-    const { id: o, type: d, path: l } = Object.assign({ path: [] }, n.data), u = (n.data.argumentList || []).map(h);
+    const { id: i, type: d, path: l } = Object.assign({ path: [] }, n.data), u = (n.data.argumentList || []).map(h);
     let s;
     try {
-      const i = l.slice(0, -1).reduce((c, y) => c[y], t), f = l.reduce((c, y) => c[y], t);
+      const o = l.slice(0, -1).reduce((c, y) => c[y], t), f = l.reduce((c, y) => c[y], t);
       switch (d) {
         case "GET":
           s = f;
           break;
         case "SET":
-          i[l.slice(-1)[0]] = h(n.data.value), s = !0;
+          o[l.slice(-1)[0]] = h(n.data.value), s = !0;
           break;
         case "APPLY":
-          s = f.apply(i, u);
+          s = f.apply(o, u);
           break;
         case "CONSTRUCT":
           {
@@ -69,7 +69,7 @@ function A(t, e = globalThis, r = ["*"]) {
         case "ENDPOINT":
           {
             const { port1: c, port2: y } = new MessageChannel();
-            A(t, y), s = j(c, [c]);
+            P(t, y), s = j(c, [c]);
           }
           break;
         case "RELEASE":
@@ -78,18 +78,18 @@ function A(t, e = globalThis, r = ["*"]) {
         default:
           return;
       }
-    } catch (i) {
-      s = { value: i, [w]: 0 };
+    } catch (o) {
+      s = { value: o, [w]: 0 };
     }
-    Promise.resolve(s).catch((i) => ({ value: i, [w]: 0 })).then((i) => {
-      const [f, c] = b(i);
-      e.postMessage(Object.assign(Object.assign({}, f), { id: o }), c), d === "RELEASE" && (e.removeEventListener("message", a), R(e), k in t && typeof t[k] == "function" && t[k]());
-    }).catch((i) => {
+    Promise.resolve(s).catch((o) => ({ value: o, [w]: 0 })).then((o) => {
+      const [f, c] = b(o);
+      e.postMessage(Object.assign(Object.assign({}, f), { id: i }), c), d === "RELEASE" && (e.removeEventListener("message", a), R(e), k in t && typeof t[k] == "function" && t[k]());
+    }).catch((o) => {
       const [f, c] = b({
         value: new TypeError("Unserializable return value"),
         [w]: 0
       });
-      e.postMessage(Object.assign(Object.assign({}, f), { id: o }), c);
+      e.postMessage(Object.assign(Object.assign({}, f), { id: i }), c);
     });
   }), e.start && e.start();
 }
@@ -99,18 +99,18 @@ function L(t) {
 function R(t) {
   L(t) && t.close();
 }
-function C(t, e) {
+function _(t, e) {
   const r = /* @__PURE__ */ new Map();
   return t.addEventListener("message", function(n) {
-    const { data: o } = n;
-    if (!o || !o.id)
+    const { data: i } = n;
+    if (!i || !i.id)
       return;
-    const d = r.get(o.id);
+    const d = r.get(i.id);
     if (d)
       try {
-        d(o);
+        d(i);
       } finally {
-        r.delete(o.id);
+        r.delete(i.id);
       }
   }), x(t, r, [], e);
 }
@@ -118,7 +118,7 @@ function m(t) {
   if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function O(t) {
+function C(t) {
   return g(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
@@ -127,7 +127,7 @@ function O(t) {
 }
 const p = /* @__PURE__ */ new WeakMap(), E = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
   const e = (p.get(t) || 0) - 1;
-  p.set(t, e), e === 0 && O(t);
+  p.set(t, e), e === 0 && C(t);
 });
 function V(t, e) {
   const r = (p.get(e) || 0) + 1;
@@ -139,15 +139,15 @@ function I(t) {
 function x(t, e, r = [], a = function() {
 }) {
   let n = !1;
-  const o = new Proxy(a, {
+  const i = new Proxy(a, {
     get(d, l) {
       if (m(n), l === N)
         return () => {
-          I(o), O(t), e.clear(), n = !0;
+          I(i), C(t), e.clear(), n = !0;
         };
       if (l === "then") {
         if (r.length === 0)
-          return { then: () => o };
+          return { then: () => i };
         const u = g(t, e, {
           type: "GET",
           path: r.map((s) => s.toString())
@@ -158,12 +158,12 @@ function x(t, e, r = [], a = function() {
     },
     set(d, l, u) {
       m(n);
-      const [s, i] = b(u);
+      const [s, o] = b(u);
       return g(t, e, {
         type: "SET",
         path: [...r, l].map((f) => f.toString()),
         value: s
-      }, i).then(h);
+      }, o).then(h);
     },
     apply(d, l, u) {
       m(n);
@@ -174,38 +174,38 @@ function x(t, e, r = [], a = function() {
         }).then(h);
       if (s === "bind")
         return x(t, e, r.slice(0, -1));
-      const [i, f] = P(u);
+      const [o, f] = A(u);
       return g(t, e, {
         type: "APPLY",
         path: r.map((c) => c.toString()),
-        argumentList: i
+        argumentList: o
       }, f).then(h);
     },
     construct(d, l) {
       m(n);
-      const [u, s] = P(l);
+      const [u, s] = A(l);
       return g(t, e, {
         type: "CONSTRUCT",
-        path: r.map((i) => i.toString()),
+        path: r.map((o) => o.toString()),
         argumentList: u
       }, s).then(h);
     }
   });
-  return V(o, t), o;
+  return V(i, t), i;
 }
 function W(t) {
   return Array.prototype.concat.apply([], t);
 }
-function P(t) {
+function A(t) {
   const e = t.map(b);
   return [e.map((r) => r[0]), W(e.map((r) => r[1]))];
 }
-const _ = /* @__PURE__ */ new WeakMap();
+const O = /* @__PURE__ */ new WeakMap();
 function j(t, e) {
-  return _.set(t, e), t;
+  return O.set(t, e), t;
 }
 function D(t) {
-  return Object.assign(t, { [M]: !0 });
+  return Object.assign(t, { [T]: !0 });
 }
 function b(t) {
   for (const [e, r] of S)
@@ -225,7 +225,7 @@ function b(t) {
       type: "RAW",
       value: t
     },
-    _.get(t) || []
+    O.get(t) || []
   ];
 }
 function h(t) {
@@ -238,25 +238,26 @@ function h(t) {
 }
 function g(t, e, r, a) {
   return new Promise((n) => {
-    const o = U();
-    e.set(o, n), t.start && t.start(), t.postMessage(Object.assign({ id: o }, r), a);
+    const i = U();
+    e.set(i, n), t.start && t.start(), t.postMessage(Object.assign({ id: i }, r), a);
   });
 }
 function U() {
   return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
 }
-class G {
+class q {
   constructor() {
     this.platformActions = [], this.parsers = [], this.application = {
       downloadFile: async (e, r, a) => await this._mainThread.downloadFile(e, r, a),
       downloadFiles: async (e, r) => await this._mainThread.downloadFiles(e, r),
-      feedback: async (e, r) => await this._mainThread.feedback(e, r)
-    }, A({
+      feedback: async (e, r) => await this._mainThread.feedback(e, r),
+      quickPick: async (e) => await this._mainThread.quickPick(e)
+    }, P({
       activate: this.activate.bind(this),
       deactivate: this.deactivate.bind(this),
       parsers: this._parsers.bind(this),
       platformActions: this._platformActions.bind(this)
-    }), this._mainThread = C(self);
+    }), this._mainThread = _(self);
   }
   /**
    * Método chamado automaticamente ao ativar a extensão.
@@ -284,6 +285,6 @@ class G {
   }
 }
 export {
-  G as ExtensionBase
+  q as ExtensionBase
 };
 //# sourceMappingURL=index.es.js.map
