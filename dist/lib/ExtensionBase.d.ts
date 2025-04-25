@@ -25,8 +25,12 @@ export declare abstract class ExtensionBase {
             callCustomCommand: (key: string, ...args: any[]) => Promise<unknown>;
             downloadFile: (fileName: string, fileType: string, fileContent: string) => Promise<void>;
             downloadFiles: (downloadName: string, files: import('..').TFileOrFolder[]) => Promise<void>;
-            feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
-            quickPick: (props: import('./types/TQuickPick').TQuickPick) => Promise<string | void>;
+            editor: {
+                feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
+                showQuickPick: (props: import('./types/TQuickPick').TQuickPick) => Promise<string | void>;
+                setPrimarySideBar: (key: string) => Promise<void>;
+                setSecondarySideBar: (key: string) => Promise<void>;
+            };
         };
         readonly dataProviders: {
             callCustomDataProvider: (key: string, ...args: any[]) => Promise<unknown>;

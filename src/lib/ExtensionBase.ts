@@ -86,12 +86,20 @@ export abstract class ExtensionBase {
       downloadFiles: async (downloadName, files) => {
         return await this._mainThread['download:files'](downloadName, files) as ReturnType<TApplicationCommands['downloadFiles']>;
       },
-      feedback: async (message, type) => {
-        return await this._mainThread['feedback'](message, type) as ReturnType<TApplicationCommands['feedback']>;
-      },
-      quickPick: async (props) => {
-        return await this._mainThread['quick:pick'](props) as ReturnType<TApplicationCommands['quickPick']>;
-      },
+      editor: {
+        feedback: async (message, type) => {
+          return await this._mainThread['editor:feedback'](message, type) as ReturnType<TApplicationCommands['editor']['feedback']>;
+        },
+        showQuickPick: async (props) => {
+          return await this._mainThread['editor:quickPick:show'](props) as ReturnType<TApplicationCommands['editor']['showQuickPick']>;
+        },
+        setPrimarySideBar: async (key) => {
+          return await this._mainThread['editor:primarySideBar:set'](key) as ReturnType<TApplicationCommands['editor']['setPrimarySideBar']>;
+        },
+        setSecondarySideBar: async (key) => {
+          return await this._mainThread['editor:secondarySideBar:set'](key) as ReturnType<TApplicationCommands['editor']['setSecondarySideBar']>;
+        },
+      }
     } satisfies TApplicationCommands,
     dataProviders: {
       callCustomDataProvider: async (key: string, ...args: any[]) => {
@@ -114,5 +122,5 @@ export abstract class ExtensionBase {
         }
       ),
     } satisfies TApplicationDataProviders,
-  } as const
+  } as const;
 }

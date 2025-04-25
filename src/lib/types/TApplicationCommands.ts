@@ -26,16 +26,33 @@ export type TApplicationCommands = {
    */
   readonly downloadFile: (fileName: string, fileType: string, fileContent: string) => Promise<void>;
   /**
-   * Allow to show some feedback to the platform user
-   * 
-   * @param message Message of the feedback
-   * @param type type of the feedback
+   * Grouped methods to editor configuration
    */
-  readonly feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
-  /**
-   * Allow to capture user freeform text input
-   * 
-   * @param props Props to configure the quick pick
-   */
-  readonly quickPick: (props: TQuickPick) => Promise<string | void>;
+  readonly editor: {
+    /**
+     * Allow to show some feedback to the platform user
+     * 
+     * @param message Message of the feedback
+     * @param type type of the feedback
+     */
+    readonly feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
+    /**
+     * Allow to capture user freeform text input
+     * 
+     * @param props Props to configure the quick pick
+     */
+    readonly showQuickPick: (props: TQuickPick) => Promise<string | void>;
+    /**
+     * Allow to set primary side bar view by key
+     * 
+     * @param key Key to identify the view to show in the side bar
+     */
+    readonly setPrimarySideBar: (key: string) => Promise<void>;
+    /**
+     * Allow to set secondary side bar view by key
+     * 
+     * @param key Key to identify the view to show in the side bar
+     */
+    readonly setSecondarySideBar: (key: string) => Promise<void>;
+  }
 }

@@ -3,17 +3,17 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const x = Symbol("Comlink.proxy"), R = Symbol("Comlink.endpoint"), j = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), g = Symbol("Comlink.thrown"), A = (t) => typeof t == "object" && t !== null || typeof t == "function", z = {
-  canHandle: (t) => A(t) && t[x],
+const x = Symbol("Comlink.proxy"), R = Symbol("Comlink.endpoint"), j = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), g = Symbol("Comlink.thrown"), S = (t) => typeof t == "object" && t !== null || typeof t == "function", z = {
+  canHandle: (t) => S(t) && t[x],
   serialize(t) {
     const { port1: e, port2: r } = new MessageChannel();
     return P(t, e), [r, [r]];
   },
   deserialize(t) {
-    return t.start(), C(t);
+    return t.start(), v(t);
   }
 }, N = {
-  canHandle: (t) => A(t) && g in t,
+  canHandle: (t) => S(t) && g in t,
   serialize({ value: t }) {
     let e;
     return t instanceof Error ? e = {
@@ -28,7 +28,7 @@ const x = Symbol("Comlink.proxy"), R = Symbol("Comlink.endpoint"), j = Symbol("C
   deserialize(t) {
     throw t.isError ? Object.assign(new Error(t.value.message), t.value) : t.value;
   }
-}, M = /* @__PURE__ */ new Map([
+}, A = /* @__PURE__ */ new Map([
   ["proxy", z],
   ["throw", N]
 ]);
@@ -83,7 +83,7 @@ function P(t, e = globalThis, r = ["*"]) {
     }
     Promise.resolve(i).catch((o) => ({ value: o, [g]: 0 })).then((o) => {
       const [f, c] = b(o);
-      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c), d === "RELEASE" && (e.removeEventListener("message", a), v(e), k in t && typeof t[k] == "function" && t[k]());
+      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c), d === "RELEASE" && (e.removeEventListener("message", a), M(e), k in t && typeof t[k] == "function" && t[k]());
     }).catch((o) => {
       const [f, c] = b({
         value: new TypeError("Unserializable return value"),
@@ -96,10 +96,10 @@ function P(t, e = globalThis, r = ["*"]) {
 function L(t) {
   return t.constructor.name === "MessagePort";
 }
-function v(t) {
+function M(t) {
   L(t) && t.close();
 }
-function C(t, e) {
+function v(t, e) {
   const r = /* @__PURE__ */ new Map();
   return t.addEventListener("message", function(n) {
     const { data: s } = n;
@@ -118,16 +118,16 @@ function y(t) {
   if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function S(t) {
+function C(t) {
   return w(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
-    v(t);
+    M(t);
   });
 }
 const p = /* @__PURE__ */ new WeakMap(), E = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
   const e = (p.get(t) || 0) - 1;
-  p.set(t, e), e === 0 && S(t);
+  p.set(t, e), e === 0 && C(t);
 });
 function V(t, e) {
   const r = (p.get(e) || 0) + 1;
@@ -143,7 +143,7 @@ function T(t, e, r = [], a = function() {
     get(d, l) {
       if (y(n), l === j)
         return () => {
-          F(s), S(t), e.clear(), n = !0;
+          F(s), C(t), e.clear(), n = !0;
         };
       if (l === "then") {
         if (r.length === 0)
@@ -208,7 +208,7 @@ function W(t) {
   return Object.assign(t, { [x]: !0 });
 }
 function b(t) {
-  for (const [e, r] of M)
+  for (const [e, r] of A)
     if (r.canHandle(t)) {
       const [a, n] = r.serialize(t);
       return [
@@ -231,29 +231,33 @@ function b(t) {
 function h(t) {
   switch (t.type) {
     case "HANDLER":
-      return M.get(t.name).deserialize(t.value);
+      return A.get(t.name).deserialize(t.value);
     case "RAW":
       return t.value;
   }
 }
 function w(t, e, r, a) {
   return new Promise((n) => {
-    const s = U();
+    const s = B();
     e.set(s, n), t.start && t.start(), t.postMessage(Object.assign({ id: s }, r), a);
   });
 }
-function U() {
+function B() {
   return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
 }
-class $ {
+class U {
   constructor() {
     this.platformActions = [], this.parsers = [], this.views = [], this.application = {
       commands: {
         callCustomCommand: async (e, ...r) => await this._mainThread[e](...r),
         downloadFile: async (e, r, a) => await this._mainThread["download:file"](e, r, a),
         downloadFiles: async (e, r) => await this._mainThread["download:files"](e, r),
-        feedback: async (e, r) => await this._mainThread.feedback(e, r),
-        quickPick: async (e) => await this._mainThread["quick:pick"](e)
+        editor: {
+          feedback: async (e, r) => await this._mainThread["editor:feedback"](e, r),
+          showQuickPick: async (e) => await this._mainThread["editor:quickPick:show"](e),
+          setPrimarySideBar: async (e) => await this._mainThread["editor:primarySideBar:set"](e),
+          setSecondarySideBar: async (e) => await this._mainThread["editor:secondarySideBar:set"](e)
+        }
       },
       dataProviders: {
         callCustomDataProvider: async (e, ...r) => await this._mainThread[e](...r),
@@ -272,7 +276,7 @@ class $ {
       views: this._views.bind(this),
       parsers: this._parsers.bind(this),
       platformActions: this._platformActions.bind(this)
-    }), this._mainThread = C(self);
+    }), this._mainThread = v(self);
   }
   /**
    * Método chamado automaticamente ao ativar a extensão.
@@ -307,6 +311,6 @@ class $ {
   }
 }
 export {
-  $ as ExtensionBase
+  U as ExtensionBase
 };
 //# sourceMappingURL=index.es.js.map
