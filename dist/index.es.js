@@ -3,17 +3,17 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), M = (t) => typeof t == "object" && t !== null || typeof t == "function", F = {
-  canHandle: (t) => M(t) && t[T],
+const x = Symbol("Comlink.proxy"), R = Symbol("Comlink.endpoint"), j = Symbol("Comlink.releaseProxy"), k = Symbol("Comlink.finalizer"), g = Symbol("Comlink.thrown"), A = (t) => typeof t == "object" && t !== null || typeof t == "function", z = {
+  canHandle: (t) => A(t) && t[x],
   serialize(t) {
     const { port1: e, port2: r } = new MessageChannel();
     return P(t, e), [r, [r]];
   },
   deserialize(t) {
-    return t.start(), _(t);
+    return t.start(), C(t);
   }
-}, v = {
-  canHandle: (t) => M(t) && w in t,
+}, N = {
+  canHandle: (t) => A(t) && g in t,
   serialize({ value: t }) {
     let e;
     return t instanceof Error ? e = {
@@ -28,9 +28,9 @@ const T = Symbol("Comlink.proxy"), z = Symbol("Comlink.endpoint"), N = Symbol("C
   deserialize(t) {
     throw t.isError ? Object.assign(new Error(t.value.message), t.value) : t.value;
   }
-}, S = /* @__PURE__ */ new Map([
-  ["proxy", F],
-  ["throw", v]
+}, M = /* @__PURE__ */ new Map([
+  ["proxy", z],
+  ["throw", N]
 ]);
 function H(t, e) {
   for (const r of t)
@@ -46,169 +46,169 @@ function P(t, e = globalThis, r = ["*"]) {
       console.warn(`Invalid origin '${n.origin}' for comlink proxy`);
       return;
     }
-    const { id: i, type: d, path: l } = Object.assign({ path: [] }, n.data), u = (n.data.argumentList || []).map(h);
-    let s;
+    const { id: s, type: d, path: l } = Object.assign({ path: [] }, n.data), u = (n.data.argumentList || []).map(h);
+    let i;
     try {
-      const o = l.slice(0, -1).reduce((c, y) => c[y], t), f = l.reduce((c, y) => c[y], t);
+      const o = l.slice(0, -1).reduce((c, m) => c[m], t), f = l.reduce((c, m) => c[m], t);
       switch (d) {
         case "GET":
-          s = f;
+          i = f;
           break;
         case "SET":
-          o[l.slice(-1)[0]] = h(n.data.value), s = !0;
+          o[l.slice(-1)[0]] = h(n.data.value), i = !0;
           break;
         case "APPLY":
-          s = f.apply(o, u);
+          i = f.apply(o, u);
           break;
         case "CONSTRUCT":
           {
             const c = new f(...u);
-            s = D(c);
+            i = W(c);
           }
           break;
         case "ENDPOINT":
           {
-            const { port1: c, port2: y } = new MessageChannel();
-            P(t, y), s = j(c, [c]);
+            const { port1: c, port2: m } = new MessageChannel();
+            P(t, m), i = I(c, [c]);
           }
           break;
         case "RELEASE":
-          s = void 0;
+          i = void 0;
           break;
         default:
           return;
       }
     } catch (o) {
-      s = { value: o, [w]: 0 };
+      i = { value: o, [g]: 0 };
     }
-    Promise.resolve(s).catch((o) => ({ value: o, [w]: 0 })).then((o) => {
+    Promise.resolve(i).catch((o) => ({ value: o, [g]: 0 })).then((o) => {
       const [f, c] = b(o);
-      e.postMessage(Object.assign(Object.assign({}, f), { id: i }), c), d === "RELEASE" && (e.removeEventListener("message", a), R(e), k in t && typeof t[k] == "function" && t[k]());
+      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c), d === "RELEASE" && (e.removeEventListener("message", a), v(e), k in t && typeof t[k] == "function" && t[k]());
     }).catch((o) => {
       const [f, c] = b({
         value: new TypeError("Unserializable return value"),
-        [w]: 0
+        [g]: 0
       });
-      e.postMessage(Object.assign(Object.assign({}, f), { id: i }), c);
+      e.postMessage(Object.assign(Object.assign({}, f), { id: s }), c);
     });
   }), e.start && e.start();
 }
 function L(t) {
   return t.constructor.name === "MessagePort";
 }
-function R(t) {
+function v(t) {
   L(t) && t.close();
 }
-function _(t, e) {
+function C(t, e) {
   const r = /* @__PURE__ */ new Map();
   return t.addEventListener("message", function(n) {
-    const { data: i } = n;
-    if (!i || !i.id)
+    const { data: s } = n;
+    if (!s || !s.id)
       return;
-    const d = r.get(i.id);
+    const d = r.get(s.id);
     if (d)
       try {
-        d(i);
+        d(s);
       } finally {
-        r.delete(i.id);
+        r.delete(s.id);
       }
-  }), x(t, r, [], e);
+  }), T(t, r, [], e);
 }
-function m(t) {
+function y(t) {
   if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function C(t) {
-  return g(t, /* @__PURE__ */ new Map(), {
+function S(t) {
+  return w(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
-    R(t);
+    v(t);
   });
 }
 const p = /* @__PURE__ */ new WeakMap(), E = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
   const e = (p.get(t) || 0) - 1;
-  p.set(t, e), e === 0 && C(t);
+  p.set(t, e), e === 0 && S(t);
 });
 function V(t, e) {
   const r = (p.get(e) || 0) + 1;
   p.set(e, r), E && E.register(t, e, t);
 }
-function I(t) {
+function F(t) {
   E && E.unregister(t);
 }
-function x(t, e, r = [], a = function() {
+function T(t, e, r = [], a = function() {
 }) {
   let n = !1;
-  const i = new Proxy(a, {
+  const s = new Proxy(a, {
     get(d, l) {
-      if (m(n), l === N)
+      if (y(n), l === j)
         return () => {
-          I(i), C(t), e.clear(), n = !0;
+          F(s), S(t), e.clear(), n = !0;
         };
       if (l === "then") {
         if (r.length === 0)
-          return { then: () => i };
-        const u = g(t, e, {
+          return { then: () => s };
+        const u = w(t, e, {
           type: "GET",
-          path: r.map((s) => s.toString())
+          path: r.map((i) => i.toString())
         }).then(h);
         return u.then.bind(u);
       }
-      return x(t, e, [...r, l]);
+      return T(t, e, [...r, l]);
     },
     set(d, l, u) {
-      m(n);
-      const [s, o] = b(u);
-      return g(t, e, {
+      y(n);
+      const [i, o] = b(u);
+      return w(t, e, {
         type: "SET",
         path: [...r, l].map((f) => f.toString()),
-        value: s
+        value: i
       }, o).then(h);
     },
     apply(d, l, u) {
-      m(n);
-      const s = r[r.length - 1];
-      if (s === z)
-        return g(t, e, {
+      y(n);
+      const i = r[r.length - 1];
+      if (i === R)
+        return w(t, e, {
           type: "ENDPOINT"
         }).then(h);
-      if (s === "bind")
-        return x(t, e, r.slice(0, -1));
-      const [o, f] = A(u);
-      return g(t, e, {
+      if (i === "bind")
+        return T(t, e, r.slice(0, -1));
+      const [o, f] = _(u);
+      return w(t, e, {
         type: "APPLY",
         path: r.map((c) => c.toString()),
         argumentList: o
       }, f).then(h);
     },
     construct(d, l) {
-      m(n);
-      const [u, s] = A(l);
-      return g(t, e, {
+      y(n);
+      const [u, i] = _(l);
+      return w(t, e, {
         type: "CONSTRUCT",
         path: r.map((o) => o.toString()),
         argumentList: u
-      }, s).then(h);
+      }, i).then(h);
     }
   });
-  return V(i, t), i;
-}
-function W(t) {
-  return Array.prototype.concat.apply([], t);
-}
-function A(t) {
-  const e = t.map(b);
-  return [e.map((r) => r[0]), W(e.map((r) => r[1]))];
-}
-const O = /* @__PURE__ */ new WeakMap();
-function j(t, e) {
-  return O.set(t, e), t;
+  return V(s, t), s;
 }
 function D(t) {
-  return Object.assign(t, { [T]: !0 });
+  return Array.prototype.concat.apply([], t);
+}
+function _(t) {
+  const e = t.map(b);
+  return [e.map((r) => r[0]), D(e.map((r) => r[1]))];
+}
+const O = /* @__PURE__ */ new WeakMap();
+function I(t, e) {
+  return O.set(t, e), t;
+}
+function W(t) {
+  return Object.assign(t, { [x]: !0 });
 }
 function b(t) {
-  for (const [e, r] of S)
+  for (const [e, r] of M)
     if (r.canHandle(t)) {
       const [a, n] = r.serialize(t);
       return [
@@ -231,33 +231,48 @@ function b(t) {
 function h(t) {
   switch (t.type) {
     case "HANDLER":
-      return S.get(t.name).deserialize(t.value);
+      return M.get(t.name).deserialize(t.value);
     case "RAW":
       return t.value;
   }
 }
-function g(t, e, r, a) {
+function w(t, e, r, a) {
   return new Promise((n) => {
-    const i = U();
-    e.set(i, n), t.start && t.start(), t.postMessage(Object.assign({ id: i }, r), a);
+    const s = U();
+    e.set(s, n), t.start && t.start(), t.postMessage(Object.assign({ id: s }, r), a);
   });
 }
 function U() {
   return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
 }
-class q {
+class $ {
   constructor() {
-    this.platformActions = [], this.parsers = [], this.application = {
-      downloadFile: async (e, r, a) => await this._mainThread.downloadFile(e, r, a),
-      downloadFiles: async (e, r) => await this._mainThread.downloadFiles(e, r),
-      feedback: async (e, r) => await this._mainThread.feedback(e, r),
-      quickPick: async (e) => await this._mainThread.quickPick(e)
+    this.platformActions = [], this.parsers = [], this.views = [], this.application = {
+      commands: {
+        callCustomCommand: async (e, ...r) => await this._mainThread[e](...r),
+        downloadFile: async (e, r, a) => await this._mainThread["download:file"](e, r, a),
+        downloadFiles: async (e, r) => await this._mainThread["download:files"](e, r),
+        feedback: async (e, r) => await this._mainThread.feedback(e, r),
+        quickPick: async (e) => await this._mainThread["quick:pick"](e)
+      },
+      dataProviders: {
+        callCustomDataProvider: async (e, ...r) => await this._mainThread[e](...r),
+        project: Object.assign(
+          async () => await this._mainThread.project(),
+          {
+            pages: async (e) => await this._mainThread["project.pages"](e),
+            services: async (e) => await this._mainThread["project.services"](e),
+            components: async (e) => await this._mainThread["project.components"](e)
+          }
+        )
+      }
     }, P({
       activate: this.activate.bind(this),
       deactivate: this.deactivate.bind(this),
+      views: this._views.bind(this),
       parsers: this._parsers.bind(this),
       platformActions: this._platformActions.bind(this)
-    }), this._mainThread = _(self);
+    }), this._mainThread = C(self);
   }
   /**
    * Método chamado automaticamente ao ativar a extensão.
@@ -283,8 +298,15 @@ class q {
     if (!a) throw new Error(`Parser with key "${e}" not found`);
     return await a.parser(r);
   }
+  async _views(e, r) {
+    const a = this.views.find((s) => s.key === e);
+    if (!a) throw new Error(`Parser with key "${e}" not found`);
+    const n = a.actions.find((s) => s.key === r);
+    if (!n) throw new Error(`View action with key "${e}" not found`);
+    return await n.action();
+  }
 }
 export {
-  q as ExtensionBase
+  $ as ExtensionBase
 };
 //# sourceMappingURL=index.es.js.map

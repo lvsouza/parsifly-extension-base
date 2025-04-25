@@ -1,6 +1,13 @@
 import { TFileOrFolder } from './TFileOrFolder';
 import { TQuickPick } from './TQuickPick';
-export type TApplicationMethods = {
+export type TApplicationCommands = {
+    /**
+     * Allow you to call a custom command from application
+     *
+     * @param key Name of the command
+     * @param args List of arguments to be forwarded to the command call
+     */
+    readonly callCustomCommand: (key: string, ...args: unknown[]) => Promise<unknown>;
     /**
      * Allow you to download a lot of files and folders as zip
      *

@@ -1,10 +1,11 @@
-import { TApplicationMethods } from './types/TApplicationMethods';
 import { TPlatformAction } from './types/TPlatformAction';
 import { TParser } from './types/TParser';
+import { TView } from './types/TView';
 export declare abstract class ExtensionBase {
     private _mainThread;
     platformActions: TPlatformAction[];
     parsers: TParser[];
+    views: TView[];
     constructor();
     /**
      * Método chamado automaticamente ao ativar a extensão.
@@ -18,5 +19,22 @@ export declare abstract class ExtensionBase {
     deactivate(): void;
     private _platformActions;
     private _parsers;
-    readonly application: TApplicationMethods;
+    private _views;
+    readonly application: {
+        readonly commands: {
+            callCustomCommand: (key: string, ...args: any[]) => Promise<unknown>;
+            downloadFile: (fileName: string, fileType: string, fileContent: string) => Promise<void>;
+            downloadFiles: (downloadName: string, files: import('..').TFileOrFolder[]) => Promise<void>;
+            feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
+            quickPick: (props: import('./types/TQuickPick').TQuickPick) => Promise<string | void>;
+        };
+        readonly dataProviders: {
+            callCustomDataProvider: (key: string, ...args: any[]) => Promise<unknown>;
+            project: (() => Promise<any>) & {
+                pages: (index?: number) => Promise<any>;
+                services: (index?: number) => Promise<any>;
+                components: (index?: number) => Promise<any>;
+            };
+        };
+    };
 }
