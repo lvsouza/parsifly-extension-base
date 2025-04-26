@@ -30,7 +30,7 @@ export declare abstract class ExtensionBase {
                 showQuickPick: (props: import('./types/TQuickPick').TQuickPick) => Promise<string | void>;
                 showPrimarySideBarByKey: (key: string) => Promise<void>;
                 showSecondarySideBarByKey: (key: string) => Promise<void>;
-                setSideBarItems: (key: string, items: import('./types/TListViewItem').TListViewItem[]) => Promise<void>;
+                setSideBarItems: (key: string, items: import('..').TListViewItem[]) => Promise<void>;
             };
         };
         readonly dataProviders: {

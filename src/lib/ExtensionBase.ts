@@ -36,7 +36,7 @@ export abstract class ExtensionBase {
    * Pode ser sobrescrito pelas classes derivadas.
    */
   activate(): void {
-    console.log('Extensão ativada (método base).');
+    console.log('Extension activated (base implementation).');
   }
 
   /**
@@ -44,7 +44,7 @@ export abstract class ExtensionBase {
    * Pode ser sobrescrito pelas classes derivadas.
    */
   deactivate(): void {
-    console.log('Extensão desativada (método base).');
+    console.log('Extension deactivated (base implementation).');
   }
 
 
@@ -57,11 +57,11 @@ export abstract class ExtensionBase {
     return await platformAction.action();
   }
 
-  private async _parsers(key: string, data: any) {
+  private async _parsers(key: string) {
     const parser = this.parsers.find(parser => parser.key === key);
     if (!parser) throw new Error(`Parser with key "${key}" not found`);
 
-    return await parser.parser(data);
+    return await parser.parser();
   }
 
   private async _views(key: string, actionKey: string) {
