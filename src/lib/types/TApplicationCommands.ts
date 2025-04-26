@@ -1,4 +1,5 @@
 import { TFileOrFolder } from './TFileOrFolder';
+import { TListViewItem } from './TListViewItem';
 import { TQuickPick } from './TQuickPick';
 
 
@@ -47,12 +48,19 @@ export type TApplicationCommands = {
      * 
      * @param key Key to identify the view to show in the side bar
      */
-    readonly setPrimarySideBar: (key: string) => Promise<void>;
+    readonly showPrimarySideBarByKey: (key: string) => Promise<void>;
     /**
      * Allow to set secondary side bar view by key
      * 
      * @param key Key to identify the view to show in the side bar
      */
-    readonly setSecondarySideBar: (key: string) => Promise<void>;
+    readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
+    /**
+     * Allow to set a list of items to the side bar by their key
+     * 
+     * @param key Key to identify the view side bar
+     * @param items List of new items
+     */
+    readonly setSideBarItems: (key: string, items: TListViewItem[]) => Promise<void>;
   }
 }

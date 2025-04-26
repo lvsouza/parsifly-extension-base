@@ -93,11 +93,14 @@ export abstract class ExtensionBase {
         showQuickPick: async (props) => {
           return await this._mainThread['editor:quickPick:show'](props) as ReturnType<TApplicationCommands['editor']['showQuickPick']>;
         },
-        setPrimarySideBar: async (key) => {
-          return await this._mainThread['editor:primarySideBar:set'](key) as ReturnType<TApplicationCommands['editor']['setPrimarySideBar']>;
+        showPrimarySideBarByKey: async (key) => {
+          return await this._mainThread['editor:primarySideBar:showByKey'](key) as ReturnType<TApplicationCommands['editor']['showPrimarySideBarByKey']>;
         },
-        setSecondarySideBar: async (key) => {
-          return await this._mainThread['editor:secondarySideBar:set'](key) as ReturnType<TApplicationCommands['editor']['setSecondarySideBar']>;
+        showSecondarySideBarByKey: async (key) => {
+          return await this._mainThread['editor:secondarySideBar:showByKey'](key) as ReturnType<TApplicationCommands['editor']['showSecondarySideBarByKey']>;
+        },
+        setSideBarItems: async (key, items) => {
+          return await this._mainThread['editor:sideBar:setItems'](key, items) as ReturnType<TApplicationCommands['editor']['setSideBarItems']>;
         },
       }
     } satisfies TApplicationCommands,

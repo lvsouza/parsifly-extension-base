@@ -28,8 +28,9 @@ export declare abstract class ExtensionBase {
             editor: {
                 feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
                 showQuickPick: (props: import('./types/TQuickPick').TQuickPick) => Promise<string | void>;
-                setPrimarySideBar: (key: string) => Promise<void>;
-                setSecondarySideBar: (key: string) => Promise<void>;
+                showPrimarySideBarByKey: (key: string) => Promise<void>;
+                showSecondarySideBarByKey: (key: string) => Promise<void>;
+                setSideBarItems: (key: string, items: import('./types/TListViewItem').TListViewItem[]) => Promise<void>;
             };
         };
         readonly dataProviders: {
