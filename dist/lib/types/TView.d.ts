@@ -4,7 +4,6 @@ type TAction = {
 };
 export type TView = {
     key: string;
-    type: 'list-view';
     actions: TAction[];
 };
 export {};
