@@ -35,7 +35,7 @@ export abstract class ExtensionBase {
    * Método chamado automaticamente ao ativar a extensão.
    * Pode ser sobrescrito pelas classes derivadas.
    */
-  activate(): void {
+  activate(): void | Promise<void> {
     console.log('Extension activated (base implementation).');
   }
 
@@ -43,7 +43,7 @@ export abstract class ExtensionBase {
    * Método chamado automaticamente ao desativar a extensão.
    * Pode ser sobrescrito pelas classes derivadas.
    */
-  deactivate(): void {
+  deactivate(): void | Promise<void> {
     console.log('Extension deactivated (base implementation).');
   }
 

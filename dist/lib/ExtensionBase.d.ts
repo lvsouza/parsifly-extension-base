@@ -11,12 +11,12 @@ export declare abstract class ExtensionBase {
      * Método chamado automaticamente ao ativar a extensão.
      * Pode ser sobrescrito pelas classes derivadas.
      */
-    activate(): void;
+    activate(): void | Promise<void>;
     /**
      * Método chamado automaticamente ao desativar a extensão.
      * Pode ser sobrescrito pelas classes derivadas.
      */
-    deactivate(): void;
+    deactivate(): void | Promise<void>;
     private _platformActions;
     private _parsers;
     private _views;
