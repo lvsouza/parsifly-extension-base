@@ -1,0 +1,9 @@
+{
+  "name": "Extension",
+  "authorName": "Lucas Souza Dev",
+  "packageName": "app-studio-extension-base",
+  "description": "",
+  "platformActions": [],
+  "parsers": [],
+  "views": []
+}

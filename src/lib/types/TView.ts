@@ -1,6 +1,11 @@
 
 
 
+type TTab = {
+  key: string;
+  action(): Promise<void>;
+}
+
 type TAction = {
   key: string;
   action(): Promise<void>;
@@ -8,5 +13,6 @@ type TAction = {
 
 export type TView = {
   key: string;
+  tabs?: TTab[];
   actions: TAction[]
 }
