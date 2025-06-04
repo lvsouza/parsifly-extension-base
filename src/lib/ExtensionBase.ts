@@ -1,4 +1,5 @@
 import { TPlatformAction } from './types/TPlatformAction';
+import { TabsView } from './shared/components/TabsView';
 import { EventLink } from './shared/services/EventLink';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { TQuickPick } from './types/TQuickPick';
@@ -56,17 +57,35 @@ export abstract class ExtensionBase {
 
   public readonly application = {
     views: {
-      register: async (view: View) => {
-        this._eventLink.setExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`, view.dataProvider.getItems);
-        view.actions?.forEach(action => {
-          this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
-        });
+      register: async (view: View | TabsView) => {
+        if (view instanceof TabsView) {
+          view.tabs.forEach(tabView => {
+            this._eventLink.setExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`, tabView.dataProvider.getItems);
+          })
+          view.actions?.forEach(action => {
+            this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
+          });
+        } else {
+          this._eventLink.setExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`, view.dataProvider.getItems);
+          view.actions?.forEach(action => {
+            this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
+          });
+        }
       },
-      unregister: async (view: View) => {
-        this._eventLink.removeExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`);
-        view.actions?.forEach(action => {
-          this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
-        });
+      unregister: async (view: View | TabsView) => {
+        if (view instanceof TabsView) {
+          view.tabs.forEach(tabView => {
+            this._eventLink.removeExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`);
+          })
+          view.actions?.forEach(action => {
+            this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
+          });
+        } else {
+          this._eventLink.removeExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`);
+          view.actions?.forEach(action => {
+            this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
+          });
+        }
       },
     },
     commands: {

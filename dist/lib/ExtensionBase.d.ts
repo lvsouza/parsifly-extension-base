@@ -1,4 +1,5 @@
 import { TPlatformAction } from './types/TPlatformAction';
+import { TabsView } from './shared/components/TabsView';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
@@ -21,8 +22,8 @@ export declare abstract class ExtensionBase {
     private _parsers;
     readonly application: {
         readonly views: {
-            readonly register: (view: View) => Promise<void>;
-            readonly unregister: (view: View) => Promise<void>;
+            readonly register: (view: View | TabsView) => Promise<void>;
+            readonly unregister: (view: View | TabsView) => Promise<void>;
         };
         readonly commands: {
             /**

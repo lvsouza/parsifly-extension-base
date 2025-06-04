@@ -1,14 +1,24 @@
-class U {
+class K {
   constructor(t) {
     this.key = t.key, this.getItems = t.getItems;
   }
 }
-class K {
+class x {
+  constructor(t) {
+    this.key = t.key, this.tabs = t.tabs, this.actions = t.actions;
+  }
+}
+class q {
+  constructor(t) {
+    this.key = t.key, this.dataProvider = t.dataProvider;
+  }
+}
+class X {
   constructor(t) {
     this.key = t.key, this.action = t.action;
   }
 }
-class G {
+class Y {
   constructor(t) {
     this.key = t.key, this.actions = t.actions, this.dataProvider = t.dataProvider;
   }
@@ -18,17 +28,17 @@ class G {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const x = Symbol("Comlink.proxy"), T = Symbol("Comlink.endpoint"), R = Symbol("Comlink.releaseProxy"), p = Symbol("Comlink.finalizer"), w = Symbol("Comlink.thrown"), P = (e) => typeof e == "object" && e !== null || typeof e == "function", I = {
-  canHandle: (e) => P(e) && e[x],
+const S = Symbol("Comlink.proxy"), O = Symbol("Comlink.endpoint"), R = Symbol("Comlink.releaseProxy"), b = Symbol("Comlink.finalizer"), k = Symbol("Comlink.thrown"), L = (e) => typeof e == "object" && e !== null || typeof e == "function", I = {
+  canHandle: (e) => L(e) && e[S],
   serialize(e) {
     const { port1: t, port2: n } = new MessageChannel();
-    return _(e, t), [n, [n]];
+    return p(e, t), [n, [n]];
   },
   deserialize(e) {
     return e.start(), M(e);
   }
 }, N = {
-  canHandle: (e) => P(e) && w in e,
+  canHandle: (e) => L(e) && k in e,
   serialize({ value: e }) {
     let t;
     return e instanceof Error ? t = {
@@ -43,34 +53,34 @@ const x = Symbol("Comlink.proxy"), T = Symbol("Comlink.endpoint"), R = Symbol("C
   deserialize(e) {
     throw e.isError ? Object.assign(new Error(e.value.message), e.value) : e.value;
   }
-}, L = /* @__PURE__ */ new Map([
+}, A = /* @__PURE__ */ new Map([
   ["proxy", I],
   ["throw", N]
 ]);
-function $(e, t) {
+function j(e, t) {
   for (const n of e)
     if (t === n || n === "*" || n instanceof RegExp && n.test(t))
       return !0;
   return !1;
 }
-function _(e, t = globalThis, n = ["*"]) {
+function p(e, t = globalThis, n = ["*"]) {
   t.addEventListener("message", function r(s) {
     if (!s || !s.data)
       return;
-    if (!$(n, s.origin)) {
+    if (!j(n, s.origin)) {
       console.warn(`Invalid origin '${s.origin}' for comlink proxy`);
       return;
     }
-    const { id: i, type: f, path: l } = Object.assign({ path: [] }, s.data), u = (s.data.argumentList || []).map(h);
+    const { id: i, type: h, path: l } = Object.assign({ path: [] }, s.data), u = (s.data.argumentList || []).map(y);
     let a;
     try {
       const o = l.slice(0, -1).reduce((c, E) => c[E], e), d = l.reduce((c, E) => c[E], e);
-      switch (f) {
+      switch (h) {
         case "GET":
           a = d;
           break;
         case "SET":
-          o[l.slice(-1)[0]] = h(s.data.value), a = !0;
+          o[l.slice(-1)[0]] = y(s.data.value), a = !0;
           break;
         case "APPLY":
           a = d.apply(o, u);
@@ -84,7 +94,7 @@ function _(e, t = globalThis, n = ["*"]) {
         case "ENDPOINT":
           {
             const { port1: c, port2: E } = new MessageChannel();
-            _(e, E), a = V(c, [c]);
+            p(e, E), a = H(c, [c]);
           }
           break;
         case "RELEASE":
@@ -94,25 +104,25 @@ function _(e, t = globalThis, n = ["*"]) {
           return;
       }
     } catch (o) {
-      a = { value: o, [w]: 0 };
+      a = { value: o, [k]: 0 };
     }
-    Promise.resolve(a).catch((o) => ({ value: o, [w]: 0 })).then((o) => {
-      const [d, c] = k(o);
-      t.postMessage(Object.assign(Object.assign({}, d), { id: i }), c), f === "RELEASE" && (t.removeEventListener("message", r), A(t), p in e && typeof e[p] == "function" && e[p]());
+    Promise.resolve(a).catch((o) => ({ value: o, [k]: 0 })).then((o) => {
+      const [d, c] = w(o);
+      t.postMessage(Object.assign(Object.assign({}, d), { id: i }), c), h === "RELEASE" && (t.removeEventListener("message", r), $(t), b in e && typeof e[b] == "function" && e[b]());
     }).catch((o) => {
-      const [d, c] = k({
+      const [d, c] = w({
         value: new TypeError("Unserializable return value"),
-        [w]: 0
+        [k]: 0
       });
       t.postMessage(Object.assign(Object.assign({}, d), { id: i }), c);
     });
   }), t.start && t.start();
 }
-function j(e) {
+function z(e) {
   return e.constructor.name === "MessagePort";
 }
-function A(e) {
-  j(e) && e.close();
+function $(e) {
+  z(e) && e.close();
 }
 function M(e, t) {
   const n = /* @__PURE__ */ new Map();
@@ -120,110 +130,110 @@ function M(e, t) {
     const { data: i } = s;
     if (!i || !i.id)
       return;
-    const f = n.get(i.id);
-    if (f)
+    const h = n.get(i.id);
+    if (h)
       try {
-        f(i);
+        h(i);
       } finally {
         n.delete(i.id);
       }
-  }), b(e, n, [], t);
+  }), _(e, n, [], t);
 }
 function v(e) {
   if (e)
     throw new Error("Proxy has been released and is not useable");
 }
-function C(e) {
-  return y(e, /* @__PURE__ */ new Map(), {
+function T(e) {
+  return f(e, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
-    A(e);
+    $(e);
   });
 }
 const m = /* @__PURE__ */ new WeakMap(), g = "FinalizationRegistry" in globalThis && new FinalizationRegistry((e) => {
   const t = (m.get(e) || 0) - 1;
-  m.set(e, t), t === 0 && C(e);
+  m.set(e, t), t === 0 && T(e);
 });
-function z(e, t) {
+function B(e, t) {
   const n = (m.get(t) || 0) + 1;
   m.set(t, n), g && g.register(e, t, e);
 }
-function B(e) {
+function V(e) {
   g && g.unregister(e);
 }
-function b(e, t, n = [], r = function() {
+function _(e, t, n = [], r = function() {
 }) {
   let s = !1;
   const i = new Proxy(r, {
-    get(f, l) {
+    get(h, l) {
       if (v(s), l === R)
         return () => {
-          B(i), C(e), t.clear(), s = !0;
+          V(i), T(e), t.clear(), s = !0;
         };
       if (l === "then") {
         if (n.length === 0)
           return { then: () => i };
-        const u = y(e, t, {
+        const u = f(e, t, {
           type: "GET",
           path: n.map((a) => a.toString())
-        }).then(h);
+        }).then(y);
         return u.then.bind(u);
       }
-      return b(e, t, [...n, l]);
+      return _(e, t, [...n, l]);
     },
-    set(f, l, u) {
+    set(h, l, u) {
       v(s);
-      const [a, o] = k(u);
-      return y(e, t, {
+      const [a, o] = w(u);
+      return f(e, t, {
         type: "SET",
         path: [...n, l].map((d) => d.toString()),
         value: a
-      }, o).then(h);
+      }, o).then(y);
     },
-    apply(f, l, u) {
+    apply(h, l, u) {
       v(s);
       const a = n[n.length - 1];
-      if (a === T)
-        return y(e, t, {
+      if (a === O)
+        return f(e, t, {
           type: "ENDPOINT"
-        }).then(h);
+        }).then(y);
       if (a === "bind")
-        return b(e, t, n.slice(0, -1));
-      const [o, d] = S(u);
-      return y(e, t, {
+        return _(e, t, n.slice(0, -1));
+      const [o, d] = P(u);
+      return f(e, t, {
         type: "APPLY",
         path: n.map((c) => c.toString()),
         argumentList: o
-      }, d).then(h);
+      }, d).then(y);
     },
-    construct(f, l) {
+    construct(h, l) {
       v(s);
-      const [u, a] = S(l);
-      return y(e, t, {
+      const [u, a] = P(l);
+      return f(e, t, {
         type: "CONSTRUCT",
         path: n.map((o) => o.toString()),
         argumentList: u
-      }, a).then(h);
+      }, a).then(y);
     }
   });
-  return z(i, e), i;
+  return B(i, e), i;
 }
-function H(e) {
+function D(e) {
   return Array.prototype.concat.apply([], e);
 }
-function S(e) {
-  const t = e.map(k);
-  return [t.map((n) => n[0]), H(t.map((n) => n[1]))];
+function P(e) {
+  const t = e.map(w);
+  return [t.map((n) => n[0]), D(t.map((n) => n[1]))];
 }
-const O = /* @__PURE__ */ new WeakMap();
-function V(e, t) {
-  return O.set(e, t), e;
+const C = /* @__PURE__ */ new WeakMap();
+function H(e, t) {
+  return C.set(e, t), e;
 }
 function W(e) {
-  return Object.assign(e, { [x]: !0 });
+  return Object.assign(e, { [S]: !0 });
 }
-function k(e) {
-  for (const [t, n] of L)
+function w(e) {
+  for (const [t, n] of A)
     if (n.canHandle(e)) {
       const [r, s] = n.serialize(e);
       return [
@@ -240,18 +250,18 @@ function k(e) {
       type: "RAW",
       value: e
     },
-    O.get(e) || []
+    C.get(e) || []
   ];
 }
-function h(e) {
+function y(e) {
   switch (e.type) {
     case "HANDLER":
-      return L.get(e.name).deserialize(e.value);
+      return A.get(e.name).deserialize(e.value);
     case "RAW":
       return e.value;
   }
 }
-function y(e, t, n, r) {
+function f(e, t, n, r) {
   return new Promise((s) => {
     const i = F();
     t.set(i, s), e.start && e.start(), e.postMessage(Object.assign({ id: i }, n), r);
@@ -260,9 +270,12 @@ function y(e, t, n, r) {
 function F() {
   return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
 }
-class D {
+const U = {
+  DEBUG: !1
+};
+class G {
   constructor() {
-    this._events = /* @__PURE__ */ new Map(), _({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = M(self);
+    this._events = /* @__PURE__ */ new Map(), p({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = M(self);
   }
   setExtensionEvent(t, n) {
     this._events.set(t, n);
@@ -275,26 +288,34 @@ class D {
   }
   async _callExtensionEvent(t, ...n) {
     const r = this._events.get(t);
-    if (!r)
+    if (U.DEBUG && console.log(this._events.keys()), !r)
       throw new Error(`[EXTENSION] Event with key "${t}" was not found.`);
     return r(...n);
   }
 }
-class q {
+class Q {
   constructor() {
-    this._eventLink = new D(), this.platformActions = [], this.parsers = [], this.views = [], this.application = {
+    this._eventLink = new G(), this.platformActions = [], this.parsers = [], this.views = [], this.application = {
       views: {
         register: async (t) => {
-          var n;
-          this._eventLink.setExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`, t.dataProvider.getItems), (n = t.actions) == null || n.forEach((r) => {
-            this._eventLink.setExtensionEvent(`views:${t.key}:actions:${r.key}`, r.action);
-          });
+          var n, r;
+          t instanceof x ? (t.tabs.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${t.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems);
+          }), (n = t.actions) == null || n.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${t.key}:actions:${s.key}`, s.action);
+          })) : (this._eventLink.setExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`, t.dataProvider.getItems), (r = t.actions) == null || r.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${t.key}:actions:${s.key}`, s.action);
+          }));
         },
         unregister: async (t) => {
-          var n;
-          this._eventLink.removeExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`), (n = t.actions) == null || n.forEach((r) => {
-            this._eventLink.removeExtensionEvent(`views:${t.key}:actions:${r.key}`);
-          });
+          var n, r;
+          t instanceof x ? (t.tabs.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${t.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`);
+          }), (n = t.actions) == null || n.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${t.key}:actions:${s.key}`);
+          })) : (this._eventLink.removeExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`), (r = t.actions) == null || r.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${t.key}:actions:${s.key}`);
+          }));
         }
       },
       commands: {
@@ -397,9 +418,12 @@ class q {
   }
 }
 export {
-  K as Action,
-  q as ExtensionBase,
-  U as ListProvider,
-  G as View
+  X as Action,
+  U as Envs,
+  Q as ExtensionBase,
+  K as ListProvider,
+  q as TabView,
+  x as TabsView,
+  Y as View
 };
 //# sourceMappingURL=index.es.js.map
