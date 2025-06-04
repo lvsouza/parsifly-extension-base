@@ -1,49 +1,38 @@
-import * as ComLink from 'comlink';
-
-import { TApplicationDataProviders } from './types/TApplicationDataProviders';
-import { TApplicationCommands } from './types/TApplicationCommands';
 import { TPlatformAction } from './types/TPlatformAction';
+import { EventLink } from './shared/services/EventLink';
+import { TFileOrFolder } from './types/TFileOrFolder';
+import { TQuickPick } from './types/TQuickPick';
+import { View } from './shared/components/View';
 import { TParser } from './types/TParser';
-import { TView } from './types/TView';
 
 
 export abstract class ExtensionBase {
-  private _mainThread: Record<string, (...args: unknown[]) => Promise<unknown>>;
+  private _eventLink: EventLink = new EventLink();
 
 
   public platformActions: TPlatformAction[] = [];
-
   public parsers: TParser[] = [];
-
-  public views: TView[] = [];
+  public views: View[] = [];
 
 
   constructor() {
-    ComLink.expose({
-      activate: this.activate.bind(this),
-      deactivate: this.deactivate.bind(this),
-
-      views: this._views.bind(this),
-      parsers: this._parsers.bind(this),
-      platformActions: this._platformActions.bind(this),
-    });
-
-    this._mainThread = ComLink.wrap(self as any);
+    this._eventLink.setExtensionEvent('activate', this.activate.bind(this));
+    this._eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
+    this._eventLink.setExtensionEvent('parsers', this._parsers.bind(this));
+    this._eventLink.setExtensionEvent('platformActions', this._platformActions.bind(this));
   }
 
   /**
-   * Método chamado automaticamente ao ativar a extensão.
-   * Pode ser sobrescrito pelas classes derivadas.
+   * Automatically called when the extension start.
    */
-  activate(): void | Promise<void> {
+  async activate(): Promise<void> {
     console.log('Extension activated (base implementation).');
   }
 
   /**
-   * Método chamado automaticamente ao desativar a extensão.
-   * Pode ser sobrescrito pelas classes derivadas.
+   * Automatically called when the extension stop.
    */
-  deactivate(): void | Promise<void> {
+  async deactivate(): Promise<void> {
     console.log('Extension deactivated (base implementation).');
   }
 
@@ -64,66 +53,119 @@ export abstract class ExtensionBase {
     return await parser.parser();
   }
 
-  private async _views(key: string, actionKey: string) {
-    const view = this.views.find(view => view.key === key);
-    if (!view) throw new Error(`Parser with key "${key}" not found`);
-
-    const viewAction = view.actions.find(action => action.key === actionKey);
-    if (!viewAction) throw new Error(`View action with key "${key}" not found`);
-
-    return await viewAction.action();
-  }
-
 
   public readonly application = {
+    views: {
+      register: async (view: View) => {
+        this._eventLink.setExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`, view.dataProvider.getItems);
+        view.actions?.forEach(action => {
+          this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
+        });
+      },
+      unregister: async (view: View) => {
+        this._eventLink.removeExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`);
+        view.actions?.forEach(action => {
+          this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
+        });
+      },
+    },
     commands: {
-      callCustomCommand: async (key: string, ...args: any[]) => {
-        return await this._mainThread[key](...args);
+      /**
+       * Allow you to call a custom command from application
+       * 
+       * @param key Name of the command
+       * @param args List of arguments to be forwarded to the command call
+       */
+      callCustomCommand: async <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]): Promise<GReturn> => {
+        return await this._eventLink.callStudioEvent(key, ...args);
       },
-      downloadFile: async (fileName, fileType, fileContent) => {
-        return await this._mainThread['download:file'](fileName, fileType, fileContent) as ReturnType<TApplicationCommands['downloadFile']>;
+      /**
+       * Allow you to download some content in a file
+       * 
+       * @param fileName Name of the generated file
+       * @param fileType extension of the file
+       * @param fileContent file content in string
+       */
+      downloadFile: async (fileName: string, fileType: string, fileContent: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent<string, void>('download:file', fileName, fileType, fileContent);
       },
-      downloadFiles: async (downloadName, files) => {
-        return await this._mainThread['download:files'](downloadName, files) as ReturnType<TApplicationCommands['downloadFiles']>;
+      /**
+       * Allow you to download a lot of files and folders as zip
+       * 
+       * @param downloadName Name of the download as zip
+       * @param files List of files or folders to download
+       */
+      downloadFiles: async (downloadName: string, files: TFileOrFolder[]): Promise<void> => {
+        return await this._eventLink.callStudioEvent<string | TFileOrFolder[], void>('download:files', downloadName, files);
       },
+      /**
+       * Grouped methods to editor configuration
+       */
       editor: {
-        feedback: async (message, type) => {
-          return await this._mainThread['editor:feedback'](message, type) as ReturnType<TApplicationCommands['editor']['feedback']>;
+        /**
+         * Allow to show some feedback to the platform user
+         * 
+         * @param message Message of the feedback
+         * @param type type of the feedback
+         */
+        feedback: async (message: string, type: "warning" | "success" | "error" | "info"): Promise<void> => {
+          return await this._eventLink.callStudioEvent<string, void>('editor:feedback', message, type);
         },
-        showQuickPick: async (props) => {
-          return await this._mainThread['editor:quickPick:show'](props) as ReturnType<TApplicationCommands['editor']['showQuickPick']>;
+        /**
+         * Allow to capture user freeform text input
+         * 
+         * @param props Props to configure the quick pick
+         */
+        showQuickPick: async (props: TQuickPick): Promise<string | void> => {
+          return await this._eventLink.callStudioEvent<TQuickPick, string | void>('editor:quickPick:show', props);
         },
-        showPrimarySideBarByKey: async (key) => {
-          return await this._mainThread['editor:primarySideBar:showByKey'](key) as ReturnType<TApplicationCommands['editor']['showPrimarySideBarByKey']>;
+        /**
+         * Allow to set primary side bar view by key
+         * 
+         * @param key Key to identify the view to show in the side bar
+         */
+        showPrimarySideBarByKey: async (key: string): Promise<void> => {
+          return await this._eventLink.callStudioEvent<string, void>('editor:primarySideBar:showByKey', key);
         },
-        showSecondarySideBarByKey: async (key) => {
-          return await this._mainThread['editor:secondarySideBar:showByKey'](key) as ReturnType<TApplicationCommands['editor']['showSecondarySideBarByKey']>;
-        },
-        setSideBarItems: async (key, items) => {
-          return await this._mainThread['editor:sideBar:setItems'](key, items) as ReturnType<TApplicationCommands['editor']['setSideBarItems']>;
+        /**
+         * Allow to set secondary side bar view by key
+         * 
+         * @param key Key to identify the view to show in the side bar
+         */
+        showSecondarySideBarByKey: async (key: string): Promise<void> => {
+          return await this._eventLink.callStudioEvent<string, void>('editor:secondarySideBar:showByKey', key);
         },
       }
-    } satisfies TApplicationCommands,
+    },
     dataProviders: {
-      callCustomDataProvider: async (key: string, ...args: any[]) => {
-        return await this._mainThread[key](...args);
+      /**
+       * Allow you to call a custom command from application
+       * 
+       * @param key Name of the command
+       * @param args List of arguments to be forwarded to the command call
+       */
+      callCustomDataProvider: async <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]): Promise<GReturn> => {
+        return await this._eventLink.callStudioEvent(key, ...args);
       },
+      /**
+       * Allow you to get the entire project object or get parts with ...project.pages(), .services(), .components() and more.
+       */
       project: Object.assign(
-        async () => {
-          return await this._mainThread['project']() as ReturnType<TApplicationDataProviders['project']>;
+        async (): Promise<any> => {
+          return await this._eventLink.callStudioEvent<void, any>('project');
         },
         {
-          pages: async (index?: number) => {
-            return await this._mainThread['project.pages'](index) as ReturnType<TApplicationDataProviders['project']['pages']>;
+          pages: async (index?: number): Promise<any | any[]> => {
+            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.pages', index);
           },
-          services: async (index?: number) => {
-            return await this._mainThread['project.services'](index) as ReturnType<TApplicationDataProviders['project']['services']>;
+          services: async (index?: number): Promise<any | any[]> => {
+            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.services', index);
           },
-          components: async (index?: number) => {
-            return await this._mainThread['project.components'](index) as ReturnType<TApplicationDataProviders['project']['components']>;
+          components: async (index?: number): Promise<any | any[]> => {
+            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.components', index);
           },
         }
       ),
-    } satisfies TApplicationDataProviders,
+    },
   } as const;
 }
