@@ -6,7 +6,12 @@ export type TListItemWithTitle = {
   title: string;
 }
 
-export type TListItemWithLabel = {
+export type TListItemWithChildren = {
+  /** Define if a item can have a children list */
+  children: boolean;
+}
+
+export type TListItemWithLabel = (TListItemWithChildren | { children?: undefined }) & {
   /** Label, main information for the record  */
   label: string;
   title?: undefined;
