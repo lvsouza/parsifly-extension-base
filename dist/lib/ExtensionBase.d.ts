@@ -3,11 +3,10 @@ import { TabsView } from './shared/components/TabsView';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
-import { TParser } from './types/TParser';
+import { Parser } from './shared/components/Parser';
 export declare abstract class ExtensionBase {
     private _eventLink;
     platformActions: TPlatformAction[];
-    parsers: TParser[];
     views: View[];
     constructor();
     /**
@@ -19,8 +18,11 @@ export declare abstract class ExtensionBase {
      */
     deactivate(): Promise<void>;
     private _platformActions;
-    private _parsers;
     readonly application: {
+        readonly parsers: {
+            readonly register: (parser: Parser) => Promise<void>;
+            readonly unregister: (parser: Parser) => Promise<void>;
+        };
         readonly views: {
             readonly register: (view: View | TabsView) => Promise<void>;
             readonly unregister: (view: View | TabsView) => Promise<void>;

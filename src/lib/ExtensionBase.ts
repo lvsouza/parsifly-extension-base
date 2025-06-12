@@ -2,9 +2,9 @@ import { TPlatformAction } from './types/TPlatformAction';
 import { TabsView } from './shared/components/TabsView';
 import { EventLink } from './shared/services/EventLink';
 import { TFileOrFolder } from './types/TFileOrFolder';
+import { Parser } from './shared/components/Parser';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
-import { TParser } from './types/TParser';
 
 
 export abstract class ExtensionBase {
@@ -12,14 +12,12 @@ export abstract class ExtensionBase {
 
 
   public platformActions: TPlatformAction[] = [];
-  public parsers: TParser[] = [];
   public views: View[] = [];
 
 
   constructor() {
     this._eventLink.setExtensionEvent('activate', this.activate.bind(this));
     this._eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
-    this._eventLink.setExtensionEvent('parsers', this._parsers.bind(this));
     this._eventLink.setExtensionEvent('platformActions', this._platformActions.bind(this));
   }
 
@@ -47,15 +45,16 @@ export abstract class ExtensionBase {
     return await platformAction.action();
   }
 
-  private async _parsers(key: string) {
-    const parser = this.parsers.find(parser => parser.key === key);
-    if (!parser) throw new Error(`Parser with key "${key}" not found`);
-
-    return await parser.parser();
-  }
-
 
   public readonly application = {
+    parsers: {
+      register: async (parser: Parser) => {
+        this._eventLink.setExtensionEvent(`parsers:${parser.key}`, parser.parser);
+      },
+      unregister: async (parser: Parser) => {
+        this._eventLink.removeExtensionEvent(`parsers:${parser.key}`);
+      },
+    },
     views: {
       register: async (view: View | TabsView) => {
         if (view instanceof TabsView) {
