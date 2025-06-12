@@ -1,7 +1,7 @@
-import { TListViewItem } from '../../types/TListViewItem';
+import { ListViewItem } from '../components/ListViewItem';
 interface IListProviderProps {
     key: string;
-    getItems: (item?: TListViewItem) => Promise<TListViewItem[]>;
+    getItems: (item?: ListViewItem) => Promise<ListViewItem[]>;
 }
 export declare class ListProvider {
     readonly key: IListProviderProps['key'];
