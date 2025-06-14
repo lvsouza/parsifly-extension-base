@@ -65,12 +65,16 @@ export abstract class ExtensionBase {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => {
             this._eventLink.setExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`, tabView.dataProvider.getItems);
+            if (tabView.dataProvider.onItemClick) this._eventLink.setExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:onItemClick:${tabView.dataProvider.key}`, tabView.dataProvider.onItemClick);
+            if (tabView.dataProvider.onItemDoubleClick) this._eventLink.setExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:onItemDoubleClick:${tabView.dataProvider.key}`, tabView.dataProvider.onItemDoubleClick);
           })
           view.actions?.forEach(action => {
             this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
           });
         } else {
           this._eventLink.setExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`, view.dataProvider.getItems);
+          if (view.dataProvider.onItemClick) this._eventLink.setExtensionEvent(`views:${view.key}:onItemClick:${view.dataProvider.key}`, view.dataProvider.onItemClick);
+          if (view.dataProvider.onItemDoubleClick) this._eventLink.setExtensionEvent(`views:${view.key}:onItemDoubleClick:${view.dataProvider.key}`, view.dataProvider.onItemDoubleClick);
           view.actions?.forEach(action => {
             this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
           });
@@ -80,12 +84,16 @@ export abstract class ExtensionBase {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`);
+            if (tabView.dataProvider.onItemClick) this._eventLink.removeExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:onItemClick:${tabView.dataProvider.key}`);
+            if (tabView.dataProvider.onItemDoubleClick) this._eventLink.removeExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:onItemDoubleClick:${tabView.dataProvider.key}`);
           })
           view.actions?.forEach(action => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
           });
         } else {
           this._eventLink.removeExtensionEvent(`views:${view.key}:loadItems:${view.dataProvider.key}`);
+          if (view.dataProvider.onItemClick) this._eventLink.removeExtensionEvent(`views:${view.key}:onItemClick:${view.dataProvider.key}`);
+          if (view.dataProvider.onItemDoubleClick) this._eventLink.removeExtensionEvent(`views:${view.key}:onItemDoubleClick:${view.dataProvider.key}`);
           view.actions?.forEach(action => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
           });
