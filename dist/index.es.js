@@ -1,26 +1,37 @@
-class K {
-  constructor(t) {
-    this.key = t.key, this.getItems = t.getItems;
-  }
-}
-class L {
-  constructor(t) {
-    this.key = t.key, this.tabs = t.tabs, this.actions = t.actions;
-  }
-}
 class q {
-  constructor(t) {
-    this.key = t.key, this.dataProvider = t.dataProvider;
+  constructor(e) {
+    this.key = e.key, "action" in e && (this.action = e.action), "actions" in e && (this.actions = e.actions);
+  }
+  isSingle() {
+    return typeof this.action == "function";
+  }
+  isMulti() {
+    return Array.isArray(this.actions);
   }
 }
 class X {
-  constructor(t) {
-    this.key = t.key, this.action = t.action;
+  constructor(e) {
+    this.key = e.key, this.getItems = e.getItems;
+  }
+}
+class L {
+  constructor(e) {
+    this.key = e.key, this.tabs = e.tabs, this.actions = e.actions;
   }
 }
 class Y {
-  constructor(t) {
-    this.key = t.key, this.actions = t.actions, this.dataProvider = t.dataProvider;
+  constructor(e) {
+    this.key = e.key, this.dataProvider = e.dataProvider;
+  }
+}
+class p {
+  constructor(e) {
+    this.key = e.key, this.action = e.action;
+  }
+}
+class Q {
+  constructor(e) {
+    this.key = e.key, this.actions = e.actions, this.dataProvider = e.dataProvider;
   }
 }
 /**
@@ -28,59 +39,59 @@ class Y {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const S = Symbol("Comlink.proxy"), I = Symbol("Comlink.endpoint"), O = Symbol("Comlink.releaseProxy"), b = Symbol("Comlink.finalizer"), k = Symbol("Comlink.thrown"), $ = (e) => typeof e == "object" && e !== null || typeof e == "function", R = {
-  canHandle: (e) => $(e) && e[S],
-  serialize(e) {
-    const { port1: t, port2: n } = new MessageChannel();
-    return x(e, t), [n, [n]];
+const S = Symbol("Comlink.proxy"), A = Symbol("Comlink.endpoint"), R = Symbol("Comlink.releaseProxy"), b = Symbol("Comlink.finalizer"), k = Symbol("Comlink.thrown"), $ = (t) => typeof t == "object" && t !== null || typeof t == "function", N = {
+  canHandle: (t) => $(t) && t[S],
+  serialize(t) {
+    const { port1: e, port2: n } = new MessageChannel();
+    return _(t, e), [n, [n]];
   },
-  deserialize(e) {
-    return e.start(), T(e);
+  deserialize(t) {
+    return t.start(), C(t);
   }
-}, N = {
-  canHandle: (e) => $(e) && k in e,
-  serialize({ value: e }) {
-    let t;
-    return e instanceof Error ? t = {
+}, j = {
+  canHandle: (t) => $(t) && k in t,
+  serialize({ value: t }) {
+    let e;
+    return t instanceof Error ? e = {
       isError: !0,
       value: {
-        message: e.message,
-        name: e.name,
-        stack: e.stack
+        message: t.message,
+        name: t.name,
+        stack: t.stack
       }
-    } : t = { isError: !1, value: e }, [t, []];
+    } : e = { isError: !1, value: t }, [e, []];
   },
-  deserialize(e) {
-    throw e.isError ? Object.assign(new Error(e.value.message), e.value) : e.value;
+  deserialize(t) {
+    throw t.isError ? Object.assign(new Error(t.value.message), t.value) : t.value;
   }
-}, A = /* @__PURE__ */ new Map([
-  ["proxy", R],
-  ["throw", N]
+}, M = /* @__PURE__ */ new Map([
+  ["proxy", N],
+  ["throw", j]
 ]);
-function j(e, t) {
-  for (const n of e)
-    if (t === n || n === "*" || n instanceof RegExp && n.test(t))
+function z(t, e) {
+  for (const n of t)
+    if (e === n || n === "*" || n instanceof RegExp && n.test(e))
       return !0;
   return !1;
 }
-function x(e, t = globalThis, n = ["*"]) {
-  t.addEventListener("message", function i(s) {
+function _(t, e = globalThis, n = ["*"]) {
+  e.addEventListener("message", function i(s) {
     if (!s || !s.data)
       return;
-    if (!j(n, s.origin)) {
+    if (!z(n, s.origin)) {
       console.warn(`Invalid origin '${s.origin}' for comlink proxy`);
       return;
     }
-    const { id: a, type: d, path: l } = Object.assign({ path: [] }, s.data), u = (s.data.argumentList || []).map(y);
+    const { id: a, type: y, path: l } = Object.assign({ path: [] }, s.data), u = (s.data.argumentList || []).map(d);
     let r;
     try {
-      const o = l.slice(0, -1).reduce((c, E) => c[E], e), h = l.reduce((c, E) => c[E], e);
-      switch (d) {
+      const o = l.slice(0, -1).reduce((c, E) => c[E], t), h = l.reduce((c, E) => c[E], t);
+      switch (y) {
         case "GET":
           r = h;
           break;
         case "SET":
-          o[l.slice(-1)[0]] = y(s.data.value), r = !0;
+          o[l.slice(-1)[0]] = d(s.data.value), r = !0;
           break;
         case "APPLY":
           r = h.apply(o, u);
@@ -88,13 +99,13 @@ function x(e, t = globalThis, n = ["*"]) {
         case "CONSTRUCT":
           {
             const c = new h(...u);
-            r = W(c);
+            r = F(c);
           }
           break;
         case "ENDPOINT":
           {
             const { port1: c, port2: E } = new MessageChannel();
-            x(e, E), r = H(c, [c]);
+            _(t, E), r = W(c, [c]);
           }
           break;
         case "RELEASE":
@@ -108,138 +119,138 @@ function x(e, t = globalThis, n = ["*"]) {
     }
     Promise.resolve(r).catch((o) => ({ value: o, [k]: 0 })).then((o) => {
       const [h, c] = w(o);
-      t.postMessage(Object.assign(Object.assign({}, h), { id: a }), c), d === "RELEASE" && (t.removeEventListener("message", i), M(t), b in e && typeof e[b] == "function" && e[b]());
+      e.postMessage(Object.assign(Object.assign({}, h), { id: a }), c), y === "RELEASE" && (e.removeEventListener("message", i), T(e), b in t && typeof t[b] == "function" && t[b]());
     }).catch((o) => {
       const [h, c] = w({
         value: new TypeError("Unserializable return value"),
         [k]: 0
       });
-      t.postMessage(Object.assign(Object.assign({}, h), { id: a }), c);
+      e.postMessage(Object.assign(Object.assign({}, h), { id: a }), c);
     });
-  }), t.start && t.start();
+  }), e.start && e.start();
 }
-function z(e) {
-  return e.constructor.name === "MessagePort";
+function B(t) {
+  return t.constructor.name === "MessagePort";
 }
-function M(e) {
-  z(e) && e.close();
+function T(t) {
+  B(t) && t.close();
 }
-function T(e, t) {
+function C(t, e) {
   const n = /* @__PURE__ */ new Map();
-  return e.addEventListener("message", function(s) {
+  return t.addEventListener("message", function(s) {
     const { data: a } = s;
     if (!a || !a.id)
       return;
-    const d = n.get(a.id);
-    if (d)
+    const y = n.get(a.id);
+    if (y)
       try {
-        d(a);
+        y(a);
       } finally {
         n.delete(a.id);
       }
-  }), _(e, n, [], t);
+  }), x(t, n, [], e);
 }
-function v(e) {
-  if (e)
+function v(t) {
+  if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function C(e) {
-  return f(e, /* @__PURE__ */ new Map(), {
+function I(t) {
+  return f(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
-    M(e);
+    T(t);
   });
 }
-const m = /* @__PURE__ */ new WeakMap(), g = "FinalizationRegistry" in globalThis && new FinalizationRegistry((e) => {
-  const t = (m.get(e) || 0) - 1;
-  m.set(e, t), t === 0 && C(e);
+const m = /* @__PURE__ */ new WeakMap(), g = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
+  const e = (m.get(t) || 0) - 1;
+  m.set(t, e), e === 0 && I(t);
 });
-function B(e, t) {
-  const n = (m.get(t) || 0) + 1;
-  m.set(t, n), g && g.register(e, t, e);
+function V(t, e) {
+  const n = (m.get(e) || 0) + 1;
+  m.set(e, n), g && g.register(t, e, t);
 }
-function V(e) {
-  g && g.unregister(e);
+function D(t) {
+  g && g.unregister(t);
 }
-function _(e, t, n = [], i = function() {
+function x(t, e, n = [], i = function() {
 }) {
   let s = !1;
   const a = new Proxy(i, {
-    get(d, l) {
-      if (v(s), l === O)
+    get(y, l) {
+      if (v(s), l === R)
         return () => {
-          V(a), C(e), t.clear(), s = !0;
+          D(a), I(t), e.clear(), s = !0;
         };
       if (l === "then") {
         if (n.length === 0)
           return { then: () => a };
-        const u = f(e, t, {
+        const u = f(t, e, {
           type: "GET",
           path: n.map((r) => r.toString())
-        }).then(y);
+        }).then(d);
         return u.then.bind(u);
       }
-      return _(e, t, [...n, l]);
+      return x(t, e, [...n, l]);
     },
-    set(d, l, u) {
+    set(y, l, u) {
       v(s);
       const [r, o] = w(u);
-      return f(e, t, {
+      return f(t, e, {
         type: "SET",
         path: [...n, l].map((h) => h.toString()),
         value: r
-      }, o).then(y);
+      }, o).then(d);
     },
-    apply(d, l, u) {
+    apply(y, l, u) {
       v(s);
       const r = n[n.length - 1];
-      if (r === I)
-        return f(e, t, {
+      if (r === A)
+        return f(t, e, {
           type: "ENDPOINT"
-        }).then(y);
+        }).then(d);
       if (r === "bind")
-        return _(e, t, n.slice(0, -1));
+        return x(t, e, n.slice(0, -1));
       const [o, h] = P(u);
-      return f(e, t, {
+      return f(t, e, {
         type: "APPLY",
         path: n.map((c) => c.toString()),
         argumentList: o
-      }, h).then(y);
+      }, h).then(d);
     },
-    construct(d, l) {
+    construct(y, l) {
       v(s);
       const [u, r] = P(l);
-      return f(e, t, {
+      return f(t, e, {
         type: "CONSTRUCT",
         path: n.map((o) => o.toString()),
         argumentList: u
-      }, r).then(y);
+      }, r).then(d);
     }
   });
-  return B(a, e), a;
+  return V(a, t), a;
 }
-function D(e) {
-  return Array.prototype.concat.apply([], e);
+function H(t) {
+  return Array.prototype.concat.apply([], t);
 }
-function P(e) {
-  const t = e.map(w);
-  return [t.map((n) => n[0]), D(t.map((n) => n[1]))];
+function P(t) {
+  const e = t.map(w);
+  return [e.map((n) => n[0]), H(e.map((n) => n[1]))];
 }
-const p = /* @__PURE__ */ new WeakMap();
-function H(e, t) {
-  return p.set(e, t), e;
+const O = /* @__PURE__ */ new WeakMap();
+function W(t, e) {
+  return O.set(t, e), t;
 }
-function W(e) {
-  return Object.assign(e, { [S]: !0 });
+function F(t) {
+  return Object.assign(t, { [S]: !0 });
 }
-function w(e) {
-  for (const [t, n] of A)
-    if (n.canHandle(e)) {
-      const [i, s] = n.serialize(e);
+function w(t) {
+  for (const [e, n] of M)
+    if (n.canHandle(t)) {
+      const [i, s] = n.serialize(t);
       return [
         {
           type: "HANDLER",
-          name: t,
+          name: e,
           value: i
         },
         s
@@ -248,81 +259,93 @@ function w(e) {
   return [
     {
       type: "RAW",
-      value: e
+      value: t
     },
-    p.get(e) || []
+    O.get(t) || []
   ];
 }
-function y(e) {
-  switch (e.type) {
+function d(t) {
+  switch (t.type) {
     case "HANDLER":
-      return A.get(e.name).deserialize(e.value);
+      return M.get(t.name).deserialize(t.value);
     case "RAW":
-      return e.value;
+      return t.value;
   }
 }
-function f(e, t, n, i) {
+function f(t, e, n, i) {
   return new Promise((s) => {
-    const a = F();
-    t.set(a, s), e.start && e.start(), e.postMessage(Object.assign({ id: a }, n), i);
+    const a = U();
+    e.set(a, s), t.start && t.start(), t.postMessage(Object.assign({ id: a }, n), i);
   });
 }
-function F() {
+function U() {
   return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
 }
-const U = {
+const G = {
   DEBUG: !1
 };
-class G {
+class K {
   constructor() {
-    this._events = /* @__PURE__ */ new Map(), x({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = T(self);
+    this._events = /* @__PURE__ */ new Map(), _({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = C(self);
   }
-  setExtensionEvent(t, n) {
-    this._events.set(t, n);
+  setExtensionEvent(e, n) {
+    this._events.set(e, n);
   }
-  removeExtensionEvent(t) {
-    this._events.delete(t);
+  removeExtensionEvent(e) {
+    this._events.delete(e);
   }
-  async callStudioEvent(t, ...n) {
-    return this._studioWrapper.callEvent(t, ...n);
+  async callStudioEvent(e, ...n) {
+    return this._studioWrapper.callEvent(e, ...n);
   }
-  async _callExtensionEvent(t, ...n) {
-    const i = this._events.get(t);
-    if (U.DEBUG && console.log(this._events.keys()), !i)
-      throw new Error(`[EXTENSION] Event with key "${t}" was not found.`);
+  async _callExtensionEvent(e, ...n) {
+    const i = this._events.get(e);
+    if (G.DEBUG && console.log(this._events.keys()), !i)
+      throw new Error(`[EXTENSION] Event with key "${e}" was not found.`);
     return i(...n);
   }
 }
-class Q {
+class J {
   constructor() {
-    this._eventLink = new G(), this.platformActions = [], this.views = [], this.application = {
-      parsers: {
-        register: async (t) => {
-          this._eventLink.setExtensionEvent(`parsers:${t.key}`, t.parser);
+    this._eventLink = new K(), this.application = {
+      platformActions: {
+        register: async (e) => {
+          e.action ? this._eventLink.setExtensionEvent(`platformActions:${e.key}`, e.action) : e.actions && e.actions.forEach((n) => {
+            this._eventLink.setExtensionEvent(`platformActions:${e.key}:actions:${n.key}`, n.action);
+          });
         },
-        unregister: async (t) => {
-          this._eventLink.removeExtensionEvent(`parsers:${t.key}`);
+        unregister: async (e) => {
+          e.action ? this._eventLink.removeExtensionEvent(`platformActions:${e.key}`) : e.actions && e.actions.forEach((n) => {
+            this._eventLink.removeExtensionEvent(`platformActions:${e.key}:actions:${n.key}`);
+          });
+        }
+      },
+      parsers: {
+        register: async (e) => {
+          this._eventLink.setExtensionEvent(`parsers:${e.key}`, e.parser);
+        },
+        unregister: async (e) => {
+          this._eventLink.removeExtensionEvent(`parsers:${e.key}`);
         }
       },
       views: {
-        register: async (t) => {
+        register: async (e) => {
           var n, i;
-          t instanceof L ? (t.tabs.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${t.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems);
-          }), (n = t.actions) == null || n.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${t.key}:actions:${s.key}`, s.action);
-          })) : (this._eventLink.setExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`, t.dataProvider.getItems), (i = t.actions) == null || i.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${t.key}:actions:${s.key}`, s.action);
+          e instanceof L ? (e.tabs.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems);
+          }), (n = e.actions) == null || n.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
+          })) : (this._eventLink.setExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`, e.dataProvider.getItems), (i = e.actions) == null || i.forEach((s) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
           }));
         },
-        unregister: async (t) => {
+        unregister: async (e) => {
           var n, i;
-          t instanceof L ? (t.tabs.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${t.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`);
-          }), (n = t.actions) == null || n.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${t.key}:actions:${s.key}`);
-          })) : (this._eventLink.removeExtensionEvent(`views:${t.key}:loadItems:${t.dataProvider.key}`), (i = t.actions) == null || i.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${t.key}:actions:${s.key}`);
+          e instanceof L ? (e.tabs.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`);
+          }), (n = e.actions) == null || n.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
+          })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), (i = e.actions) == null || i.forEach((s) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
           }));
         }
       },
@@ -333,7 +356,7 @@ class Q {
          * @param key Name of the command
          * @param args List of arguments to be forwarded to the command call
          */
-        callCustomCommand: async (t, ...n) => await this._eventLink.callStudioEvent(t, ...n),
+        callCustomCommand: async (e, ...n) => await this._eventLink.callStudioEvent(e, ...n),
         /**
          * Allow you to download some content in a file
          * 
@@ -341,14 +364,14 @@ class Q {
          * @param fileType extension of the file
          * @param fileContent file content in string
          */
-        downloadFile: async (t, n, i) => await this._eventLink.callStudioEvent("download:file", t, n, i),
+        downloadFile: async (e, n, i) => await this._eventLink.callStudioEvent("download:file", e, n, i),
         /**
          * Allow you to download a lot of files and folders as zip
          * 
          * @param downloadName Name of the download as zip
          * @param files List of files or folders to download
          */
-        downloadFiles: async (t, n) => await this._eventLink.callStudioEvent("download:files", t, n),
+        downloadFiles: async (e, n) => await this._eventLink.callStudioEvent("download:files", e, n),
         /**
          * Grouped methods to editor configuration
          */
@@ -359,25 +382,25 @@ class Q {
            * @param message Message of the feedback
            * @param type type of the feedback
            */
-          feedback: async (t, n) => await this._eventLink.callStudioEvent("editor:feedback", t, n),
+          feedback: async (e, n) => await this._eventLink.callStudioEvent("editor:feedback", e, n),
           /**
            * Allow to capture user freeform text input
            * 
            * @param props Props to configure the quick pick
            */
-          showQuickPick: async (t) => await this._eventLink.callStudioEvent("editor:quickPick:show", t),
+          showQuickPick: async (e) => await this._eventLink.callStudioEvent("editor:quickPick:show", e),
           /**
            * Allow to set primary side bar view by key
            * 
            * @param key Key to identify the view to show in the side bar
            */
-          showPrimarySideBarByKey: async (t) => await this._eventLink.callStudioEvent("editor:primarySideBar:showByKey", t),
+          showPrimarySideBarByKey: async (e) => await this._eventLink.callStudioEvent("editor:primarySideBar:showByKey", e),
           /**
            * Allow to set secondary side bar view by key
            * 
            * @param key Key to identify the view to show in the side bar
            */
-          showSecondarySideBarByKey: async (t) => await this._eventLink.callStudioEvent("editor:secondarySideBar:showByKey", t)
+          showSecondarySideBarByKey: async (e) => await this._eventLink.callStudioEvent("editor:secondarySideBar:showByKey", e)
         }
       },
       dataProviders: {
@@ -387,20 +410,20 @@ class Q {
          * @param key Name of the command
          * @param args List of arguments to be forwarded to the command call
          */
-        callCustomDataProvider: async (t, ...n) => await this._eventLink.callStudioEvent(t, ...n),
+        callCustomDataProvider: async (e, ...n) => await this._eventLink.callStudioEvent(e, ...n),
         /**
          * Allow you to get the entire project object or get parts with ...project.pages(), .services(), .components() and more.
          */
         project: Object.assign(
           async () => await this._eventLink.callStudioEvent("project"),
           {
-            pages: async (t) => await this._eventLink.callStudioEvent("project.pages", t),
-            services: async (t) => await this._eventLink.callStudioEvent("project.services", t),
-            components: async (t) => await this._eventLink.callStudioEvent("project.components", t)
+            pages: async (e) => await this._eventLink.callStudioEvent("project.pages", e),
+            services: async (e) => await this._eventLink.callStudioEvent("project.services", e),
+            components: async (e) => await this._eventLink.callStudioEvent("project.components", e)
           }
         )
       }
-    }, this._eventLink.setExtensionEvent("activate", this.activate.bind(this)), this._eventLink.setExtensionEvent("deactivate", this.deactivate.bind(this)), this._eventLink.setExtensionEvent("platformActions", this._platformActions.bind(this));
+    }, this._eventLink.setExtensionEvent("activate", this.activate.bind(this)), this._eventLink.setExtensionEvent("deactivate", this.deactivate.bind(this));
   }
   /**
    * Automatically called when the extension start.
@@ -414,32 +437,28 @@ class Q {
   async deactivate() {
     console.log("Extension deactivated (base implementation).");
   }
-  async _platformActions(t) {
-    const n = this.platformActions.flatMap((i) => "action" in i ? [i] : i.actions).find((i) => i.key === t);
-    if (!n) throw new Error(`Action with key "${t}" not found`);
-    return await n.action();
-  }
 }
-class J {
-  constructor(t) {
-    if (this.key = t.key, this.icon = t.icon, this.extra = t.extra, this.description = t.description, "title" in t && t.title !== void 0 && (this.title = t.title), "label" in t && t.label !== void 0 && (this.label = t.label), "children" in t && t.children !== void 0 && (this.children = t.children), this.title && this.label || !this.title && !this.label)
+class Z {
+  constructor(e) {
+    if (this.key = e.key, this.icon = e.icon, this.extra = e.extra, this.description = e.description, "title" in e && e.title !== void 0 && (this.title = e.title), "label" in e && e.label !== void 0 && (this.label = e.label), "children" in e && e.children !== void 0 && (this.children = e.children), this.title && this.label || !this.title && !this.label)
       throw new Error("ListViewItem must have either a `title` or a `label`, but not both.");
   }
 }
-class Z {
-  constructor(t) {
-    this.key = t.key, this.parser = t.parser;
+class ee {
+  constructor(e) {
+    this.key = e.key, this.parser = e.parser;
   }
 }
 export {
-  X as Action,
-  U as Envs,
-  Q as ExtensionBase,
-  K as ListProvider,
-  J as ListViewItem,
-  Z as Parser,
-  q as TabView,
+  p as Action,
+  G as Envs,
+  J as ExtensionBase,
+  X as ListProvider,
+  Z as ListViewItem,
+  ee as Parser,
+  q as PlatformAction,
+  Y as TabView,
   L as TabsView,
-  Y as View
+  Q as View
 };
 //# sourceMappingURL=index.es.js.map

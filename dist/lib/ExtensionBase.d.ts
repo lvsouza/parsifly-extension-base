@@ -1,13 +1,11 @@
-import { TPlatformAction } from './types/TPlatformAction';
+import { PlatformAction } from './shared/components/PlatformActions';
 import { TabsView } from './shared/components/TabsView';
 import { TFileOrFolder } from './types/TFileOrFolder';
+import { Parser } from './shared/components/Parser';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
-import { Parser } from './shared/components/Parser';
 export declare abstract class ExtensionBase {
     private _eventLink;
-    platformActions: TPlatformAction[];
-    views: View[];
     constructor();
     /**
      * Automatically called when the extension start.
@@ -17,8 +15,11 @@ export declare abstract class ExtensionBase {
      * Automatically called when the extension stop.
      */
     deactivate(): Promise<void>;
-    private _platformActions;
     readonly application: {
+        readonly platformActions: {
+            readonly register: (platformAction: PlatformAction) => Promise<void>;
+            readonly unregister: (platformAction: PlatformAction) => Promise<void>;
+        };
         readonly parsers: {
             readonly register: (parser: Parser) => Promise<void>;
             readonly unregister: (parser: Parser) => Promise<void>;

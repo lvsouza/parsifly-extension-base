@@ -1,4 +1,4 @@
-import { TPlatformAction } from './types/TPlatformAction';
+import { PlatformAction } from './shared/components/PlatformActions';
 import { TabsView } from './shared/components/TabsView';
 import { EventLink } from './shared/services/EventLink';
 import { TFileOrFolder } from './types/TFileOrFolder';
@@ -11,15 +11,11 @@ export abstract class ExtensionBase {
   private _eventLink: EventLink = new EventLink();
 
 
-  public platformActions: TPlatformAction[] = [];
-  public views: View[] = [];
-
-
   constructor() {
     this._eventLink.setExtensionEvent('activate', this.activate.bind(this));
     this._eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
-    this._eventLink.setExtensionEvent('platformActions', this._platformActions.bind(this));
   }
+
 
   /**
    * Automatically called when the extension start.
@@ -35,18 +31,27 @@ export abstract class ExtensionBase {
     console.log('Extension deactivated (base implementation).');
   }
 
-
-  private async _platformActions(key: string) {
-    const platformAction = this.platformActions
-      .flatMap(platformAction => 'action' in platformAction ? [platformAction] : platformAction.actions)
-      .find(platformAction => platformAction.key === key);
-    if (!platformAction) throw new Error(`Action with key "${key}" not found`);
-
-    return await platformAction.action();
-  }
-
-
   public readonly application = {
+    platformActions: {
+      register: async (platformAction: PlatformAction) => {
+        if (platformAction.action) {
+          this._eventLink.setExtensionEvent(`platformActions:${platformAction.key}`, platformAction.action);
+        } else if (platformAction.actions) {
+          platformAction.actions.forEach(action => {
+            this._eventLink.setExtensionEvent(`platformActions:${platformAction.key}:actions:${action.key}`, action.action);
+          });
+        }
+      },
+      unregister: async (platformAction: PlatformAction) => {
+        if (platformAction.action) {
+          this._eventLink.removeExtensionEvent(`platformActions:${platformAction.key}`);
+        } else if (platformAction.actions) {
+          platformAction.actions.forEach(action => {
+            this._eventLink.removeExtensionEvent(`platformActions:${platformAction.key}:actions:${action.key}`);
+          });
+        }
+      },
+    },
     parsers: {
       register: async (parser: Parser) => {
         this._eventLink.setExtensionEvent(`parsers:${parser.key}`, parser.parser);
