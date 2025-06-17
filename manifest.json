@@ -1,7 +1,7 @@
 {
   "name": "Extension",
   "authorName": "Lucas Souza Dev",
-  "packageName": "app-studio-extension-base",
+  "packageName": "parsifly-extension-base",
   "description": "",
   "platformActions": [],
   "parsers": [],
