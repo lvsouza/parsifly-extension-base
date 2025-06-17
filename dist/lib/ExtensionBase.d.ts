@@ -25,6 +25,7 @@ export declare abstract class ExtensionBase {
             readonly unregister: (parser: Parser) => Promise<void>;
         };
         readonly views: {
+            readonly refresh: (view: View | TabsView) => Promise<void>;
             readonly register: (view: View | TabsView) => Promise<void>;
             readonly unregister: (view: View | TabsView) => Promise<void>;
         };

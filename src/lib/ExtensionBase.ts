@@ -62,6 +62,9 @@ export abstract class ExtensionBase {
       },
     },
     views: {
+      refresh: async (view: View | TabsView) => {
+        await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
+      },
       register: async (view: View | TabsView) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => {
