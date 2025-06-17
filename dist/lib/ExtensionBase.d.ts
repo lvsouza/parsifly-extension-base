@@ -84,21 +84,21 @@ export declare abstract class ExtensionBase {
         };
         readonly dataProviders: {
             readonly callCustomDataProvider: <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]) => Promise<GReturn>;
-            readonly project: (() => Promise<import('./data-providers/interfaces/IProject').IProject<"application" | "package">>) & {
-                set: (project: import('./data-providers/interfaces/IProject').IProject<"application" | "package">) => Promise<void>;
-                pages: ((index?: number) => Promise<import('./data-providers/interfaces/IPage').IPage | import('./data-providers/interfaces/IPage').IPage[]>) & {
-                    set: (page: import('./data-providers/interfaces/IPage').IPage, index: number) => Promise<void>;
-                    add: (page: import('./data-providers/interfaces/IPage').IPage, index?: number) => Promise<void>;
+            readonly project: (() => Promise<import('..').IProject<"application" | "package">>) & {
+                set: (project: import('..').IProject<"application" | "package">) => Promise<void>;
+                pages: ((index?: number) => Promise<import('..').IPage | import('..').IPage[]>) & {
+                    set: (page: import('..').IPage, index: number) => Promise<void>;
+                    add: (page: import('..').IPage, index?: number) => Promise<void>;
                     del: (index?: number) => Promise<void>;
                 };
-                components: ((index?: number) => Promise<import('./data-providers/interfaces/IComponent').IComponent | import('./data-providers/interfaces/IComponent').IComponent[]>) & {
-                    set: (component: import('./data-providers/interfaces/IComponent').IComponent, index: number) => Promise<void>;
-                    add: (component: import('./data-providers/interfaces/IComponent').IComponent, index?: number) => Promise<void>;
+                components: ((index?: number) => Promise<import('..').IComponent | import('..').IComponent[]>) & {
+                    set: (component: import('..').IComponent, index: number) => Promise<void>;
+                    add: (component: import('..').IComponent, index?: number) => Promise<void>;
                     del: (index?: number) => Promise<void>;
                 };
-                services: ((index?: number) => Promise<import('./data-providers/interfaces/IService').IService | import('./data-providers/interfaces/IService').IService[]>) & {
-                    set: (service: import('./data-providers/interfaces/IService').IService, index: number) => Promise<void>;
-                    add: (service: import('./data-providers/interfaces/IService').IService, index?: number) => Promise<void>;
+                services: ((index?: number) => Promise<import('..').IService | import('..').IService[]>) & {
+                    set: (service: import('..').IService, index: number) => Promise<void>;
+                    add: (service: import('..').IService, index?: number) => Promise<void>;
                     del: (index?: number) => Promise<void>;
                 };
             };

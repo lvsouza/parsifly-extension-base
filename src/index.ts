@@ -11,3 +11,9 @@ export { type TListViewItem, ListViewItem } from './lib/shared/components/ListVi
 export { type TParser, Parser } from './lib/shared/components/Parser';
 
 export { type TFileOrFolder } from './lib/types/TFileOrFolder';
+
+export { type IComponent } from './lib/data-providers/interfaces/IComponent';
+export { type IProject } from './lib/data-providers/interfaces/IProject';
+export { type IService } from './lib/data-providers/interfaces/IService';
+export { type IPage } from './lib/data-providers/interfaces/IPage';
+export { type IBase } from './lib/data-providers/interfaces/IBase';
