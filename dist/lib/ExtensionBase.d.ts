@@ -83,20 +83,24 @@ export declare abstract class ExtensionBase {
             };
         };
         readonly dataProviders: {
-            /**
-             * Allow you to call a custom command from application
-             *
-             * @param key Name of the command
-             * @param args List of arguments to be forwarded to the command call
-             */
             readonly callCustomDataProvider: <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]) => Promise<GReturn>;
-            /**
-             * Allow you to get the entire project object or get parts with ...project.pages(), .services(), .components() and more.
-             */
-            readonly project: (() => Promise<any>) & {
-                pages: (index?: number) => Promise<any | any[]>;
-                services: (index?: number) => Promise<any | any[]>;
-                components: (index?: number) => Promise<any | any[]>;
+            readonly project: (() => Promise<import('./data-providers/interfaces/IProject').IProject<"application" | "package">>) & {
+                set: (project: import('./data-providers/interfaces/IProject').IProject<"application" | "package">) => Promise<void>;
+                pages: ((index?: number) => Promise<import('./data-providers/interfaces/IPage').IPage | import('./data-providers/interfaces/IPage').IPage[]>) & {
+                    set: (page: import('./data-providers/interfaces/IPage').IPage, index: number) => Promise<void>;
+                    add: (page: import('./data-providers/interfaces/IPage').IPage, index?: number) => Promise<void>;
+                    del: (index?: number) => Promise<void>;
+                };
+                components: ((index?: number) => Promise<import('./data-providers/interfaces/IComponent').IComponent | import('./data-providers/interfaces/IComponent').IComponent[]>) & {
+                    set: (component: import('./data-providers/interfaces/IComponent').IComponent, index: number) => Promise<void>;
+                    add: (component: import('./data-providers/interfaces/IComponent').IComponent, index?: number) => Promise<void>;
+                    del: (index?: number) => Promise<void>;
+                };
+                services: ((index?: number) => Promise<import('./data-providers/interfaces/IService').IService | import('./data-providers/interfaces/IService').IService[]>) & {
+                    set: (service: import('./data-providers/interfaces/IService').IService, index: number) => Promise<void>;
+                    add: (service: import('./data-providers/interfaces/IService').IService, index?: number) => Promise<void>;
+                    del: (index?: number) => Promise<void>;
+                };
             };
         };
     };

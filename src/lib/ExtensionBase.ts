@@ -1,6 +1,7 @@
 import { PlatformAction } from './shared/components/PlatformActions';
 import { TabsView } from './shared/components/TabsView';
 import { EventLink } from './shared/services/EventLink';
+import { createDataProviders } from './data-providers';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
 import { TQuickPick } from './types/TQuickPick';
@@ -168,35 +169,6 @@ export abstract class ExtensionBase {
         },
       }
     },
-    dataProviders: {
-      /**
-       * Allow you to call a custom command from application
-       * 
-       * @param key Name of the command
-       * @param args List of arguments to be forwarded to the command call
-       */
-      callCustomDataProvider: async <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]): Promise<GReturn> => {
-        return await this._eventLink.callStudioEvent(key, ...args);
-      },
-      /**
-       * Allow you to get the entire project object or get parts with ...project.pages(), .services(), .components() and more.
-       */
-      project: Object.assign(
-        async (): Promise<any> => {
-          return await this._eventLink.callStudioEvent<void, any>('project');
-        },
-        {
-          pages: async (index?: number): Promise<any | any[]> => {
-            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.pages', index);
-          },
-          services: async (index?: number): Promise<any | any[]> => {
-            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.services', index);
-          },
-          components: async (index?: number): Promise<any | any[]> => {
-            return await this._eventLink.callStudioEvent<number | undefined, any | any[]>('project.components', index);
-          },
-        }
-      ),
-    },
+    dataProviders: createDataProviders(this._eventLink),
   } as const;
 }
