@@ -86,20 +86,20 @@ export declare abstract class ExtensionBase {
             readonly callCustomDataProvider: <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]) => Promise<GReturn>;
             readonly project: (() => Promise<import('..').IProject<"application" | "package">>) & {
                 set: (project: import('..').IProject<"application" | "package">) => Promise<void>;
-                pages: ((index?: number) => Promise<import('..').IPage | import('..').IPage[]>) & {
+                pages: (() => Promise<import('..').IPage[]>) & ((index: number) => Promise<import('..').IPage>) & {
                     set: (page: import('..').IPage, index: number) => Promise<void>;
-                    add: (page: import('..').IPage, index?: number) => Promise<void>;
-                    del: (index?: number) => Promise<void>;
+                    add: ((page: import('..').IPage) => Promise<void>) & ((page: import('..').IPage, index: number) => Promise<void>);
+                    del: (() => Promise<void>) & ((index: number) => Promise<void>);
                 };
-                components: ((index?: number) => Promise<import('..').IComponent | import('..').IComponent[]>) & {
+                components: (() => Promise<import('..').IComponent[]>) & ((index: number) => Promise<import('..').IComponent>) & {
                     set: (component: import('..').IComponent, index: number) => Promise<void>;
-                    add: (component: import('..').IComponent, index?: number) => Promise<void>;
-                    del: (index?: number) => Promise<void>;
+                    add: ((component: import('..').IComponent) => Promise<void>) & ((component: import('..').IComponent, index: number) => Promise<void>);
+                    del: (() => Promise<void>) & ((index: number) => Promise<void>);
                 };
-                services: ((index?: number) => Promise<import('..').IService | import('..').IService[]>) & {
+                services: (() => Promise<import('..').IService[]>) & ((index: number) => Promise<import('..').IService>) & {
                     set: (service: import('..').IService, index: number) => Promise<void>;
-                    add: (service: import('..').IService, index?: number) => Promise<void>;
-                    del: (index?: number) => Promise<void>;
+                    add: ((service: import('..').IService) => Promise<void>) & ((service: import('..').IService, index: number) => Promise<void>);
+                    del: (() => Promise<void>) & ((index: number) => Promise<void>);
                 };
             };
         };

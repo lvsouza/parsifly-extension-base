@@ -30,51 +30,90 @@ export const createDataProviders = (eventLink: EventLink) => {
         },
 
         pages: Object.assign(
-          async (index?: number): Promise<IPage | IPage[]> => {
-            return await eventLink.callStudioEvent<number | undefined, IPage | IPage[]>('project.pages:get', index);
+          async (): Promise<IPage[]> => {
+            return await eventLink.callStudioEvent<void, IPage[]>('project.pages:get');
+          },
+          async (index: number): Promise<IPage> => {
+            return await eventLink.callStudioEvent<number, IPage>('project.pages:get', index);
           },
           {
             set: async (page: IPage, index: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IPage | number | undefined, void>('project.pages:set', page, index);
+              return await eventLink.callStudioEvent<IPage | number, void>('project.pages:set', page, index);
             },
-            add: async (page: IPage, index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IPage | number | undefined, void>('project.pages:add', page, index);
-            },
-            del: async (index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<number | undefined, void>('project.pages:del', index);
-            },
+            add: Object.assign(
+              async (page: IPage): Promise<void> => {
+                return await eventLink.callStudioEvent<IPage, void>('project.pages:add', page);
+              },
+              async (page: IPage, index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<IPage | number, void>('project.pages:add', page, index);
+              },
+            ),
+            del: Object.assign(
+              async (): Promise<void> => {
+                return await eventLink.callStudioEvent<void, void>('project.pages:del');
+              },
+              async (index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<number, void>('project.pages:del', index);
+              },
+            )
           }
         ),
         components: Object.assign(
-          async (index?: number): Promise<IComponent | IComponent[]> => {
-            return await eventLink.callStudioEvent<number | undefined, IComponent | IComponent[]>('project.components:get', index);
+          async (): Promise<IComponent[]> => {
+            return await eventLink.callStudioEvent<void, IComponent[]>('project.components:get');
+          },
+          async (index: number): Promise<IComponent> => {
+            return await eventLink.callStudioEvent<number, IComponent>('project.components:get', index);
           },
           {
             set: async (component: IComponent, index: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IComponent | number | undefined, void>('project.components:set', component, index);
+              return await eventLink.callStudioEvent<IComponent | number, void>('project.components:set', component, index);
             },
-            add: async (component: IComponent, index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IComponent | number | undefined, void>('project.components:add', component, index);
-            },
-            del: async (index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<number | undefined, void>('project.components:del', index);
-            },
+            add: Object.assign(
+              async (component: IComponent): Promise<void> => {
+                return await eventLink.callStudioEvent<IComponent, void>('project.components:add', component);
+              },
+              async (component: IComponent, index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<IComponent | number, void>('project.components:add', component, index);
+              },
+            ),
+            del: Object.assign(
+              async (): Promise<void> => {
+                return await eventLink.callStudioEvent<void, void>('project.components:del');
+              },
+              async (index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<number, void>('project.components:del', index);
+              },
+            )
           }
         ),
         services: Object.assign(
-          async (index?: number): Promise<IService | IService[]> => {
-            return await eventLink.callStudioEvent<number | undefined, IService | IService[]>('project.services:get', index);
+          async (): Promise<IService[]> => {
+            return await eventLink.callStudioEvent<void, IService[]>('project.services:get');
+          },
+          async (index: number): Promise<IService> => {
+            return await eventLink.callStudioEvent<number, IService>('project.services:get', index);
           },
           {
             set: async (service: IService, index: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IService | number | undefined, void>('project.services:set', service, index);
+              return await eventLink.callStudioEvent<IService | number, void>('project.services:set', service, index);
             },
-            add: async (service: IService, index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<IService | number | undefined, void>('project.services:add', service, index);
-            },
-            del: async (index?: number): Promise<void> => {
-              return await eventLink.callStudioEvent<number | undefined, void>('project.services:del', index);
-            },
+            add: Object.assign(
+              async (service: IService): Promise<void> => {
+                return await eventLink.callStudioEvent<IService, void>('project.services:add', service);
+              },
+              async (service: IService, index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<IService | number, void>('project.services:add', service, index);
+              },
+            ),
+            del: Object.assign(
+              async (): Promise<void> => {
+                return await eventLink.callStudioEvent<void, void>('project.services:del');
+              },
+              async (index: number): Promise<void> => {
+                return await eventLink.callStudioEvent<number, void>('project.services:del', index);
+              },
+            )
           }
         ),
       }

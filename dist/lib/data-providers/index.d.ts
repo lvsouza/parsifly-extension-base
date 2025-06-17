@@ -16,20 +16,20 @@ export declare const createDataProviders: (eventLink: EventLink) => {
      */
     readonly project: (() => Promise<IProject<"application" | "package">>) & {
         set: (project: IProject<"application" | "package">) => Promise<void>;
-        pages: ((index?: number) => Promise<IPage | IPage[]>) & {
+        pages: (() => Promise<IPage[]>) & ((index: number) => Promise<IPage>) & {
             set: (page: IPage, index: number) => Promise<void>;
-            add: (page: IPage, index?: number) => Promise<void>;
-            del: (index?: number) => Promise<void>;
+            add: ((page: IPage) => Promise<void>) & ((page: IPage, index: number) => Promise<void>);
+            del: (() => Promise<void>) & ((index: number) => Promise<void>);
         };
-        components: ((index?: number) => Promise<IComponent | IComponent[]>) & {
+        components: (() => Promise<IComponent[]>) & ((index: number) => Promise<IComponent>) & {
             set: (component: IComponent, index: number) => Promise<void>;
-            add: (component: IComponent, index?: number) => Promise<void>;
-            del: (index?: number) => Promise<void>;
+            add: ((component: IComponent) => Promise<void>) & ((component: IComponent, index: number) => Promise<void>);
+            del: (() => Promise<void>) & ((index: number) => Promise<void>);
         };
-        services: ((index?: number) => Promise<IService | IService[]>) & {
+        services: (() => Promise<IService[]>) & ((index: number) => Promise<IService>) & {
             set: (service: IService, index: number) => Promise<void>;
-            add: (service: IService, index?: number) => Promise<void>;
-            del: (index?: number) => Promise<void>;
+            add: ((service: IService) => Promise<void>) & ((service: IService, index: number) => Promise<void>);
+            del: (() => Promise<void>) & ((index: number) => Promise<void>);
         };
     };
 };
