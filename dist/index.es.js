@@ -31,6 +31,11 @@ class V {
 }
 class J {
   constructor(e) {
+    this.key = e.key, this.actions = e.actions;
+  }
+}
+class Z {
+  constructor(e) {
     this.key = e.key, this.actions = e.actions, this.dataProvider = e.dataProvider;
   }
 }
@@ -154,7 +159,7 @@ function k(t) {
   if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function O(t) {
+function L(t) {
   return h(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
@@ -163,7 +168,7 @@ function O(t) {
 }
 const m = /* @__PURE__ */ new WeakMap(), g = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
   const e = (m.get(t) || 0) - 1;
-  m.set(t, e), e === 0 && O(t);
+  m.set(t, e), e === 0 && L(t);
 });
 function z(t, e) {
   const n = (m.get(e) || 0) + 1;
@@ -179,7 +184,7 @@ function P(t, e, n = [], a = function() {
     get(y, l) {
       if (k(s), l === M)
         return () => {
-          B(r), O(t), e.clear(), s = !0;
+          B(r), L(t), e.clear(), s = !0;
         };
       if (l === "then") {
         if (n.length === 0)
@@ -236,9 +241,9 @@ function _(t) {
   const e = t.map(b);
   return [e.map((n) => n[0]), H(e.map((n) => n[1]))];
 }
-const L = /* @__PURE__ */ new WeakMap();
+const O = /* @__PURE__ */ new WeakMap();
 function W(t, e) {
-  return L.set(t, e), t;
+  return O.set(t, e), t;
 }
 function F(t) {
   return Object.assign(t, { [$]: !0 });
@@ -261,7 +266,7 @@ function b(t) {
       type: "RAW",
       value: t
     },
-    L.get(t) || []
+    O.get(t) || []
   ];
 }
 function E(t) {
@@ -367,26 +372,26 @@ const q = (t) => ({
     }
   )
 });
-class Z {
+class ee {
   constructor() {
     this._eventLink = new K(), this.application = {
       platformActions: {
-        register: async (e) => {
+        register: (e) => {
           e.action ? this._eventLink.setExtensionEvent(`platformActions:${e.key}`, e.action) : e.actions && e.actions.forEach((n) => {
             this._eventLink.setExtensionEvent(`platformActions:${e.key}:actions:${n.key}`, n.action);
           });
         },
-        unregister: async (e) => {
+        unregister: (e) => {
           e.action ? this._eventLink.removeExtensionEvent(`platformActions:${e.key}`) : e.actions && e.actions.forEach((n) => {
             this._eventLink.removeExtensionEvent(`platformActions:${e.key}:actions:${n.key}`);
           });
         }
       },
       parsers: {
-        register: async (e) => {
+        register: (e) => {
           this._eventLink.setExtensionEvent(`parsers:${e.key}`, e.parser);
         },
-        unregister: async (e) => {
+        unregister: (e) => {
           this._eventLink.removeExtensionEvent(`parsers:${e.key}`);
         }
       },
@@ -394,7 +399,7 @@ class Z {
         refresh: async (e) => {
           await this._eventLink.callStudioEvent(`views:${e.key}:refresh`);
         },
-        register: async (e) => {
+        register: (e) => {
           var n, a;
           e instanceof x ? (e.tabs.forEach((s) => {
             this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems), s.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`, s.dataProvider.onItemClick), s.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`, s.dataProvider.onItemDoubleClick);
@@ -404,7 +409,7 @@ class Z {
             this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
           }));
         },
-        unregister: async (e) => {
+        unregister: (e) => {
           var n, a;
           e instanceof x ? (e.tabs.forEach((s) => {
             this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`), s.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`), s.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`);
@@ -413,6 +418,28 @@ class Z {
           })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), e.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`), e.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`), (a = e.actions) == null || a.forEach((s) => {
             this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
           }));
+        }
+      },
+      editors: {
+        /**
+         * Allow you to open a item in a editor based on the item type
+         * 
+         * @param key Identifier of a item to be opened for some editor
+         */
+        open: async (e) => {
+          await this._eventLink.callStudioEvent("editors:open", e);
+        },
+        register: (e) => {
+          var n;
+          (n = e.actions) == null || n.forEach((a) => {
+            this._eventLink.setExtensionEvent(`editors:${e.key}:actions:${a.key}`, a.action);
+          });
+        },
+        unregister: (e) => {
+          var n;
+          (n = e.actions) == null || n.forEach((a) => {
+            this._eventLink.removeExtensionEvent(`editors:${e.key}:actions:${a.key}`);
+          });
         }
       },
       commands: {
@@ -485,27 +512,28 @@ class Z {
     console.log("Extension deactivated (base implementation).");
   }
 }
-class ee {
+class te {
   constructor(e) {
     if (this.key = e.key, this.icon = e.icon, this.extra = e.extra, this.description = e.description, "title" in e && e.title !== void 0 && (this.title = e.title), "label" in e && e.label !== void 0 && (this.label = e.label), "children" in e && e.children !== void 0 && (this.children = e.children), this.title && this.label || !this.title && !this.label)
       throw new Error("ListViewItem must have either a `title` or a `label`, but not both.");
   }
 }
-class te {
+class ne {
   constructor(e) {
     this.key = e.key, this.parser = e.parser;
   }
 }
 export {
   V as Action,
+  J as Editor,
   G as Envs,
-  Z as ExtensionBase,
+  ee as ExtensionBase,
   Y as ListProvider,
-  ee as ListViewItem,
-  te as Parser,
+  te as ListViewItem,
+  ne as Parser,
   X as PlatformAction,
   Q as TabView,
   x as TabsView,
-  J as View
+  Z as View
 };
 //# sourceMappingURL=index.es.js.map

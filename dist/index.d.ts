@@ -3,6 +3,7 @@ export { ListProvider } from './lib/shared/providers/ListProvider';
 export { TabsView } from './lib/shared/components/TabsView';
 export { TabView } from './lib/shared/components/TabView';
 export { Action } from './lib/shared/components/Action';
+export { Editor } from './lib/shared/components/Editor';
 export { View } from './lib/shared/components/View';
 export { ExtensionBase } from './lib/ExtensionBase';
 export { Envs } from './lib/Envs';

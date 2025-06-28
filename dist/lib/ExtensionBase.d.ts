@@ -2,6 +2,7 @@ import { PlatformAction } from './shared/components/PlatformActions';
 import { TabsView } from './shared/components/TabsView';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
+import { Editor } from './shared/components/Editor';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
 export declare abstract class ExtensionBase {
@@ -17,17 +18,27 @@ export declare abstract class ExtensionBase {
     deactivate(): Promise<void>;
     readonly application: {
         readonly platformActions: {
-            readonly register: (platformAction: PlatformAction) => Promise<void>;
-            readonly unregister: (platformAction: PlatformAction) => Promise<void>;
+            readonly register: (platformAction: PlatformAction) => void;
+            readonly unregister: (platformAction: PlatformAction) => void;
         };
         readonly parsers: {
-            readonly register: (parser: Parser) => Promise<void>;
-            readonly unregister: (parser: Parser) => Promise<void>;
+            readonly register: (parser: Parser) => void;
+            readonly unregister: (parser: Parser) => void;
         };
         readonly views: {
             readonly refresh: (view: View | TabsView) => Promise<void>;
-            readonly register: (view: View | TabsView) => Promise<void>;
-            readonly unregister: (view: View | TabsView) => Promise<void>;
+            readonly register: (view: View | TabsView) => void;
+            readonly unregister: (view: View | TabsView) => void;
+        };
+        readonly editors: {
+            /**
+             * Allow you to open a item in a editor based on the item type
+             *
+             * @param key Identifier of a item to be opened for some editor
+             */
+            readonly open: (key: string) => Promise<void>;
+            readonly register: (view: Editor) => void;
+            readonly unregister: (view: Editor) => void;
         };
         readonly commands: {
             /**

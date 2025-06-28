@@ -4,6 +4,7 @@ import { EventLink } from './shared/services/EventLink';
 import { createDataProviders } from './data-providers';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
+import { Editor } from './shared/components/Editor';
 import { TQuickPick } from './types/TQuickPick';
 import { View } from './shared/components/View';
 
@@ -34,7 +35,7 @@ export abstract class ExtensionBase {
 
   public readonly application = {
     platformActions: {
-      register: async (platformAction: PlatformAction) => {
+      register: (platformAction: PlatformAction) => {
         if (platformAction.action) {
           this._eventLink.setExtensionEvent(`platformActions:${platformAction.key}`, platformAction.action);
         } else if (platformAction.actions) {
@@ -43,7 +44,7 @@ export abstract class ExtensionBase {
           });
         }
       },
-      unregister: async (platformAction: PlatformAction) => {
+      unregister: (platformAction: PlatformAction) => {
         if (platformAction.action) {
           this._eventLink.removeExtensionEvent(`platformActions:${platformAction.key}`);
         } else if (platformAction.actions) {
@@ -54,10 +55,10 @@ export abstract class ExtensionBase {
       },
     },
     parsers: {
-      register: async (parser: Parser) => {
+      register: (parser: Parser) => {
         this._eventLink.setExtensionEvent(`parsers:${parser.key}`, parser.parser);
       },
-      unregister: async (parser: Parser) => {
+      unregister: (parser: Parser) => {
         this._eventLink.removeExtensionEvent(`parsers:${parser.key}`);
       },
     },
@@ -65,7 +66,7 @@ export abstract class ExtensionBase {
       refresh: async (view: View | TabsView) => {
         await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
       },
-      register: async (view: View | TabsView) => {
+      register: (view: View | TabsView) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => {
             this._eventLink.setExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`, tabView.dataProvider.getItems);
@@ -84,7 +85,7 @@ export abstract class ExtensionBase {
           });
         }
       },
-      unregister: async (view: View | TabsView) => {
+      unregister: (view: View | TabsView) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:tabsView:${tabView.key}:loadItems:${tabView.dataProvider.key}`);
@@ -102,6 +103,26 @@ export abstract class ExtensionBase {
             this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
           });
         }
+      },
+    },
+    editors: {
+      /**
+       * Allow you to open a item in a editor based on the item type
+       * 
+       * @param key Identifier of a item to be opened for some editor
+       */
+      open: async (key: string) => {
+        await this._eventLink.callStudioEvent(`editors:open`, key);
+      },
+      register: (view: Editor) => {
+        view.actions?.forEach(action => {
+          this._eventLink.setExtensionEvent(`editors:${view.key}:actions:${action.key}`, action.action);
+        });
+      },
+      unregister: (view: Editor) => {
+        view.actions?.forEach(action => {
+          this._eventLink.removeExtensionEvent(`editors:${view.key}:actions:${action.key}`);
+        });
       },
     },
     commands: {
