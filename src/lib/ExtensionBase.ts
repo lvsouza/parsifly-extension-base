@@ -115,11 +115,21 @@ export abstract class ExtensionBase {
         await this._eventLink.callStudioEvent(`editors:open`, key);
       },
       register: (view: Editor) => {
+        this._eventLink.setExtensionEvent(`editors:${view.key}:forwardEvents:receive`, async (...values) => view.onDidReceiveMessage?.(...values));
+
+        view.__internal_subscribeToSend(`editors:${view.key}:forwardEvents:send`, async (...values) => {
+          return await this._eventLink.callStudioEvent(`editors:${view.key}:forwardEvents:send`, ...values);
+        });
+
         view.actions?.forEach(action => {
           this._eventLink.setExtensionEvent(`editors:${view.key}:actions:${action.key}`, action.action);
         });
       },
       unregister: (view: Editor) => {
+        this._eventLink.removeExtensionEvent(`editors:${view.key}:forwardEvents:receive`);
+
+        view.__internal_removeSubscribeToSend(`editors:${view.key}:forwardEvents:send`);
+
         view.actions?.forEach(action => {
           this._eventLink.removeExtensionEvent(`editors:${view.key}:actions:${action.key}`);
         });

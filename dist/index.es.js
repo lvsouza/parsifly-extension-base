@@ -1,4 +1,4 @@
-class X {
+class V {
   constructor(e) {
     this.key = e.key, "action" in e && (this.action = e.action), "actions" in e && (this.actions = e.actions);
   }
@@ -9,29 +9,39 @@ class X {
     return Array.isArray(this.actions);
   }
 }
-class Y {
+class X {
   constructor(e) {
     this.key = e.key, this.getItems = e.getItems, this.onItemClick = e.onItemClick, this.onItemDoubleClick = e.onItemDoubleClick;
   }
 }
-class x {
+class $ {
   constructor(e) {
     this.key = e.key, this.tabs = e.tabs, this.actions = e.actions;
   }
 }
-class Q {
+class Y {
   constructor(e) {
     this.key = e.key, this.dataProvider = e.dataProvider;
   }
 }
-class V {
+class Q {
   constructor(e) {
     this.key = e.key, this.action = e.action;
   }
 }
 class J {
   constructor(e) {
-    this.key = e.key, this.actions = e.actions;
+    this._messageSenderListeners = /* @__PURE__ */ new Map(), this.webView = {
+      sendMessage: async (...n) => {
+        this._messageSenderListeners.forEach((i) => i(...n));
+      }
+    }, this.key = e.key, this.actions = e.actions, this.onDidReceiveMessage = e.onDidReceiveMessage;
+  }
+  __internal_subscribeToSend(e, n) {
+    this._messageSenderListeners.set(e, n);
+  }
+  __internal_removeSubscribeToSend(e) {
+    this._messageSenderListeners.delete(e);
   }
 }
 class Z {
@@ -44,16 +54,16 @@ class Z {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-const $ = Symbol("Comlink.proxy"), D = Symbol("Comlink.endpoint"), M = Symbol("Comlink.releaseProxy"), w = Symbol("Comlink.finalizer"), f = Symbol("Comlink.thrown"), C = (t) => typeof t == "object" && t !== null || typeof t == "function", T = {
-  canHandle: (t) => C(t) && t[$],
+const x = Symbol("Comlink.proxy"), O = Symbol("Comlink.endpoint"), D = Symbol("Comlink.releaseProxy"), _ = Symbol("Comlink.finalizer"), f = Symbol("Comlink.thrown"), C = (t) => typeof t == "object" && t !== null || typeof t == "function", T = {
+  canHandle: (t) => C(t) && t[x],
   serialize(t) {
     const { port1: e, port2: n } = new MessageChannel();
-    return S(t, e), [n, [n]];
+    return P(t, e), [n, [n]];
   },
   deserialize(t) {
-    return t.start(), p(t);
+    return t.start(), L(t);
   }
-}, A = {
+}, R = {
   canHandle: (t) => C(t) && f in t,
   serialize({ value: t }) {
     let e;
@@ -71,60 +81,60 @@ const $ = Symbol("Comlink.proxy"), D = Symbol("Comlink.endpoint"), M = Symbol("C
   }
 }, I = /* @__PURE__ */ new Map([
   ["proxy", T],
-  ["throw", A]
+  ["throw", R]
 ]);
-function R(t, e) {
+function A(t, e) {
   for (const n of t)
     if (e === n || n === "*" || n instanceof RegExp && n.test(e))
       return !0;
   return !1;
 }
-function S(t, e = globalThis, n = ["*"]) {
-  e.addEventListener("message", function a(s) {
+function P(t, e = globalThis, n = ["*"]) {
+  e.addEventListener("message", function i(s) {
     if (!s || !s.data)
       return;
-    if (!R(n, s.origin)) {
+    if (!A(n, s.origin)) {
       console.warn(`Invalid origin '${s.origin}' for comlink proxy`);
       return;
     }
     const { id: r, type: y, path: l } = Object.assign({ path: [] }, s.data), d = (s.data.argumentList || []).map(E);
-    let i;
+    let a;
     try {
       const o = l.slice(0, -1).reduce((c, v) => c[v], t), u = l.reduce((c, v) => c[v], t);
       switch (y) {
         case "GET":
-          i = u;
+          a = u;
           break;
         case "SET":
-          o[l.slice(-1)[0]] = E(s.data.value), i = !0;
+          o[l.slice(-1)[0]] = E(s.data.value), a = !0;
           break;
         case "APPLY":
-          i = u.apply(o, d);
+          a = u.apply(o, d);
           break;
         case "CONSTRUCT":
           {
             const c = new u(...d);
-            i = F(c);
+            a = F(c);
           }
           break;
         case "ENDPOINT":
           {
             const { port1: c, port2: v } = new MessageChannel();
-            S(t, v), i = W(c, [c]);
+            P(t, v), a = W(c, [c]);
           }
           break;
         case "RELEASE":
-          i = void 0;
+          a = void 0;
           break;
         default:
           return;
       }
     } catch (o) {
-      i = { value: o, [f]: 0 };
+      a = { value: o, [f]: 0 };
     }
-    Promise.resolve(i).catch((o) => ({ value: o, [f]: 0 })).then((o) => {
+    Promise.resolve(a).catch((o) => ({ value: o, [f]: 0 })).then((o) => {
       const [u, c] = b(o);
-      e.postMessage(Object.assign(Object.assign({}, u), { id: r }), c), y === "RELEASE" && (e.removeEventListener("message", a), j(e), w in t && typeof t[w] == "function" && t[w]());
+      e.postMessage(Object.assign(Object.assign({}, u), { id: r }), c), y === "RELEASE" && (e.removeEventListener("message", i), j(e), _ in t && typeof t[_] == "function" && t[_]());
     }).catch((o) => {
       const [u, c] = b({
         value: new TypeError("Unserializable return value"),
@@ -140,7 +150,7 @@ function N(t) {
 function j(t) {
   N(t) && t.close();
 }
-function p(t, e) {
+function L(t, e) {
   const n = /* @__PURE__ */ new Map();
   return t.addEventListener("message", function(s) {
     const { data: r } = s;
@@ -153,13 +163,13 @@ function p(t, e) {
       } finally {
         n.delete(r.id);
       }
-  }), P(t, n, [], e);
+  }), S(t, n, [], e);
 }
 function k(t) {
   if (t)
     throw new Error("Proxy has been released and is not useable");
 }
-function L(t) {
+function p(t) {
   return h(t, /* @__PURE__ */ new Map(), {
     type: "RELEASE"
   }).then(() => {
@@ -168,7 +178,7 @@ function L(t) {
 }
 const m = /* @__PURE__ */ new WeakMap(), g = "FinalizationRegistry" in globalThis && new FinalizationRegistry((t) => {
   const e = (m.get(t) || 0) - 1;
-  m.set(t, e), e === 0 && L(t);
+  m.set(t, e), e === 0 && p(t);
 });
 function z(t, e) {
   const n = (m.get(e) || 0) + 1;
@@ -177,45 +187,45 @@ function z(t, e) {
 function B(t) {
   g && g.unregister(t);
 }
-function P(t, e, n = [], a = function() {
+function S(t, e, n = [], i = function() {
 }) {
   let s = !1;
-  const r = new Proxy(a, {
+  const r = new Proxy(i, {
     get(y, l) {
-      if (k(s), l === M)
+      if (k(s), l === D)
         return () => {
-          B(r), L(t), e.clear(), s = !0;
+          B(r), p(t), e.clear(), s = !0;
         };
       if (l === "then") {
         if (n.length === 0)
           return { then: () => r };
         const d = h(t, e, {
           type: "GET",
-          path: n.map((i) => i.toString())
+          path: n.map((a) => a.toString())
         }).then(E);
         return d.then.bind(d);
       }
-      return P(t, e, [...n, l]);
+      return S(t, e, [...n, l]);
     },
     set(y, l, d) {
       k(s);
-      const [i, o] = b(d);
+      const [a, o] = b(d);
       return h(t, e, {
         type: "SET",
         path: [...n, l].map((u) => u.toString()),
-        value: i
+        value: a
       }, o).then(E);
     },
     apply(y, l, d) {
       k(s);
-      const i = n[n.length - 1];
-      if (i === D)
+      const a = n[n.length - 1];
+      if (a === O)
         return h(t, e, {
           type: "ENDPOINT"
         }).then(E);
-      if (i === "bind")
-        return P(t, e, n.slice(0, -1));
-      const [o, u] = _(d);
+      if (a === "bind")
+        return S(t, e, n.slice(0, -1));
+      const [o, u] = w(d);
       return h(t, e, {
         type: "APPLY",
         path: n.map((c) => c.toString()),
@@ -224,12 +234,12 @@ function P(t, e, n = [], a = function() {
     },
     construct(y, l) {
       k(s);
-      const [d, i] = _(l);
+      const [d, a] = w(l);
       return h(t, e, {
         type: "CONSTRUCT",
         path: n.map((o) => o.toString()),
         argumentList: d
-      }, i).then(E);
+      }, a).then(E);
     }
   });
   return z(r, t), r;
@@ -237,26 +247,26 @@ function P(t, e, n = [], a = function() {
 function H(t) {
   return Array.prototype.concat.apply([], t);
 }
-function _(t) {
+function w(t) {
   const e = t.map(b);
   return [e.map((n) => n[0]), H(e.map((n) => n[1]))];
 }
-const O = /* @__PURE__ */ new WeakMap();
+const M = /* @__PURE__ */ new WeakMap();
 function W(t, e) {
-  return O.set(t, e), t;
+  return M.set(t, e), t;
 }
 function F(t) {
-  return Object.assign(t, { [$]: !0 });
+  return Object.assign(t, { [x]: !0 });
 }
 function b(t) {
   for (const [e, n] of I)
     if (n.canHandle(t)) {
-      const [a, s] = n.serialize(t);
+      const [i, s] = n.serialize(t);
       return [
         {
           type: "HANDLER",
           name: e,
-          value: a
+          value: i
         },
         s
       ];
@@ -266,7 +276,7 @@ function b(t) {
       type: "RAW",
       value: t
     },
-    O.get(t) || []
+    M.get(t) || []
   ];
 }
 function E(t) {
@@ -277,10 +287,10 @@ function E(t) {
       return t.value;
   }
 }
-function h(t, e, n, a) {
+function h(t, e, n, i) {
   return new Promise((s) => {
     const r = U();
-    e.set(r, s), t.start && t.start(), t.postMessage(Object.assign({ id: r }, n), a);
+    e.set(r, s), t.start && t.start(), t.postMessage(Object.assign({ id: r }, n), i);
   });
 }
 function U() {
@@ -291,7 +301,7 @@ const G = {
 };
 class K {
   constructor() {
-    this._events = /* @__PURE__ */ new Map(), S({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = p(self);
+    this._events = /* @__PURE__ */ new Map(), P({ callEvent: this._callExtensionEvent.bind(this) }), this._studioWrapper = L(self);
   }
   setExtensionEvent(e, n) {
     this._events.set(e, n);
@@ -303,10 +313,10 @@ class K {
     return this._studioWrapper.callEvent(e, ...n);
   }
   async _callExtensionEvent(e, ...n) {
-    const a = this._events.get(e);
-    if (G.DEBUG && console.log(this._events.keys()), !a)
+    const i = this._events.get(e);
+    if (G.DEBUG && console.log(this._events.keys()), !i)
       throw new Error(`[EXTENSION] Event with key "${e}" was not found.`);
-    return a(...n);
+    return i(...n);
   }
 }
 const q = (t) => ({
@@ -400,22 +410,22 @@ class ee {
           await this._eventLink.callStudioEvent(`views:${e.key}:refresh`);
         },
         register: (e) => {
-          var n, a;
-          e instanceof x ? (e.tabs.forEach((s) => {
+          var n, i;
+          e instanceof $ ? (e.tabs.forEach((s) => {
             this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems), s.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`, s.dataProvider.onItemClick), s.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`, s.dataProvider.onItemDoubleClick);
           }), (n = e.actions) == null || n.forEach((s) => {
             this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
-          })) : (this._eventLink.setExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`, e.dataProvider.getItems), e.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`, e.dataProvider.onItemClick), e.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`, e.dataProvider.onItemDoubleClick), (a = e.actions) == null || a.forEach((s) => {
+          })) : (this._eventLink.setExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`, e.dataProvider.getItems), e.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`, e.dataProvider.onItemClick), e.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`, e.dataProvider.onItemDoubleClick), (i = e.actions) == null || i.forEach((s) => {
             this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
           }));
         },
         unregister: (e) => {
-          var n, a;
-          e instanceof x ? (e.tabs.forEach((s) => {
+          var n, i;
+          e instanceof $ ? (e.tabs.forEach((s) => {
             this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`), s.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`), s.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`);
           }), (n = e.actions) == null || n.forEach((s) => {
             this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
-          })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), e.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`), e.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`), (a = e.actions) == null || a.forEach((s) => {
+          })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), e.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`), e.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`), (i = e.actions) == null || i.forEach((s) => {
             this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
           }));
         }
@@ -431,14 +441,17 @@ class ee {
         },
         register: (e) => {
           var n;
-          (n = e.actions) == null || n.forEach((a) => {
-            this._eventLink.setExtensionEvent(`editors:${e.key}:actions:${a.key}`, a.action);
+          this._eventLink.setExtensionEvent(`editors:${e.key}:forwardEvents:receive`, async (...i) => {
+            var s;
+            return (s = e.onDidReceiveMessage) == null ? void 0 : s.call(e, ...i);
+          }), e.__internal_subscribeToSend(`editors:${e.key}:forwardEvents:send`, async (...i) => await this._eventLink.callStudioEvent(`editors:${e.key}:forwardEvents:send`, ...i)), (n = e.actions) == null || n.forEach((i) => {
+            this._eventLink.setExtensionEvent(`editors:${e.key}:actions:${i.key}`, i.action);
           });
         },
         unregister: (e) => {
           var n;
-          (n = e.actions) == null || n.forEach((a) => {
-            this._eventLink.removeExtensionEvent(`editors:${e.key}:actions:${a.key}`);
+          this._eventLink.removeExtensionEvent(`editors:${e.key}:forwardEvents:receive`), e.__internal_removeSubscribeToSend(`editors:${e.key}:forwardEvents:send`), (n = e.actions) == null || n.forEach((i) => {
+            this._eventLink.removeExtensionEvent(`editors:${e.key}:actions:${i.key}`);
           });
         }
       },
@@ -457,7 +470,7 @@ class ee {
          * @param fileType extension of the file
          * @param fileContent file content in string
          */
-        downloadFile: async (e, n, a) => await this._eventLink.callStudioEvent("download:file", e, n, a),
+        downloadFile: async (e, n, i) => await this._eventLink.callStudioEvent("download:file", e, n, i),
         /**
          * Allow you to download a lot of files and folders as zip
          * 
@@ -524,16 +537,16 @@ class ne {
   }
 }
 export {
-  V as Action,
+  Q as Action,
   J as Editor,
   G as Envs,
   ee as ExtensionBase,
-  Y as ListProvider,
+  X as ListProvider,
   te as ListViewItem,
   ne as Parser,
-  X as PlatformAction,
-  Q as TabView,
-  x as TabsView,
+  V as PlatformAction,
+  Y as TabView,
+  $ as TabsView,
   Z as View
 };
 //# sourceMappingURL=index.es.js.map
