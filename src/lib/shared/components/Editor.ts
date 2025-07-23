@@ -4,6 +4,12 @@ import { Action } from './Action';
 interface IEditorProps {
   key: string;
   actions?: Action[];
+  /**
+   * Listem for change of the item id that is edit in the moment
+   * 
+   * @param id Id of the content to be edited
+   */
+  resolve?: (id: string) => Promise<void>;
   onDidReceiveMessage?: (...values: unknown[]) => Promise<void>;
 }
 export class Editor {
@@ -12,6 +18,7 @@ export class Editor {
 
   public readonly key: IEditorProps['key'];
   public readonly actions: IEditorProps['actions'];
+  public readonly resolve: IEditorProps['resolve'];
   public readonly onDidReceiveMessage: IEditorProps['onDidReceiveMessage'];
 
 
@@ -24,6 +31,7 @@ export class Editor {
   constructor(props: IEditorProps) {
     this.key = props.key;
     this.actions = props.actions;
+    this.resolve = props.resolve;
     this.onDidReceiveMessage = props.onDidReceiveMessage;
   }
 

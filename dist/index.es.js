@@ -1,5 +1,5 @@
 import { e as o, w as r } from "./comlink-BsE2Av_T.mjs";
-class y {
+class E {
   constructor(e) {
     this.key = e.key, "action" in e && (this.action = e.action), "actions" in e && (this.actions = e.actions);
   }
@@ -10,7 +10,7 @@ class y {
     return Array.isArray(this.actions);
   }
 }
-class E {
+class y {
   constructor(e) {
     this.key = e.key, this.getItems = e.getItems, this.onItemClick = e.onItemClick, this.onItemDoubleClick = e.onItemDoubleClick;
   }
@@ -20,12 +20,12 @@ class a {
     this.key = e.key, this.tabs = e.tabs, this.actions = e.actions;
   }
 }
-class h {
+class k {
   constructor(e) {
     this.key = e.key, this.dataProvider = e.dataProvider;
   }
 }
-class k {
+class h {
   constructor(e) {
     this.key = e.key, this.action = e.action;
   }
@@ -36,7 +36,7 @@ class u {
       sendMessage: async (...t) => {
         this._messageSenderListeners.forEach((i) => i(...t));
       }
-    }, this.key = e.key, this.actions = e.actions, this.onDidReceiveMessage = e.onDidReceiveMessage;
+    }, this.key = e.key, this.actions = e.actions, this.resolve = e.resolve, this.onDidReceiveMessage = e.onDidReceiveMessage;
   }
   __internal_subscribeToSend(e, t) {
     this._messageSenderListeners.set(e, t);
@@ -73,63 +73,63 @@ class d {
     return i(...t);
   }
 }
-const l = (n) => ({
+const l = (s) => ({
   /**
    * Allow you to call a custom command from application
    * 
    * @param key Name of the command
    * @param args List of arguments to be forwarded to the command call
    */
-  callCustomDataProvider: async (e, ...t) => await n.callStudioEvent(e, ...t),
+  callCustomDataProvider: async (e, ...t) => await s.callStudioEvent(e, ...t),
   /**
    * Allow you to get the entire project object or get parts with ...project.pages(), .services(), .components() and more.
    */
   project: Object.assign(
-    async () => await n.callStudioEvent("project:get"),
+    async () => await s.callStudioEvent("project:get"),
     {
-      set: async (e) => await n.callStudioEvent("project:set", e),
+      set: async (e) => await s.callStudioEvent("project:set", e),
       pages: Object.assign(
-        async () => await n.callStudioEvent("project.pages:get"),
-        async (e) => await n.callStudioEvent("project.pages:get", e),
+        async () => await s.callStudioEvent("project.pages:get"),
+        async (e) => await s.callStudioEvent("project.pages:get", e),
         {
-          set: async (e, t) => await n.callStudioEvent("project.pages:set", e, t),
+          set: async (e, t) => await s.callStudioEvent("project.pages:set", e, t),
           add: Object.assign(
-            async (e) => await n.callStudioEvent("project.pages:add", e),
-            async (e, t) => await n.callStudioEvent("project.pages:add", e, t)
+            async (e) => await s.callStudioEvent("project.pages:add", e),
+            async (e, t) => await s.callStudioEvent("project.pages:add", e, t)
           ),
           del: Object.assign(
-            async () => await n.callStudioEvent("project.pages:del"),
-            async (e) => await n.callStudioEvent("project.pages:del", e)
+            async () => await s.callStudioEvent("project.pages:del"),
+            async (e) => await s.callStudioEvent("project.pages:del", e)
           )
         }
       ),
       components: Object.assign(
-        async () => await n.callStudioEvent("project.components:get"),
-        async (e) => await n.callStudioEvent("project.components:get", e),
+        async () => await s.callStudioEvent("project.components:get"),
+        async (e) => await s.callStudioEvent("project.components:get", e),
         {
-          set: async (e, t) => await n.callStudioEvent("project.components:set", e, t),
+          set: async (e, t) => await s.callStudioEvent("project.components:set", e, t),
           add: Object.assign(
-            async (e) => await n.callStudioEvent("project.components:add", e),
-            async (e, t) => await n.callStudioEvent("project.components:add", e, t)
+            async (e) => await s.callStudioEvent("project.components:add", e),
+            async (e, t) => await s.callStudioEvent("project.components:add", e, t)
           ),
           del: Object.assign(
-            async () => await n.callStudioEvent("project.components:del"),
-            async (e) => await n.callStudioEvent("project.components:del", e)
+            async () => await s.callStudioEvent("project.components:del"),
+            async (e) => await s.callStudioEvent("project.components:del", e)
           )
         }
       ),
       services: Object.assign(
-        async () => await n.callStudioEvent("project.services:get"),
-        async (e) => await n.callStudioEvent("project.services:get", e),
+        async () => await s.callStudioEvent("project.services:get"),
+        async (e) => await s.callStudioEvent("project.services:get", e),
         {
-          set: async (e, t) => await n.callStudioEvent("project.services:set", e, t),
+          set: async (e, t) => await s.callStudioEvent("project.services:set", e, t),
           add: Object.assign(
-            async (e) => await n.callStudioEvent("project.services:add", e),
-            async (e, t) => await n.callStudioEvent("project.services:add", e, t)
+            async (e) => await s.callStudioEvent("project.services:add", e),
+            async (e, t) => await s.callStudioEvent("project.services:add", e, t)
           ),
           del: Object.assign(
-            async () => await n.callStudioEvent("project.services:del"),
-            async (e) => await n.callStudioEvent("project.services:del", e)
+            async () => await s.callStudioEvent("project.services:del"),
+            async (e) => await s.callStudioEvent("project.services:del", e)
           )
         }
       )
@@ -165,22 +165,22 @@ class _ {
         },
         register: (e) => {
           var t, i;
-          e instanceof a ? (e.tabs.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`, s.dataProvider.getItems), s.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`, s.dataProvider.onItemClick), s.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`, s.dataProvider.onItemDoubleClick);
-          }), (t = e.actions) == null || t.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
-          })) : (this._eventLink.setExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`, e.dataProvider.getItems), e.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`, e.dataProvider.onItemClick), e.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`, e.dataProvider.onItemDoubleClick), (i = e.actions) == null || i.forEach((s) => {
-            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${s.key}`, s.action);
+          e instanceof a ? (e.tabs.forEach((n) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${n.key}:loadItems:${n.dataProvider.key}`, n.dataProvider.getItems), n.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${n.key}:onItemClick:${n.dataProvider.key}`, n.dataProvider.onItemClick), n.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:tabsView:${n.key}:onItemDoubleClick:${n.dataProvider.key}`, n.dataProvider.onItemDoubleClick);
+          }), (t = e.actions) == null || t.forEach((n) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${n.key}`, n.action);
+          })) : (this._eventLink.setExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`, e.dataProvider.getItems), e.dataProvider.onItemClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`, e.dataProvider.onItemClick), e.dataProvider.onItemDoubleClick && this._eventLink.setExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`, e.dataProvider.onItemDoubleClick), (i = e.actions) == null || i.forEach((n) => {
+            this._eventLink.setExtensionEvent(`views:${e.key}:actions:${n.key}`, n.action);
           }));
         },
         unregister: (e) => {
           var t, i;
-          e instanceof a ? (e.tabs.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:loadItems:${s.dataProvider.key}`), s.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemClick:${s.dataProvider.key}`), s.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${s.key}:onItemDoubleClick:${s.dataProvider.key}`);
-          }), (t = e.actions) == null || t.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
-          })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), e.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`), e.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`), (i = e.actions) == null || i.forEach((s) => {
-            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${s.key}`);
+          e instanceof a ? (e.tabs.forEach((n) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${n.key}:loadItems:${n.dataProvider.key}`), n.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${n.key}:onItemClick:${n.dataProvider.key}`), n.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:tabsView:${n.key}:onItemDoubleClick:${n.dataProvider.key}`);
+          }), (t = e.actions) == null || t.forEach((n) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${n.key}`);
+          })) : (this._eventLink.removeExtensionEvent(`views:${e.key}:loadItems:${e.dataProvider.key}`), e.dataProvider.onItemClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemClick:${e.dataProvider.key}`), e.dataProvider.onItemDoubleClick && this._eventLink.removeExtensionEvent(`views:${e.key}:onItemDoubleClick:${e.dataProvider.key}`), (i = e.actions) == null || i.forEach((n) => {
+            this._eventLink.removeExtensionEvent(`views:${e.key}:actions:${n.key}`);
           }));
         }
       },
@@ -195,16 +195,19 @@ class _ {
         },
         register: (e) => {
           var t;
-          this._eventLink.setExtensionEvent(`editors:${e.key}:forwardEvents:receive`, async (...i) => {
-            var s;
-            return (s = e.onDidReceiveMessage) == null ? void 0 : s.call(e, ...i);
+          this._eventLink.setExtensionEvent(`editors:${e.key}:resolve`, async (i) => {
+            var n;
+            return (n = e.resolve) == null ? void 0 : n.call(e, i);
+          }), this._eventLink.setExtensionEvent(`editors:${e.key}:forwardEvents:receive`, async (...i) => {
+            var n;
+            return (n = e.onDidReceiveMessage) == null ? void 0 : n.call(e, ...i);
           }), e.__internal_subscribeToSend(`editors:${e.key}:forwardEvents:send`, async (...i) => await this._eventLink.callStudioEvent(`editors:${e.key}:forwardEvents:send`, ...i)), (t = e.actions) == null || t.forEach((i) => {
             this._eventLink.setExtensionEvent(`editors:${e.key}:actions:${i.key}`, i.action);
           });
         },
         unregister: (e) => {
           var t;
-          this._eventLink.removeExtensionEvent(`editors:${e.key}:forwardEvents:receive`), e.__internal_removeSubscribeToSend(`editors:${e.key}:forwardEvents:send`), (t = e.actions) == null || t.forEach((i) => {
+          this._eventLink.removeExtensionEvent(`editors:${e.key}:resolve`), this._eventLink.removeExtensionEvent(`editors:${e.key}:forwardEvents:receive`), e.__internal_removeSubscribeToSend(`editors:${e.key}:forwardEvents:send`), (t = e.actions) == null || t.forEach((i) => {
             this._eventLink.removeExtensionEvent(`editors:${e.key}:actions:${i.key}`);
           });
         }
@@ -291,15 +294,15 @@ class S {
   }
 }
 export {
-  k as Action,
+  h as Action,
   u as Editor,
   c as Envs,
   _ as ExtensionBase,
-  E as ListProvider,
+  y as ListProvider,
   $ as ListViewItem,
   S as Parser,
-  y as PlatformAction,
-  h as TabView,
+  E as PlatformAction,
+  k as TabView,
   a as TabsView,
   m as View
 };
