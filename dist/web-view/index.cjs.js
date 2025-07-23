@@ -1,0 +1,2 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const i=require("../comlink-BfRVcakJ.js"),d=()=>{if(window.studioApi)return window.studioApi;const t=new Set,o=new MessageChannel,n={async send(...e){t.forEach(r=>r(...e))}};i.expose(n,o.port1),window.parent.postMessage({type:"connect"},"*",[o.port2]);const s=i.wrap(o.port1);return window.studioApi={send:s.send,subscribeToMessage(e){return t.add(e),()=>t.delete(e)}},window.studioApi};exports.acquireStudioApi=d;
+//# sourceMappingURL=index.cjs.js.map
