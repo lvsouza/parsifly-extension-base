@@ -1,21 +1,33 @@
-import { e as i, w as r } from "../comlink-BsE2Av_T.mjs";
-const d = () => {
+import { e as a, w as d } from "../comlink-BsE2Av_T.mjs";
+const w = () => {
   if (window.studioApi) return window.studioApi;
-  const t = /* @__PURE__ */ new Set(), o = new MessageChannel();
-  i({
+  const t = /* @__PURE__ */ new Set(), n = /* @__PURE__ */ new Set(), o = new MessageChannel();
+  a({
     async send(...e) {
-      t.forEach((n) => n(...e));
+      const s = [];
+      for (const i of n)
+        s.push(i(...e));
+      await Promise.all(s);
+    },
+    async sendDragEvent(...e) {
+      const s = [];
+      for (const i of t)
+        s.push(i(...e));
+      await Promise.all(s);
     }
   }, o.port1), window.parent.postMessage({ type: "connect" }, "*", [o.port2]);
-  const s = r(o.port1);
+  const r = d(o.port1);
   return window.studioApi = {
-    send: s.send,
+    send: r.send,
     subscribeToMessage(e) {
+      return n.add(e), () => n.delete(e);
+    },
+    subscribeToDragEvent(e) {
       return t.add(e), () => t.delete(e);
     }
   }, window.studioApi;
 };
 export {
-  d as acquireStudioApi
+  w as acquireStudioApi
 };
 //# sourceMappingURL=index.es.js.map
