@@ -20,12 +20,12 @@ class a {
     this.key = e.key, this.tabs = e.tabs, this.actions = e.actions;
   }
 }
-class k {
+class h {
   constructor(e) {
     this.key = e.key, this.dataProvider = e.dataProvider;
   }
 }
-class h {
+class k {
   constructor(e) {
     this.key = e.key, this.action = e.action;
   }
@@ -282,27 +282,27 @@ class _ {
     console.log("Extension deactivated (base implementation).");
   }
 }
-class $ {
+class g {
   constructor(e) {
-    if (this.key = e.key, this.icon = e.icon, this.extra = e.extra, this.description = e.description, "title" in e && e.title !== void 0 && (this.title = e.title), "label" in e && e.label !== void 0 && (this.label = e.label), "children" in e && e.children !== void 0 && (this.children = e.children), this.title && this.label || !this.title && !this.label)
+    if (this.key = e.key, this.icon = e.icon, this.extra = e.extra, this.description = e.description, "title" in e && e.title !== void 0 && (this.title = e.title), "label" in e && e.label !== void 0 && (this.label = e.label), "children" in e && e.children !== void 0 && (this.children = e.children), "draggable" in e && e.draggable ? (this.draggable = e.draggable, this.draggableData = e.draggableData) : this.draggable = !1, this.title && this.label || !this.title && !this.label)
       throw new Error("ListViewItem must have either a `title` or a `label`, but not both.");
   }
 }
-class S {
+class $ {
   constructor(e) {
     this.key = e.key, this.parser = e.parser;
   }
 }
 export {
-  h as Action,
+  k as Action,
   u as Editor,
   c as Envs,
   _ as ExtensionBase,
   y as ListProvider,
-  $ as ListViewItem,
-  S as Parser,
+  g as ListViewItem,
+  $ as Parser,
   E as PlatformAction,
-  k as TabView,
+  h as TabView,
   a as TabsView,
   m as View
 };

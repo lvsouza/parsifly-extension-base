@@ -25,7 +25,17 @@ type TListItemWithLabel = {
   children: boolean;
 }
 
-export type TListViewItem = (TListItemWithLabel | TListItemWithTitle) & TListItemBase;
+type TListItemWithoutDraggableData = {
+  draggable?: false | undefined;
+  draggableData?: void;
+}
+
+type TListItemWithDraggableData = {
+  draggable: boolean;
+  draggableData: Record<string, any>;
+}
+
+export type TListViewItem = (TListItemWithLabel | TListItemWithTitle) & (TListItemWithoutDraggableData | TListItemWithDraggableData) & TListItemBase;
 
 export class ListViewItem {
   public readonly key: TListItemBase['key'];
@@ -36,6 +46,9 @@ export class ListViewItem {
   public readonly title?: TListViewItem['title'];
   public readonly label?: TListViewItem['label'];
   public readonly children?: TListViewItem['children'];
+
+  public readonly draggable?: TListViewItem['draggable'];
+  public readonly draggableData?: TListViewItem['draggableData'];
 
 
   constructor(props: TListViewItem) {
@@ -54,6 +67,13 @@ export class ListViewItem {
 
     if ('children' in props && props.children !== undefined) {
       this.children = props.children;
+    }
+
+    if ('draggable' in props && props.draggable) {
+      this.draggable = props.draggable;
+      this.draggableData = props.draggableData;
+    } else {
+      this.draggable = false;
     }
 
     if ((this.title && this.label) || (!this.title && !this.label)) {

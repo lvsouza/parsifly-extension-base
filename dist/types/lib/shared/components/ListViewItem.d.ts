@@ -21,7 +21,15 @@ type TListItemWithLabel = {
     /** Define if a item can have a children list */
     children: boolean;
 };
-export type TListViewItem = (TListItemWithLabel | TListItemWithTitle) & TListItemBase;
+type TListItemWithoutDraggableData = {
+    draggable?: false | undefined;
+    draggableData?: void;
+};
+type TListItemWithDraggableData = {
+    draggable: boolean;
+    draggableData: Record<string, any>;
+};
+export type TListViewItem = (TListItemWithLabel | TListItemWithTitle) & (TListItemWithoutDraggableData | TListItemWithDraggableData) & TListItemBase;
 export declare class ListViewItem {
     readonly key: TListItemBase['key'];
     readonly icon?: TListItemBase['icon'];
@@ -30,6 +38,8 @@ export declare class ListViewItem {
     readonly title?: TListViewItem['title'];
     readonly label?: TListViewItem['label'];
     readonly children?: TListViewItem['children'];
+    readonly draggable?: TListViewItem['draggable'];
+    readonly draggableData?: TListViewItem['draggableData'];
     constructor(props: TListViewItem);
 }
 export {};
