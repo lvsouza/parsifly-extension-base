@@ -1,11 +1,11 @@
-import { ListProvider } from '../providers/ListProvider';
+import { TDataProvider } from '../providers/TDataProvider';
 import { Action } from './Action';
 
 
 interface IViewProps {
   key: string;
   actions?: Action[];
-  dataProvider: ListProvider;
+  dataProvider: TDataProvider;
 }
 export class View {
   public readonly key: IViewProps['key'];

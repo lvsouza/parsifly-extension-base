@@ -1,9 +1,9 @@
-import { ListProvider } from '../providers/ListProvider';
+import { TDataProvider } from '../providers/TDataProvider';
 
 
 interface ITabViewProps {
   key: string;
-  dataProvider: ListProvider;
+  dataProvider: TDataProvider;
 }
 export class TabView {
   public readonly key: ITabViewProps['key'];
