@@ -105,6 +105,24 @@ export abstract class ExtensionBase {
         }
       },
     },
+    details: {
+      /**
+       * Allow you to select a item
+       * 
+       * @param key Identifier of a item to be selected
+       */
+      select: async (key: string) => {
+        await this._eventLink.callStudioEvent(`details:select`, key);
+      },
+      /**
+       * Allow you to unselect a item
+       * 
+       * @param key Identifier of a item to be unselected
+       */
+      unselect: async (key: string) => {
+        await this._eventLink.callStudioEvent(`details:unselect`, key);
+      },
+    },
     editors: {
       /**
        * Allow you to open a item in a editor based on the item type
@@ -113,6 +131,14 @@ export abstract class ExtensionBase {
        */
       open: async (key: string) => {
         await this._eventLink.callStudioEvent(`editors:open`, key);
+      },
+      /**
+       * Allow you to close a item if it is opened in the editor
+       * 
+       * @param key Identifier of a item to be closed
+       */
+      close: async (key: string) => {
+        await this._eventLink.callStudioEvent(`editors:close`, key);
       },
       register: (view: Editor) => {
         this._eventLink.setExtensionEvent(`editors:${view.key}:resolve`, async (id: string) => view.resolve?.(id));
