@@ -8,6 +8,7 @@ interface IListProviderProps {
   getItems: (item?: ListViewItem) => Promise<ListViewItem[]>;
 }
 export class ListProvider {
+  public readonly type = 'list';
   public readonly key: IListProviderProps['key'];
   public readonly getItems: IListProviderProps['getItems'];
   public readonly onItemClick: IListProviderProps['onItemClick'];
