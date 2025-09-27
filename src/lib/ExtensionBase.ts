@@ -96,14 +96,14 @@ export abstract class ExtensionBase {
         }
       },
     },
-    details: {
+    selection: {
       /**
        * Allow you to select a item
        * 
        * @param key Identifier of a item to be selected
        */
       select: async (key: string) => {
-        await this._eventLink.callStudioEvent(`details:select`, key);
+        await this._eventLink.callStudioEvent(`selection:select`, key);
       },
       /**
        * Allow you to unselect a item
@@ -111,7 +111,15 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be unselected
        */
       unselect: async (key: string) => {
-        await this._eventLink.callStudioEvent(`details:unselect`, key);
+        await this._eventLink.callStudioEvent(`selection:unselect`, key);
+      },
+      /**
+       * Returns a list of selected items in the platform
+       * 
+       * @returns {Promise<string[]>} List of selected items
+       */
+      get: async (): Promise<string[]> => {
+        return await this._eventLink.callStudioEvent(`selection:get`);
       },
     },
     editors: {

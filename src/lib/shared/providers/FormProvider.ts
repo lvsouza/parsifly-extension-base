@@ -6,7 +6,7 @@ interface IFormProviderProps {
   getFields: (item?: FormViewItem) => Promise<FormViewItem[]>;
 }
 export class FormProvider {
-  public readonly type = 'list';
+  public readonly type = 'form';
   public readonly key: IFormProviderProps['key'];
   public readonly getFields: IFormProviderProps['getFields'];
 
