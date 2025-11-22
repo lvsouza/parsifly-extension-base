@@ -1,5 +1,7 @@
 
-export type TFormViewItem = {
+type TFormViewItemValue = string | number | boolean;
+
+export type TFormViewItem<TValue extends TFormViewItemValue = TFormViewItemValue> = {
   /** Identifier */
   key: string;
   name: string;
@@ -13,6 +15,9 @@ export type TFormViewItem = {
   /** Details of the record */
   description?: string;
   defaultValue?: string;
+
+  getValue?(): Promise<TValue>;
+  onDidChange?(value: TValue): Promise<void>;
 };
 
 export class FormViewItem {
@@ -25,6 +30,10 @@ export class FormViewItem {
   public readonly description: TFormViewItem['description'];
   public readonly defaultValue: TFormViewItem['defaultValue'];
 
+  public readonly getValue: TFormViewItem['getValue'];
+  public readonly onDidChange: TFormViewItem['onDidChange'];
+
+
   constructor(props: TFormViewItem) {
     this.key = props.key;
     this.name = props.name;
@@ -34,5 +43,7 @@ export class FormViewItem {
     this.children = props.children;
     this.description = props.description;
     this.defaultValue = props.defaultValue;
+    this.getValue = props.getValue;
+    this.onDidChange = props.onDidChange;
   }
 }

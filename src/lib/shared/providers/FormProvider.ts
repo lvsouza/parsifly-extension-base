@@ -12,6 +12,17 @@ export class FormProvider {
 
   constructor(props: IFormProviderProps) {
     this.key = props.key;
-    this.getFields = props.getFields;
+
+    this.getFields = async (item?: FormViewItem | undefined) => {
+      return props
+        .getFields(item)
+        .then(fields => {
+          return fields.map(field => ({
+            ...field,
+            getValue: undefined,
+            onDidChange: undefined,
+          }))
+        })
+    };
   }
 }

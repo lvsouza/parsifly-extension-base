@@ -1,5 +1,6 @@
 import { PlatformAction } from './shared/components/PlatformActions';
 import { TDataProvider } from './shared/providers/TDataProvider';
+import { FormViewItem } from './shared/components/FormViewItem';
 import { FormProvider } from './shared/providers/FormProvider';
 import { ListProvider } from './shared/providers/ListProvider';
 import { TabsView } from './shared/components/TabsView';
@@ -66,15 +67,22 @@ export abstract class ExtensionBase {
       },
     },
     views: {
-      refresh: async (view: View | TabsView) => {
-        await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
+      refresh: async (view: View | TabsView | FormViewItem) => {
+        if (view instanceof FormViewItem) {
+          await this._eventLink.callStudioEvent(`formViewItem:${view.key}:refresh`);
+        } else {
+          await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
+        }
       },
-      register: (view: View | TabsView) => {
+      register: (view: View | TabsView | FormViewItem) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => this._registerViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
           view.actions?.forEach(action => {
             this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
           });
+        } else if (view instanceof FormViewItem) {
+          if (view.getValue) this._eventLink.setExtensionEvent(`formViewItem:${view.key}:getValue`, view.getValue);
+          if (view.onDidChange) this._eventLink.setExtensionEvent(`formViewItem:${view.key}:onDidChange`, view.onDidChange);
         } else {
           this._registerViewDataProvider(`views:${view.key}`, view.dataProvider);
           view.actions?.forEach(action => {
@@ -82,12 +90,15 @@ export abstract class ExtensionBase {
           });
         }
       },
-      unregister: (view: View | TabsView) => {
+      unregister: (view: View | TabsView | FormViewItem) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => this._unregisterViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
           view.actions?.forEach(action => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
           });
+        } else if (view instanceof FormViewItem) {
+          this._eventLink.removeExtensionEvent(`formViewItem:${view.key}:getValue`);
+          this._eventLink.removeExtensionEvent(`formViewItem:${view.key}:onDidChange`);
         } else {
           this._unregisterViewDataProvider(`views:${view.key}`, view.dataProvider);
           view.actions?.forEach(action => {
