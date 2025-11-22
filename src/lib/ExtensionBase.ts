@@ -133,14 +133,14 @@ export abstract class ExtensionBase {
         return await this._eventLink.callStudioEvent(`selection:get`);
       },
     },
-    editors: {
+    edition: {
       /**
        * Allow you to open a item in a editor based on the item type
        * 
        * @param key Identifier of a item to be opened for some editor
        */
       open: async (key: string) => {
-        await this._eventLink.callStudioEvent(`editors:open`, key);
+        await this._eventLink.callStudioEvent(`edition:open`, key);
       },
       /**
        * Allow you to close a item if it is opened in the editor
@@ -148,8 +148,18 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be closed
        */
       close: async (key: string) => {
-        await this._eventLink.callStudioEvent(`editors:close`, key);
+        await this._eventLink.callStudioEvent(`edition:close`, key);
       },
+      /**
+       * Returns a list of selected items in the platform
+       * 
+       * @returns {Promise<string[]>} List of selected items
+       */
+      get: async (): Promise<string[]> => {
+        return await this._eventLink.callStudioEvent(`edition:get`);
+      },
+    },
+    editors: {
       register: (view: Editor) => {
         this._eventLink.setExtensionEvent(`editors:${view.key}:resolve`, async (id: string) => view.resolve?.(id));
         this._eventLink.setExtensionEvent(`editors:${view.key}:forwardEvents:receive`, async (...values) => view.onDidReceiveMessage?.(...values));
