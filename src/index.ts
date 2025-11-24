@@ -1,4 +1,5 @@
 export { type TPlatformAction, PlatformAction } from './lib/shared/components/PlatformActions';
+export { FieldsDescriptor } from './lib/shared/descriptors/FieldsDescriptor';
 export { type TDataProvider } from './lib/shared/providers/TDataProvider';
 export { ListProvider } from './lib/shared/providers/ListProvider';
 export { FormProvider } from './lib/shared/providers/FormProvider';

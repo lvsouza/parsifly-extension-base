@@ -1,3 +1,4 @@
+import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
 import { TDataProvider } from './shared/providers/TDataProvider';
 import { FormViewItem } from './shared/components/FormViewItem';
@@ -18,6 +19,7 @@ export abstract class ExtensionBase {
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
+  private _fields: Map<string, Set<((fields: FormViewItem[]) => void)>> = new Map();
 
 
   constructor() {
@@ -26,6 +28,7 @@ export abstract class ExtensionBase {
 
     this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
     this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
+    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FormViewItem[])));
   }
 
 
@@ -181,6 +184,56 @@ export abstract class ExtensionBase {
       subscribe: (listener: ((key: string | undefined) => Promise<void>)): (() => void) => {
         this._edition.add(listener);
         return () => this._edition.delete(listener);
+      },
+    },
+    fields: {
+      /**
+       * Returns a list of fields
+       * 
+       * @returns {Promise<FormViewItem[]>} List of fields
+       */
+      get: async (key: string): Promise<FormViewItem[]> => {
+        return await this._eventLink.callStudioEvent(`fields:get`, key);
+      },
+      /**
+       * Request the platform to get again all fields for this resource
+       * 
+       * @param key Resource key to be refreshed
+       */
+      refresh: async (key: string) => {
+        await this._eventLink.callStudioEvent(`fields:refresh`, key);
+      },
+      /**
+       * Subscribe to form fields
+       * 
+       * @returns {() => void} Unsubscribe function
+       */
+      subscribe: (key: string, listener: ((fields: FormViewItem[]) => Promise<void>)): (() => void) => {
+        const listeners = this._fields.get(key)
+
+        if (listeners) {
+          listeners.add(listener);
+        } else {
+          this._fields.set(key, new Set([listener]))
+        }
+
+        return () => this._fields.get(key)?.delete(listener);
+      },
+      /**
+       * Register a fields provider to platform. Make sure that key is at the `manifest.json`
+       * 
+       * @param fields Provider to be registered
+       */
+      register: (fields: FieldsDescriptor) => {
+        this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
+      },
+      /**
+       * Unregister the provider
+       * 
+       * @param fields Provider to be unregistered
+       */
+      unregister: (fields: FieldsDescriptor) => {
+        this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
       },
     },
     editors: {

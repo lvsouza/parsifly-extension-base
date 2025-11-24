@@ -4,6 +4,7 @@
   "packageName": "parsifly-extension-base",
   "description": "",
   "subscriptions": {
+    "fields": false,
     "edition": false,
     "selection": false
   },
