@@ -16,10 +16,16 @@ import { View } from './shared/components/View';
 export abstract class ExtensionBase {
   private _eventLink: EventLink = new EventLink();
 
+  private _selection: Set<((key: string[]) => void)> = new Set([]);
+  private _edition: Set<((key: string | undefined) => void)> = new Set([]);
+
 
   constructor() {
     this._eventLink.setExtensionEvent('activate', this.activate.bind(this));
     this._eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
+
+    this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
+    this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
   }
 
 
@@ -132,6 +138,15 @@ export abstract class ExtensionBase {
       get: async (): Promise<string[]> => {
         return await this._eventLink.callStudioEvent(`selection:get`);
       },
+      /**
+       * Subscribe to selection item key change
+       * 
+       * @returns {() => void} Unsubscribe function
+       */
+      subscribe: (listener: ((key: string[]) => Promise<void>)): (() => void) => {
+        this._selection.add(listener);
+        return () => this._selection.delete(listener);
+      },
     },
     edition: {
       /**
@@ -157,6 +172,15 @@ export abstract class ExtensionBase {
        */
       get: async (): Promise<string[]> => {
         return await this._eventLink.callStudioEvent(`edition:get`);
+      },
+      /**
+       * Subscribe to edition item key change
+       * 
+       * @returns {() => void} Unsubscribe function
+       */
+      subscribe: (listener: ((key: string | undefined) => Promise<void>)): (() => void) => {
+        this._edition.add(listener);
+        return () => this._edition.delete(listener);
       },
     },
     editors: {
