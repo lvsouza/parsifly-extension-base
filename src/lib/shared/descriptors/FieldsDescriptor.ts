@@ -1,9 +1,9 @@
-import { FormViewItem } from '../components/FormViewItem';
+import { FieldDescriptor } from './FieldDescriptor';
 
 
 interface IFieldsDescriptorProps {
   key: string;
-  onGetFields: (key: string) => Promise<FormViewItem[]>;
+  onGetFields: (key: string) => Promise<FieldDescriptor[]>;
 }
 export class FieldsDescriptor {
   public readonly type = 'fields';

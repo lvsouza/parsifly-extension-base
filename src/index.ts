@@ -1,5 +1,4 @@
 export { type TPlatformAction, PlatformAction } from './lib/shared/components/PlatformActions';
-export { FieldsDescriptor } from './lib/shared/descriptors/FieldsDescriptor';
 export { type TDataProvider } from './lib/shared/providers/TDataProvider';
 export { ListProvider } from './lib/shared/providers/ListProvider';
 export { FormProvider } from './lib/shared/providers/FormProvider';
@@ -11,7 +10,9 @@ export { View } from './lib/shared/components/View';
 export { ExtensionBase } from './lib/ExtensionBase';
 export { Envs } from './lib/Envs';
 
-export { type TFormViewItem, FormViewItem } from './lib/shared/components/FormViewItem';
+export { type TFieldDescriptor, FieldDescriptor } from './lib/shared/descriptors/FieldDescriptor';
+export { FieldsDescriptor } from './lib/shared/descriptors/FieldsDescriptor';
+
 export { type TListViewItem, ListViewItem } from './lib/shared/components/ListViewItem';
 export { type TParser, Parser } from './lib/shared/components/Parser';
 

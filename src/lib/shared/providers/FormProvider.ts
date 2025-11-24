@@ -1,9 +1,9 @@
-import { FormViewItem } from '../components/FormViewItem';
+import { FieldDescriptor } from '../descriptors/FieldDescriptor';
 
 
 interface IFormProviderProps {
   key: string;
-  getFields: (item?: FormViewItem) => Promise<FormViewItem[]>;
+  getFields: (item?: FieldDescriptor) => Promise<FieldDescriptor[]>;
 }
 export class FormProvider {
   public readonly type = 'form';
@@ -13,7 +13,7 @@ export class FormProvider {
   constructor(props: IFormProviderProps) {
     this.key = props.key;
 
-    this.getFields = async (item?: FormViewItem | undefined) => {
+    this.getFields = async (item?: FieldDescriptor | undefined) => {
       return props
         .getFields(item)
         .then(fields => {

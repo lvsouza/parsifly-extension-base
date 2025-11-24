@@ -1,7 +1,7 @@
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
+import { FieldDescriptor } from './shared/descriptors/FieldDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
 import { TDataProvider } from './shared/providers/TDataProvider';
-import { FormViewItem } from './shared/components/FormViewItem';
 import { FormProvider } from './shared/providers/FormProvider';
 import { ListProvider } from './shared/providers/ListProvider';
 import { TabsView } from './shared/components/TabsView';
@@ -19,7 +19,7 @@ export abstract class ExtensionBase {
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
-  private _fields: Map<string, Set<((fields: FormViewItem[]) => void)>> = new Map();
+  private _fields: Map<string, Set<((fields: FieldDescriptor[]) => void)>> = new Map();
 
 
   constructor() {
@@ -28,7 +28,7 @@ export abstract class ExtensionBase {
 
     this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
     this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
-    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FormViewItem[])));
+    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FieldDescriptor[])));
   }
 
 
@@ -76,22 +76,15 @@ export abstract class ExtensionBase {
       },
     },
     views: {
-      refresh: async (view: View | TabsView | FormViewItem) => {
-        if (view instanceof FormViewItem) {
-          await this._eventLink.callStudioEvent(`formViewItem:${view.key}:refresh`);
-        } else {
-          await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
-        }
+      refresh: async (view: View | TabsView) => {
+        await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
       },
-      register: (view: View | TabsView | FormViewItem) => {
+      register: (view: View | TabsView) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => this._registerViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
           view.actions?.forEach(action => {
             this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
           });
-        } else if (view instanceof FormViewItem) {
-          if (view.getValue) this._eventLink.setExtensionEvent(`formViewItem:${view.key}:getValue`, view.getValue);
-          if (view.onDidChange) this._eventLink.setExtensionEvent(`formViewItem:${view.key}:onDidChange`, view.onDidChange);
         } else {
           this._registerViewDataProvider(`views:${view.key}`, view.dataProvider);
           view.actions?.forEach(action => {
@@ -99,15 +92,12 @@ export abstract class ExtensionBase {
           });
         }
       },
-      unregister: (view: View | TabsView | FormViewItem) => {
+      unregister: (view: View | TabsView) => {
         if (view instanceof TabsView) {
           view.tabs.forEach(tabView => this._unregisterViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
           view.actions?.forEach(action => {
             this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
           });
-        } else if (view instanceof FormViewItem) {
-          this._eventLink.removeExtensionEvent(`formViewItem:${view.key}:getValue`);
-          this._eventLink.removeExtensionEvent(`formViewItem:${view.key}:onDidChange`);
         } else {
           this._unregisterViewDataProvider(`views:${view.key}`, view.dataProvider);
           view.actions?.forEach(action => {
@@ -190,9 +180,10 @@ export abstract class ExtensionBase {
       /**
        * Returns a list of fields
        * 
-       * @returns {Promise<FormViewItem[]>} List of fields
+       * @param key Resource key to be refreshed
+       * @returns {Promise<FieldDescriptor[]>} List of fields
        */
-      get: async (key: string): Promise<FormViewItem[]> => {
+      get: async (key: string): Promise<FieldDescriptor[]> => {
         return await this._eventLink.callStudioEvent(`fields:get`, key);
       },
       /**
@@ -208,7 +199,7 @@ export abstract class ExtensionBase {
        * 
        * @returns {() => void} Unsubscribe function
        */
-      subscribe: (key: string, listener: ((fields: FormViewItem[]) => Promise<void>)): (() => void) => {
+      subscribe: (key: string, listener: ((fields: FieldDescriptor[]) => Promise<void>)): (() => void) => {
         const listeners = this._fields.get(key)
 
         if (listeners) {
@@ -220,20 +211,30 @@ export abstract class ExtensionBase {
         return () => this._fields.get(key)?.delete(listener);
       },
       /**
-       * Register a fields provider to platform. Make sure that key is at the `manifest.json`
+       * Register a fields descriptor to platform. Make sure that key is at the `manifest.json`
        * 
-       * @param fields Provider to be registered
+       * @param fields Descriptor to be registered
        */
-      register: (fields: FieldsDescriptor) => {
-        this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
+      register: (fields: FieldsDescriptor | FieldDescriptor) => {
+        if (fields instanceof FieldDescriptor) {
+          if (fields.getValue) this._eventLink.setExtensionEvent(`fieldDescriptor:${fields.key}:getValue`, fields.getValue);
+          if (fields.onDidChange) this._eventLink.setExtensionEvent(`fieldDescriptor:${fields.key}:onDidChange`, fields.onDidChange);
+        } else {
+          this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
+        }
       },
       /**
-       * Unregister the provider
+       * Unregister the descriptor
        * 
-       * @param fields Provider to be unregistered
+       * @param fields Descriptor to be unregistered
        */
-      unregister: (fields: FieldsDescriptor) => {
-        this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
+      unregister: (fields: FieldsDescriptor | FieldDescriptor) => {
+        if (fields instanceof FieldDescriptor) {
+          this._eventLink.removeExtensionEvent(`fieldDescriptor:${fields.key}:getValue`);
+          this._eventLink.removeExtensionEvent(`fieldDescriptor:${fields.key}:onDidChange`);
+        } else {
+          this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
+        }
       },
     },
     editors: {
