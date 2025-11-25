@@ -37,7 +37,8 @@ export class EventLink {
     }
 
     if (!event) {
-      throw new Error(`[EXTENSION] Event with key "${key}" was not found.`);
+      console.warn(`[EXTENSION] Event with key "${key}" was not found.`);
+      return Promise.resolve(undefined as GReturn);
     }
 
     return event(...params);

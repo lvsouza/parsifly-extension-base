@@ -1,4 +1,5 @@
 import { EventLink } from '../shared/services/EventLink';
+import { IProject, TProjectType } from './interfaces/IProject';
 
 // --- INTERFACES ---
 
@@ -10,10 +11,10 @@ export interface ISubscription {
   /**
    * Stops the listener from receiving further updates.
    * @example
-   * const sub = provider.doc('project').field('name').onValue(() => {});
-   * sub.unsubscribe();
+   * const sub = await provider.doc('project').field('name').onValue(() => {});
+   * await sub.unsubscribe();
    */
-  unsubscribe(): void;
+  unsubscribe(): Promise<void>;
 }
 
 /**
@@ -44,10 +45,10 @@ export interface IField<T> {
    * @param callback The function to call when the value changes.
    * @returns An object with an unsubscribe method.
    * @example
-   * const sub = provider.doc('project').field('name').onValue(name => console.log(name));
-   * sub.unsubscribe();
+   * const sub = await provider.doc('project').field('name').onValue(name => console.log(name));
+   * await sub.unsubscribe();
    */
-  onValue(callback: (value: T) => void): ISubscription;
+  onValue(callback: (value: T) => Promise<void>): Promise<ISubscription>;
 }
 
 /**
@@ -90,16 +91,6 @@ export interface IDoc<T> {
    * await provider.doc<IPage>('pages').doc('p1').delete();
    */
   delete(): Promise<void>;
-
-  /**
-   * Subscribes to real-time updates for the entire Document.
-   * @param callback The function to call when the Document data changes.
-   * @returns An object with an unsubscribe method.
-   * @example
-   * const sub = provider.doc<IProject>('project').onValue(data => console.log('Project changed:', data));
-   * sub.unsubscribe();
-   */
-  onValue(callback: (value: T) => void): ISubscription;
 
   /**
    * Gets a reference to a specific field within this Document.
@@ -148,10 +139,10 @@ export interface ICollection<T> {
    * @param callback The function to call when the list of documents changes.
    * @returns An object with an unsubscribe method.
    * @example
-   * const sub = provider.collection<IPage>('pages').onValue(list => console.log('List updated:', list.length));
-   * sub.unsubscribe();
+   * const sub = await provider.collection<IPage>('pages').onValue(list => console.log('List updated:', list.length));
+   * await sub.unsubscribe();
    */
-  onValue(callback: (value: T[]) => void): ISubscription;
+  onValue(callback: (value: T[]) => Promise<void>): Promise<ISubscription>;
 
   /**
    * Gets a reference to a specific Document within the Collection by its ID.
@@ -175,39 +166,29 @@ class ResourceBase<T> {
   constructor(
     protected eventLink: EventLink,
     protected path: string,
-    protected docId?: string
+    protected docId: string[]
   ) { }
-
-  /**
-   * Generates the unique event string for subscription.
-   * If a docId is present, it is appended to ensure listener uniqueness.
-   * @returns The event string used for setExtensionEvent.
-   */
-  protected getSubscriptionEventName(): string {
-    const action = 'onChange';
-    if (this.docId) {
-      // Ex: project.pages:onChange:page-123 or project.pages.name:onChange:page-123
-      return `${this.path}:${action}:${this.docId}`;
-    }
-
-    // Ex: project:onChange or project.pages:onChange (for list updates)
-    return `${this.path}:${action}`;
-  }
 
   /**
    * Implements the subscription logic using eventLink.
    * @param callback The function to be called on updates.
    * @returns An ISubscription object.
    */
-  onValue(callback: (value: T) => void): ISubscription {
-    const eventString = this.getSubscriptionEventName();
+  async onValue(callback: (value: T) => Promise<void>): Promise<ISubscription> {
+    let method = 'onValue';
+    let params = [...this.docId];
+
+    const eventString = `${this.path}:${method}`;
+    const subscriptionKey = crypto.randomUUID();
 
     // The callback type casting is often necessary when dealing with generic types in event emitters
-    this.eventLink.setExtensionEvent(eventString, callback as any);
+    this.eventLink.setExtensionEvent(subscriptionKey, callback as any);
+    await this.eventLink.callStudioEvent<any, any>('subscribe-to-get-data', subscriptionKey, eventString, ...params);
 
     return {
-      unsubscribe: () => {
-        this.eventLink.removeExtensionEvent(eventString);
+      unsubscribe: async () => {
+        await this.eventLink.callStudioEvent<any, any>('unsubscribe-to-get-data', subscriptionKey);
+        this.eventLink.removeExtensionEvent(subscriptionKey);
       }
     };
   }
@@ -230,7 +211,7 @@ class ResourceBase<T> {
       else if (actionSuffix === 'del') method = 'delById';
 
       // CRITICAL CHANGE: Prepend the docId to the parameters list
-      params = [this.docId, ...args];
+      params = [...this.docId, ...args];
     }
 
     const eventString = `${this.path}:${method}`;
@@ -295,7 +276,7 @@ class DocRef<T> extends ResourceBase<T> implements IDoc<T> {
    * The docId is discarded since the collection itself is a list, not an item.
    */
   collection<U>(subCollectionName: string): ICollection<U> {
-    return new CollectionRef<U>(this.eventLink, `${this.path}.${subCollectionName}`);
+    return new CollectionRef<U>(this.eventLink, `${this.path}.${subCollectionName}`, this.docId);
   }
 
   // onValue is inherited from ResourceBase
@@ -307,8 +288,8 @@ class DocRef<T> extends ResourceBase<T> implements IDoc<T> {
  * @template T The type of the documents within the collection.
  */
 class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
-  constructor(eventLink: EventLink, path: string) {
-    super(eventLink, path);
+  constructor(eventLink: EventLink, path: string, protected docId: string[]) {
+    super(eventLink, path, docId);
   }
 
   async value(): Promise<T[]> {
@@ -326,7 +307,7 @@ class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
    * Creates a DocRef, passing the ID so that subsequent operations use the 'ById' suffix and include the ID in params.
    */
   doc(id: string): IDoc<T> {
-    return new DocRef<T>(this.eventLink, this.path, id);
+    return new DocRef<T>(this.eventLink, this.path, [...this.docId, id]);
   }
 
   // onValue is inherited from ResourceBase
@@ -342,20 +323,11 @@ export const createDataProviders = (eventLink: EventLink) => {
   return {
     /**
      * Gets a reference to a root Document (Singleton or starting point).
-     * @example provider.doc<IProject>('project').value()
+     * @example provider.project<IProject>().value()
      */
-    doc: <T = any>(path: string): IDoc<T> => {
+    project: <T = IProject<TProjectType>>(): IDoc<T> => {
       // Path example: 'project', 'settings'
-      return new DocRef<T>(eventLink, path);
+      return new DocRef<T>(eventLink, 'project', []);
     },
-    /**
-     * Gets a reference to a root Collection.
-     * @example provider.collection<IUser>('users').value()
-     */
-    collection: <T = any>(path: string): ICollection<T> => {
-      // Path example: 'users', 'global_assets'
-      return new CollectionRef<T>(eventLink, path);
-    }
   };
 };
-
