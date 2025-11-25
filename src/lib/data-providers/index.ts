@@ -235,7 +235,7 @@ class ResourceBase<T> {
 
     const eventString = `${this.path}:${method}`;
     // Pass the combined array (including docId if necessary) as parameters
-    return this.eventLink.callStudioEvent<any, any>(eventString, ...params);
+    return this.eventLink.callStudioEvent<any, any>('get-or-set-data', eventString, ...params);
   }
 }
 
