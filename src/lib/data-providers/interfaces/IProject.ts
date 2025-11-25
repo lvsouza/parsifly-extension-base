@@ -4,7 +4,9 @@ import { IPage } from './IPage';
 import { IBase } from './IBase';
 
 
-export interface IProject<T extends 'application' | 'package'> extends IBase<T> {
+export type TProjectType = 'application' | 'package';
+
+export interface IProject<GType extends TProjectType> extends IBase<GType> {
   /**
    * Version of the package
    */
