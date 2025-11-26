@@ -1,5 +1,5 @@
 
-interface IActionProps {
+export interface IActionProps {
   key: string;
   action(): Promise<void>;
 }

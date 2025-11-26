@@ -1,6 +1,6 @@
 {
   "name": "parsifly-extension-base",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
   "types": "dist/types/index.d.ts",
@@ -17,16 +17,23 @@
     }
   },
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "doc": "typedoc"
   },
   "dependencies": {
     "comlink": "^4.4.2"
   },
   "devDependencies": {
+    "@types/node": "24.1.0",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-frontmatter": "^1.3.1",
+    "typedoc-plugin-include-example": "^3.0.2",
+    "typedoc-plugin-language-switcher": "^1.0.2",
+    "typedoc-plugin-markdown": "^4.9.0",
+    "typedoc-plugin-mdn-links": "^5.0.10",
     "typescript": "^5.6.2",
     "vite": "^5.4.6",
-    "vite-plugin-dts": "^4.2.1",
-    "@types/node": "24.1.0"
+    "vite-plugin-dts": "^4.2.1"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

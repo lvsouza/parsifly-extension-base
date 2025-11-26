@@ -1,5 +1,5 @@
 
-type TListItemBase = {
+export type TListItemBase = {
   /** Identifier */
   key: string;
   /** VS Code icons */
@@ -10,14 +10,14 @@ type TListItemBase = {
   description?: string;
 }
 
-type TListItemWithTitle = {
+export type TListItemWithTitle = {
   label?: undefined;
   children?: false | undefined;
   /** Title, main information for the record  */
   title: string;
 }
 
-type TListItemWithLabel = {
+export type TListItemWithLabel = {
   /** Label, main information for the record  */
   label: string;
   title?: undefined;
@@ -25,12 +25,12 @@ type TListItemWithLabel = {
   children: boolean;
 }
 
-type TListItemWithoutDraggableData = {
+export type TListItemWithoutDraggableData = {
   draggable?: false | undefined;
   draggableData?: void;
 }
 
-type TListItemWithDraggableData = {
+export type TListItemWithDraggableData = {
   draggable: boolean;
   draggableData: Record<string, any>;
 }

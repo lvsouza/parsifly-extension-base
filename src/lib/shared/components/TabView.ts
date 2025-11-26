@@ -1,7 +1,7 @@
 import { TDataProvider } from '../providers/TDataProvider';
 
 
-interface ITabViewProps {
+export interface ITabViewProps {
   key: string;
   dataProvider: TDataProvider;
 }

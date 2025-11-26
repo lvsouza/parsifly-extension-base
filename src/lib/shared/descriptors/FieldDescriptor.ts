@@ -1,5 +1,5 @@
 
-type TFieldDescriptorValue = string | number | boolean;
+export type TFieldDescriptorValue = string | number | boolean;
 
 export type TFieldDescriptor<TValue extends TFieldDescriptorValue = TFieldDescriptorValue> = {
   /** Identifier */

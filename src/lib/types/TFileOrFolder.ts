@@ -1,13 +1,13 @@
 
 
-type TFile = {
+export type TFile = {
   /** Type of the file */
   type: string;
   /** File content */
   content: string;
 };
 
-type TFolder = {
+export type TFolder = {
   /** Type of the file */
   type?: undefined;
   /** List of files or folders */

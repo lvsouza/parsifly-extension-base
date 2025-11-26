@@ -2,7 +2,7 @@ import { TabView } from './TabView';
 import { Action } from './Action';
 
 
-interface ITabsViewProps {
+export interface ITabsViewProps {
   key: string;
   tabs: TabView[];
   actions?: Action[];

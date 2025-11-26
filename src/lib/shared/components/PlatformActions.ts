@@ -1,12 +1,12 @@
-type TBaseAction = {
+export type TBaseAction = {
   key: string;
 };
 
-type TSingleAction = {
+export type TSingleAction = {
   action(): Promise<void>;
 };
 
-type TMultiAction = {
+export type TMultiAction = {
   actions: (TBaseAction & TSingleAction)[];
 };
 

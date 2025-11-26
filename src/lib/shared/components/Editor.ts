@@ -1,7 +1,7 @@
 import { Action } from './Action';
 
 
-interface IEditorProps {
+export interface IEditorProps {
   key: string;
   actions?: Action[];
   /**

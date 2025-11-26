@@ -1,7 +1,7 @@
 import { ListViewItem } from '../components/ListViewItem';
 
 
-interface IListProviderProps {
+export interface IListProviderProps {
   key: string;
   onItemClick?: (item: ListViewItem) => Promise<void>;
   onItemDoubleClick?: (item: ListViewItem) => Promise<void>;

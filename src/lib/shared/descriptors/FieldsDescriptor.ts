@@ -1,7 +1,7 @@
 import { FieldDescriptor } from './FieldDescriptor';
 
 
-interface IFieldsDescriptorProps {
+export interface IFieldsDescriptorProps {
   key: string;
   onGetFields: (key: string) => Promise<FieldDescriptor[]>;
 }

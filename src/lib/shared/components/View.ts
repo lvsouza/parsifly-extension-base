@@ -2,7 +2,7 @@ import { TDataProvider } from '../providers/TDataProvider';
 import { Action } from './Action';
 
 
-interface IViewProps {
+export interface IViewProps {
   key: string;
   actions?: Action[];
   dataProvider: TDataProvider;

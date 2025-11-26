@@ -1,14 +1,14 @@
 import * as ComLink from 'comlink';
 
 
-type TDragEventMonitor = {
+export type TDragEventMonitor = {
   x: number;
   y: number;
   droppableId: string;
   draggingId: string | undefined;
 }
 
-type TStudioApi = {
+export type TStudioApi = {
   /** Allows you to send a message to your extension host */
   send: ComLink.Remote<(...data: any[]) => Promise<any>>;
   /** Allows you to subscribe to receive a message from your extension host */

@@ -3,7 +3,7 @@ import * as ComLink from 'comlink';
 import { Envs } from '../../Envs';
 
 
-type TEvent<GParams = unknown, GReturn = unknown> = (...params: GParams[]) => Promise<GReturn>;
+export type TEvent<GParams = unknown, GReturn = unknown> = (...params: GParams[]) => Promise<GReturn>;
 
 export class EventLink {
   private _events: Map<string, TEvent<any, any>> = new Map();

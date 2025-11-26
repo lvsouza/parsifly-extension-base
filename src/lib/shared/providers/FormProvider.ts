@@ -1,7 +1,7 @@
 import { FieldDescriptor } from '../descriptors/FieldDescriptor';
 
 
-interface IFormProviderProps {
+export interface IFormProviderProps {
   key: string;
   getFields: (item?: FieldDescriptor) => Promise<FieldDescriptor[]>;
 }

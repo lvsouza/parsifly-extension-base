@@ -1,7 +1,7 @@
 import { TFileOrFolder } from '../../types/TFileOrFolder';
 
 
-type TParserResult = {
+export type TParserResult = {
   name: string;
   content: string | TFileOrFolder;
 }
