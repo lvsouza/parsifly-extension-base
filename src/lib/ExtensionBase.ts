@@ -215,26 +215,17 @@ export abstract class ExtensionBase {
        * 
        * @param fields Descriptor to be registered
        */
-      register: (fields: FieldsDescriptor | FieldDescriptor) => {
-        if (fields instanceof FieldDescriptor) {
-          if (fields.getValue) this._eventLink.setExtensionEvent(`fieldDescriptor:${fields.key}:getValue`, fields.getValue);
-          if (fields.onDidChange) this._eventLink.setExtensionEvent(`fieldDescriptor:${fields.key}:onDidChange`, fields.onDidChange);
-        } else {
-          this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
-        }
+      register: (fields: FieldsDescriptor) => {
+        this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
       },
       /**
        * Unregister the descriptor
        * 
        * @param fields Descriptor to be unregistered
        */
-      unregister: (fields: FieldsDescriptor | FieldDescriptor) => {
-        if (fields instanceof FieldDescriptor) {
-          this._eventLink.removeExtensionEvent(`fieldDescriptor:${fields.key}:getValue`);
-          this._eventLink.removeExtensionEvent(`fieldDescriptor:${fields.key}:onDidChange`);
-        } else {
-          this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
-        }
+      unregister: (fields: FieldsDescriptor) => {
+        (fields as any).unregisterFields();
+        this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
       },
     },
     editors: {
