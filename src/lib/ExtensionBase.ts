@@ -329,8 +329,6 @@ export abstract class ExtensionBase {
       this._eventLink.setExtensionEvent(`${baseKey}:getFields:${dataProvider.key}`, dataProvider.getFields);
     } else if (dataProvider instanceof ListProvider) {
       this._eventLink.setExtensionEvent(`${baseKey}:getItems:${dataProvider.key}`, dataProvider.getItems);
-      if (dataProvider.onItemClick) this._eventLink.setExtensionEvent(`${baseKey}:onItemClick:${dataProvider.key}`, dataProvider.onItemClick);
-      if (dataProvider.onItemDoubleClick) this._eventLink.setExtensionEvent(`${baseKey}:onItemDoubleClick:${dataProvider.key}`, dataProvider.onItemDoubleClick);
     }
   }
 
@@ -338,9 +336,8 @@ export abstract class ExtensionBase {
     if (dataProvider instanceof FormProvider) {
       this._eventLink.removeExtensionEvent(`${baseKey}:getFields:${dataProvider.key}`);
     } else if (dataProvider instanceof ListProvider) {
+      (dataProvider as any).unregisterFields();
       this._eventLink.removeExtensionEvent(`${baseKey}:getItems:${dataProvider.key}`);
-      if (dataProvider.onItemClick) this._eventLink.removeExtensionEvent(`${baseKey}:onItemClick:${dataProvider.key}`);
-      if (dataProvider.onItemDoubleClick) this._eventLink.removeExtensionEvent(`${baseKey}:onItemDoubleClick:${dataProvider.key}`);
     }
   }
 }

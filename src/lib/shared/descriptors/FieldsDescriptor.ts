@@ -67,15 +67,15 @@ export class FieldsDescriptor {
    *
    * @private
    */
-  private registeredFieldsPropName: Map<string, Set<FieldDescriptor>> = new Map();
+  private _registeredFields: Map<string, Set<FieldDescriptor>> = new Map();
 
 
   constructor(props: IFieldsDescriptorProps) {
     this.key = props.key;
     this.unregisterFields = this.unregisterFields;
     this.onGetFields = async (key: string) => {
-      const registeredFieldsByKey = this.registeredFieldsPropName.get(key) || new Set();
-      this.registeredFieldsPropName.set(key, registeredFieldsByKey);
+      const registeredFieldsByKey = this._registeredFields.get(key) || new Set();
+      this._registeredFields.set(key, registeredFieldsByKey);
 
       registeredFieldsByKey.forEach((field) => {
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
@@ -108,7 +108,7 @@ export class FieldsDescriptor {
    * @private
    */
   private unregisterFields() {
-    for (const [, registeredFieldsByKey] of this.registeredFieldsPropName) {
+    for (const [, registeredFieldsByKey] of this._registeredFields) {
       registeredFieldsByKey.forEach((field) => {
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:onDidChange`);
@@ -116,6 +116,6 @@ export class FieldsDescriptor {
       registeredFieldsByKey.clear();
     }
 
-    this.registeredFieldsPropName.clear();
+    this._registeredFields.clear();
   }
 }
