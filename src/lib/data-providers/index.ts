@@ -99,7 +99,7 @@ export interface IDoc<T> {
    * @example
    * const nameField = provider.doc('project').field('name');
    */
-  field<K extends keyof T>(key: K): IField<T[K]>;
+  field<K extends keyof T>(key: K | (string & {})): IField<T[K]>;
 
   /**
    * Gets a reference to a sub-collection nested under this Document.
@@ -266,7 +266,7 @@ class DocRef<T> extends ResourceBase<T> implements IDoc<T> {
    * @inheritdoc
    * Creates a FieldRef, passing its current docId to maintain context.
    */
-  field<K extends keyof T>(key: K): IField<T[K]> {
+  field<K extends keyof T>(key: K | (string & {})): IField<T[K]> {
     return new FieldRef<T[K]>(this.eventLink, `${this.path}.${String(key)}`, this.docId);
   }
 
@@ -325,9 +325,8 @@ export const createDataProviders = (eventLink: EventLink) => {
      * Gets a reference to a root Document (Singleton or starting point).
      * @example provider.project<IProject>().value()
      */
-    project: <T = IProject<TProjectType>>(): IDoc<T> => {
-      // Path example: 'project', 'settings'
-      return new DocRef<T>(eventLink, 'project', []);
+    project: (): IDoc<IProject<TProjectType>> => {
+      return new DocRef<IProject<TProjectType>>(eventLink, 'project', []);
     },
   };
 };
