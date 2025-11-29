@@ -1,4 +1,6 @@
+import { ContextMenuItem, TContextMenuItem } from './ContextMenuItem';
 import { EventLink } from '../services/EventLink';
+
 
 export type TListItemBase = {
   /** Identifier */
@@ -11,6 +13,7 @@ export type TListItemBase = {
   description?: string;
   onItemClick?: () => Promise<void>;
   onItemDoubleClick?: () => Promise<void>;
+  getContextMenuItems?: () => Promise<ContextMenuItem[]>;
 }
 
 export type TListItemWithTitle = {
@@ -49,6 +52,7 @@ export class ListViewItem {
   public readonly description?: TListItemBase['description'];
   public readonly onItemClick?: TListViewItem['onItemClick'];
   public readonly onItemDoubleClick?: TListViewItem['onItemDoubleClick'];
+  public readonly getContextMenuItems?: TListViewItem['getContextMenuItems'];
 
   public readonly title?: TListViewItem['title'];
   public readonly label?: TListViewItem['label'];
@@ -59,7 +63,7 @@ export class ListViewItem {
   public readonly draggableData?: TListViewItem['draggableData'];
 
 
-  private _registeredItems: Set<ListViewItem> = new Set();
+  private _registeredItems: Set<ListViewItem | ContextMenuItem> = new Set();
 
   constructor(props: TListViewItem) {
     this.key = props.key;
@@ -104,6 +108,7 @@ export class ListViewItem {
           if (field.getItems) EventLink.setExtensionEvent(`listItem:${field.key}:getItems`, field.getItems);
           if (field.onItemClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemClick`, field.onItemClick);
           if (field.onItemDoubleClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemDoubleClick`, field.onItemDoubleClick);
+          if (field.getContextMenuItems) EventLink.setExtensionEvent(`listItem:${field.key}:getContextMenuItems`, field.getContextMenuItems);
           this._registeredItems.add(field);
         });
 
@@ -114,17 +119,43 @@ export class ListViewItem {
           unregisterFields: undefined,
           _registeredItems: undefined,
           onItemDoubleClick: undefined,
+          getContextMenuItems: undefined,
         })) as TListViewItem[];
       }) as typeof props.getItems
+    }
+
+    if ('getContextMenuItems' in props && props.getContextMenuItems !== undefined) {
+      const getContextMenuItems = props.getContextMenuItems;
+
+      this.getContextMenuItems = (async () => {
+        const items = await getContextMenuItems();
+
+        items.forEach(item => {
+          if (item.onClick) EventLink.setExtensionEvent(`contextMenuItem:${item.key}:onClick`, item.onClick);
+          this._registeredItems.add(item);
+        });
+
+        return items.map(item => ({
+          ...item,
+          onClick: undefined,
+          unregisterFields: undefined,
+          _registeredItems: undefined,
+        })) as Partial<TContextMenuItem>[];
+      }) as typeof props.getContextMenuItems
     }
   }
 
   private unregisterFields() {
     this._registeredItems.forEach((field) => {
-      (field as any).unregisterFields();
-      EventLink.removeExtensionEvent(`listItem:${field.key}:getItems`);
-      EventLink.removeExtensionEvent(`listItem:${field.key}:onItemClick`);
-      EventLink.removeExtensionEvent(`listItem:${field.key}:onItemDoubleClick`);
+      if (field instanceof ListViewItem) {
+        (field as any).unregisterFields();
+        EventLink.removeExtensionEvent(`listItem:${field.key}:getItems`);
+        EventLink.removeExtensionEvent(`listItem:${field.key}:onItemClick`);
+        EventLink.removeExtensionEvent(`listItem:${field.key}:onItemDoubleClick`);
+        EventLink.removeExtensionEvent(`listItem:${field.key}:getContextMenuItems`);
+      } else {
+        EventLink.removeExtensionEvent(`contextMenuItem:${field.key}:onClick`);
+      }
     });
 
     this._registeredItems.clear();

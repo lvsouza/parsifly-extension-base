@@ -24,6 +24,7 @@ export class ListProvider {
         if (field.getItems) EventLink.setExtensionEvent(`listItem:${field.key}:getItems`, field.getItems);
         if (field.onItemClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemClick`, field.onItemClick);
         if (field.onItemDoubleClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemDoubleClick`, field.onItemDoubleClick);
+          if (field.getContextMenuItems) EventLink.setExtensionEvent(`listItem:${field.key}:getContextMenuItems`, field.getContextMenuItems);
         this._registeredItems.add(field);
       });
 
@@ -34,6 +35,7 @@ export class ListProvider {
         unregisterFields: undefined,
         _registeredItems: undefined,
         onItemDoubleClick: undefined,
+        getContextMenuItems: undefined,
       })) as TListViewItem[];
     }) as typeof props.getItems
   }
@@ -44,6 +46,7 @@ export class ListProvider {
       EventLink.removeExtensionEvent(`listItem:${field.key}:getItems`);
       EventLink.removeExtensionEvent(`listItem:${field.key}:onItemClick`);
       EventLink.removeExtensionEvent(`listItem:${field.key}:onItemDoubleClick`);
+      EventLink.removeExtensionEvent(`listItem:${field.key}:getContextMenuItems`);
     });
 
     this._registeredItems.clear();
