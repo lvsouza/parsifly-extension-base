@@ -1,5 +1,4 @@
-import { ListViewItem, TListViewItem } from '../components/ListViewItem';
-import { EventLink } from '../services/EventLink';
+import { ListViewItem } from '../components/list-view-item/ListViewItem';
 
 
 export interface IListProviderProps {
@@ -12,43 +11,37 @@ export class ListProvider {
   public readonly getItems: IListProviderProps['getItems'];
 
 
-  private _registeredItems: Set<ListViewItem> = new Set();
+  #registeredItems: Set<ListViewItem> = new Set();
 
   constructor(props: IListProviderProps) {
     this.key = props.key;
-    this.unregisterFields = this.unregisterFields;
+    this.unregister = this.unregister;
 
     this.getItems = (async () => {
       const items = await props.getItems();
-      items.forEach(field => {
-        if (field.getItems) EventLink.setExtensionEvent(`listItem:${field.key}:getItems`, field.getItems);
-        if (field.onItemClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemClick`, field.onItemClick);
-        if (field.onItemDoubleClick) EventLink.setExtensionEvent(`listItem:${field.key}:onItemDoubleClick`, field.onItemDoubleClick);
-          if (field.getContextMenuItems) EventLink.setExtensionEvent(`listItem:${field.key}:getContextMenuItems`, field.getContextMenuItems);
-        this._registeredItems.add(field);
-      });
+
+      for (const item of items) {
+        this.#registeredItems.add(item)
+      }
 
       return items.map(field => ({
-        ...field,
-        getItems: undefined,
-        onItemClick: undefined,
-        unregisterFields: undefined,
-        _registeredItems: undefined,
-        onItemDoubleClick: undefined,
-        getContextMenuItems: undefined,
-      })) as TListViewItem[];
+        key: field.key,
+        icon: field.internalValue.icon,
+        label: field.internalValue.label,
+        extra: field.internalValue.extra,
+        title: field.internalValue.title,
+        children: field.internalValue.children,
+        draggable: field.internalValue.draggable,
+        description: field.internalValue.description,
+      } as any));
     }) as typeof props.getItems
   }
 
-  private unregisterFields() {
-    this._registeredItems.forEach((field) => {
-      (field as any).unregisterFields();
-      EventLink.removeExtensionEvent(`listItem:${field.key}:getItems`);
-      EventLink.removeExtensionEvent(`listItem:${field.key}:onItemClick`);
-      EventLink.removeExtensionEvent(`listItem:${field.key}:onItemDoubleClick`);
-      EventLink.removeExtensionEvent(`listItem:${field.key}:getContextMenuItems`);
+  private unregister() {
+    this.#registeredItems.forEach((field) => {
+      (field as any).unregister();
     });
 
-    this._registeredItems.clear();
+    this.#registeredItems.clear();
   }
 }

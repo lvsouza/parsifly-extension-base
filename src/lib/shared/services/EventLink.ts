@@ -43,6 +43,16 @@ export class EventLink {
   public removeExtensionEvent(key: string) {
     EventLink._EVENTS.delete(key);
   }
+  /**
+   * Call a async event at the studio can return a value on resolve
+   * 
+   * @param key Event key to be called
+   * @param params Params to be forward to studio
+   * @returns 
+   */
+  public async callStudioEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
+    return EventLink._STUDIO_WRAPPER.callEvent(key, ...params) as Promise<GReturn>;
+  }
 
 
   /**
@@ -61,8 +71,6 @@ export class EventLink {
   public static removeExtensionEvent(key: string) {
     EventLink._EVENTS.delete(key);
   }
-
-
   /**
    * Call a async event at the studio can return a value on resolve
    * 
@@ -70,7 +78,7 @@ export class EventLink {
    * @param params Params to be forward to studio
    * @returns 
    */
-  public async callStudioEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
+  public static async callStudioEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
     return EventLink._STUDIO_WRAPPER.callEvent(key, ...params) as Promise<GReturn>;
   }
 

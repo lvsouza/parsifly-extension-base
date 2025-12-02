@@ -14,8 +14,9 @@ export * from './lib/Envs';
 export * from './lib/shared/descriptors/FieldDescriptor';
 export * from './lib/shared/descriptors/FieldsDescriptor';
 
+export * from './lib/shared/components/list-view-item/TListViewItem';
+export * from './lib/shared/components/list-view-item/ListViewItem';
 export * from './lib/shared/components/ContextMenuItem';
-export * from './lib/shared/components/ListViewItem';
 export * from './lib/shared/components/Parser';
 
 export * from './lib/types/TFileOrFolder';

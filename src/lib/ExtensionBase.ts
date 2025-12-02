@@ -224,7 +224,7 @@ export abstract class ExtensionBase {
        * @param fields Descriptor to be unregistered
        */
       unregister: (fields: FieldsDescriptor) => {
-        (fields as any).unregisterFields();
+        (fields as any).unregister();
         this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
       },
     },
@@ -336,7 +336,7 @@ export abstract class ExtensionBase {
     if (dataProvider instanceof FormProvider) {
       this._eventLink.removeExtensionEvent(`${baseKey}:getFields:${dataProvider.key}`);
     } else if (dataProvider instanceof ListProvider) {
-      (dataProvider as any).unregisterFields();
+      (dataProvider as any).unregister();
       this._eventLink.removeExtensionEvent(`${baseKey}:getItems:${dataProvider.key}`);
     }
   }

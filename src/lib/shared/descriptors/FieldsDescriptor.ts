@@ -72,7 +72,7 @@ export class FieldsDescriptor {
 
   constructor(props: IFieldsDescriptorProps) {
     this.key = props.key;
-    this.unregisterFields = this.unregisterFields;
+    this.unregister = this.unregister;
     this.onGetFields = async (key: string) => {
       const registeredFieldsByKey = this._registeredFields.get(key) || new Set();
       this._registeredFields.set(key, registeredFieldsByKey);
@@ -107,7 +107,7 @@ export class FieldsDescriptor {
    *
    * @private
    */
-  private unregisterFields() {
+  private unregister() {
     for (const [, registeredFieldsByKey] of this._registeredFields) {
       registeredFieldsByKey.forEach((field) => {
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
