@@ -159,11 +159,11 @@ export abstract class ExtensionBase {
         await this._eventLink.callStudioEvent(`edition:close`, key);
       },
       /**
-       * Returns a list of selected items in the platform
+       * Returns a edited item id in the platform
        * 
-       * @returns {Promise<string[]>} List of selected items
+       * @returns {Promise<string>} Edited item id
        */
-      get: async (): Promise<string[]> => {
+      get: async (): Promise<string> => {
         return await this._eventLink.callStudioEvent(`edition:get`);
       },
       /**

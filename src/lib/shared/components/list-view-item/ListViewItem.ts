@@ -6,7 +6,9 @@ import { TListViewItem } from './TListViewItem';
 export type TOnDidUnmountEvent = () => Promise<void>
 
 export type TOnDidMountProps<GData extends Record<string, any>> = {
-  refetchChildren(): Promise<void>
+  refetchChildren(): Promise<void>;
+  edit(value: boolean): Promise<void>;
+  select(value: boolean): Promise<void>;
   onDidUnmount: (didUnmount: TOnDidUnmountEvent) => void;
   set<GKey extends keyof GData>(property: GKey, value: GData[GKey]): Promise<void>;
 };
@@ -74,6 +76,12 @@ export class ListViewItem {
 
 
     this.onDidMount({
+      edit: async (value) => {
+        return await EventLink.callStudioEvent(`listItem:${this.key}:edit`, value);
+      },
+      select: async (value) => {
+        return await EventLink.callStudioEvent(`listItem:${this.key}:select`, value);
+      },
       refetchChildren: async () => {
         return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
       },
