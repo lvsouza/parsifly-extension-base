@@ -21,6 +21,7 @@ export class ListProvider {
       const items = await props.getItems();
 
       for (const item of items) {
+        item.register();
         this.#registeredItems.add(item)
       }
 
@@ -38,10 +39,7 @@ export class ListProvider {
   }
 
   private unregister() {
-    this.#registeredItems.forEach((field) => {
-      (field as any).unregister();
-    });
-
+    this.#registeredItems.forEach((field) => field.unregister());
     this.#registeredItems.clear();
   }
 }

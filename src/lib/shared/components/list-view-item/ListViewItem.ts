@@ -28,7 +28,6 @@ export class ListViewItem {
     this.unregister = this.unregister;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
-    EventLink.setExtensionEvent(`listItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
 
@@ -39,7 +38,8 @@ export class ListViewItem {
       const items = await this.internalValue.getItems?.() || [];
 
       for (const item of items) {
-        this.#registeredItems.add(item)
+        item.register();
+        this.#registeredItems.add(item);
       }
 
       return items.map(field => ({
@@ -110,7 +110,12 @@ export class ListViewItem {
     });
   }
 
-  private unregister() {
+
+  public register() {
+    EventLink.setExtensionEvent(`listItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+  }
+
+  public unregister() {
     EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
     EventLink.removeExtensionEvent(`listItem:${this.key}:onDidMount`)
     EventLink.removeExtensionEvent(`listItem:${this.key}:onItemClick`);
@@ -120,7 +125,7 @@ export class ListViewItem {
 
     this.#registeredItems.forEach((field) => {
       if (field instanceof ListViewItem) {
-        (field as any).unregister();
+        field.unregister();
       } else {
         EventLink.removeExtensionEvent(`contextMenuItem:${field.key}:onClick`);
       }

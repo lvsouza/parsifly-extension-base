@@ -29,6 +29,7 @@ export class Parser {
   public readonly onDidMount: TParserConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TParserConstructor['initialValue']>>;
 
+
   constructor(props: TParserConstructor) {
     this.key = props.key;
     this.register = this.register;

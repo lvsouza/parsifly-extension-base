@@ -17,6 +17,7 @@ import { View } from './shared/components/View';
 export abstract class ExtensionBase {
   private _eventLink: EventLink = new EventLink();
 
+  private _platformActions: Set<PlatformAction> = new Set([]);
   private _parsers: Set<Parser> = new Set([]);
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
@@ -38,6 +39,13 @@ export abstract class ExtensionBase {
       label: parser.internalValue.label,
       description: parser.internalValue.description,
     })));
+    this._eventLink.setExtensionEvent('platformActions:load', async () => Array.from(this._platformActions).map(platformAction => ({
+      key: platformAction.key,
+      icon: platformAction.internalValue.icon,
+      label: platformAction.internalValue.label,
+      children: platformAction.internalValue.children,
+      description: platformAction.internalValue.description,
+    })));
   }
 
 
@@ -57,23 +65,45 @@ export abstract class ExtensionBase {
 
   public readonly application = {
     platformActions: {
+      reload: async () => {
+        return await this._eventLink.callStudioEvent(
+          `platformActions:change`,
+          Array.from(this._platformActions).map(platformAction => ({
+            key: platformAction.key,
+            icon: platformAction.internalValue.icon,
+            label: platformAction.internalValue.label,
+            children: platformAction.internalValue.children,
+            description: platformAction.internalValue.description,
+          })),
+        );
+      },
       register: (platformAction: PlatformAction) => {
-        if (platformAction.action) {
-          this._eventLink.setExtensionEvent(`platformActions:${platformAction.key}`, platformAction.action);
-        } else if (platformAction.actions) {
-          platformAction.actions.forEach(action => {
-            this._eventLink.setExtensionEvent(`platformActions:${platformAction.key}:actions:${action.key}`, action.action);
-          });
-        }
+        platformAction.register();
+        this._platformActions.add(platformAction);
+        this._eventLink.callStudioEvent(
+          `platformActions:change`,
+          Array.from(this._platformActions).map(platformActions => ({
+            key: platformActions.key,
+            icon: platformActions.internalValue.icon,
+            label: platformActions.internalValue.label,
+            children: platformAction.internalValue.children,
+            description: platformActions.internalValue.description,
+          })),
+        );
       },
       unregister: (platformAction: PlatformAction) => {
-        if (platformAction.action) {
-          this._eventLink.removeExtensionEvent(`platformActions:${platformAction.key}`);
-        } else if (platformAction.actions) {
-          platformAction.actions.forEach(action => {
-            this._eventLink.removeExtensionEvent(`platformActions:${platformAction.key}:actions:${action.key}`);
-          });
-        }
+        platformAction.unregister();
+        this._platformActions.delete(platformAction);
+        this._eventLink.callStudioEvent(
+          `platformActions:change`,
+          Array.from(this._platformActions).map(platformAction => ({
+            key: platformAction.key,
+            icon: platformAction.internalValue.icon,
+            label: platformAction.internalValue.label,
+            children: platformAction.internalValue.children,
+            description: platformAction.internalValue.description,
+          })),
+        );
       },
     },
     parsers: {
