@@ -1,32 +1,27 @@
 import { ContextMenuItem, TContextMenuItem } from '../ContextMenuItem';
+import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { TListViewItem } from './TListViewItem';
 
 
-export type TOnDidUnmountEvent = () => Promise<void>
-
-export type TOnDidMountProps<GData extends Record<string, any>> = {
+type TListItemMountContext = {
   refetchChildren(): Promise<void>;
   edit(value: boolean): Promise<void>;
   select(value: boolean): Promise<void>;
-  onDidUnmount: (didUnmount: TOnDidUnmountEvent) => void;
-  set<GKey extends keyof GData>(property: GKey, value: GData[GKey]): Promise<void>;
-};
-
-export type TOnDidMount<GData extends Record<string, any>> = (props: TOnDidMountProps<GData>) => Promise<void>
-
+  set<GKey extends keyof TListViewItem>(property: GKey, value: TListViewItem[GKey]): Promise<void>;
+}
 
 export type TListViewItemConstructor = {
   key: string;
   initialValue?: Partial<TListViewItem>;
-  onDidMount: TOnDidMount<TListViewItem>;
+  onDidMount?: TOnDidMount<TListItemMountContext>;
 }
 export class ListViewItem {
   #registeredItems: Set<ListViewItem | ContextMenuItem> = new Set();
 
-  public readonly key: string;
-  public readonly internalValue: Partial<TListViewItem>;
-  public readonly onDidMount: TOnDidMount<TListViewItem>;
+  public readonly key: TListViewItemConstructor['key'];
+  public readonly onDidMount: TListViewItemConstructor['onDidMount'];
+  public readonly internalValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
 
   constructor(props: TListViewItemConstructor) {
     this.key = props.key;
@@ -75,7 +70,7 @@ export class ListViewItem {
     });
 
 
-    this.onDidMount({
+    this.onDidMount?.({
       edit: async (value) => {
         return await EventLink.callStudioEvent(`listItem:${this.key}:edit`, value);
       },
@@ -94,7 +89,9 @@ export class ListViewItem {
             this.internalValue[property] = newValue;
             return;
 
-          default: return await EventLink.callStudioEvent(`listItem:${this.key}:set`, { property, newValue });
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.callStudioEvent(`listItem:${this.key}:set`, { property, newValue });
         }
       },
       onDidUnmount: (didUnmount) => {

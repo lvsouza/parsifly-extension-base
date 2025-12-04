@@ -17,6 +17,8 @@ import { View } from './shared/components/View';
 export abstract class ExtensionBase {
   private _eventLink: EventLink = new EventLink();
 
+  private _parsers: Set<Parser> = new Set([]);
+
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
   private _fields: Map<string, Set<((fields: FieldDescriptor[]) => void)>> = new Map();
@@ -29,6 +31,13 @@ export abstract class ExtensionBase {
     this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
     this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
     this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FieldDescriptor[])));
+
+    this._eventLink.setExtensionEvent('parsers:load', async () => Array.from(this._parsers).map(parser => ({
+      key: parser.key,
+      icon: parser.internalValue.icon,
+      label: parser.internalValue.label,
+      description: parser.internalValue.description,
+    })));
   }
 
 
@@ -68,11 +77,42 @@ export abstract class ExtensionBase {
       },
     },
     parsers: {
+      reload: async () => {
+        return await this._eventLink.callStudioEvent(
+          `parsers:change`,
+          Array.from(this._parsers).map(parser => ({
+            key: parser.key,
+            icon: parser.internalValue.icon,
+            label: parser.internalValue.label,
+            description: parser.internalValue.description,
+          })),
+        );
+      },
       register: (parser: Parser) => {
-        this._eventLink.setExtensionEvent(`parsers:${parser.key}`, parser.parser);
+        parser.register();
+        this._parsers.add(parser);
+        this._eventLink.callStudioEvent(
+          `parsers:change`,
+          Array.from(this._parsers).map(parser => ({
+            key: parser.key,
+            icon: parser.internalValue.icon,
+            label: parser.internalValue.label,
+            description: parser.internalValue.description,
+          })),
+        );
       },
       unregister: (parser: Parser) => {
-        this._eventLink.removeExtensionEvent(`parsers:${parser.key}`);
+        parser.unregister();
+        this._parsers.delete(parser);
+        this._eventLink.callStudioEvent(
+          `parsers:change`,
+          Array.from(this._parsers).map(parser => ({
+            key: parser.key,
+            icon: parser.internalValue.icon,
+            label: parser.internalValue.label,
+            description: parser.internalValue.description,
+          })),
+        );
       },
     },
     views: {
