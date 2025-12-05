@@ -2,6 +2,14 @@ import { ContextMenuItem } from '../ContextMenuItem';
 import { ListViewItem } from './ListViewItem';
 
 
+export type TListItemMountContext = {
+  refetchChildren(): Promise<void>;
+  edit(value: boolean): Promise<void>;
+  select(value: boolean): Promise<void>;
+  set<GKey extends keyof TListViewItem>(property: GKey, value: TListViewItem[GKey]): Promise<void>;
+}
+
+
 export type TListItemBase = {
   /** Identifier */
   key: string;
@@ -11,9 +19,9 @@ export type TListItemBase = {
   extra?: string;
   /** Details of the record */
   description?: string;
-  onItemClick?: () => Promise<void>;
-  onItemDoubleClick?: () => Promise<void>;
-  getContextMenuItems?: () => Promise<ContextMenuItem[]>;
+  onItemClick?: (context: TListItemMountContext) => Promise<void>;
+  onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
+  getContextMenuItems?: (context: TListItemMountContext) => Promise<ContextMenuItem[]>;
 }
 
 export type TListItemWithTitle = {
@@ -30,7 +38,7 @@ export type TListItemWithLabel = {
   title?: undefined;
   /** Define if a item can have a children list */
   children: boolean;
-  getItems?: () => Promise<ListViewItem[]>;
+  getItems?: (context: TListItemMountContext) => Promise<ListViewItem[]>;
 }
 
 export type TListItemWithoutDraggableData = {

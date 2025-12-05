@@ -1,15 +1,8 @@
 import { ContextMenuItem, TContextMenuItem } from '../ContextMenuItem';
+import { TListItemMountContext, TListViewItem } from './TListViewItem';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
-import { TListViewItem } from './TListViewItem';
 
-
-type TListItemMountContext = {
-  refetchChildren(): Promise<void>;
-  edit(value: boolean): Promise<void>;
-  select(value: boolean): Promise<void>;
-  set<GKey extends keyof TListViewItem>(property: GKey, value: TListViewItem[GKey]): Promise<void>;
-}
 
 export type TListViewItemConstructor = {
   key: string;
@@ -23,6 +16,7 @@ export class ListViewItem {
   public readonly onDidMount: TListViewItemConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
 
+
   constructor(props: TListViewItemConstructor) {
     this.key = props.key;
     this.unregister = this.unregister;
@@ -31,11 +25,38 @@ export class ListViewItem {
   }
 
 
+  readonly #context: TListItemMountContext = {
+    edit: async (value) => {
+      return await EventLink.callStudioEvent(`listItem:${this.key}:edit`, value);
+    },
+    select: async (value) => {
+      return await EventLink.callStudioEvent(`listItem:${this.key}:select`, value);
+    },
+    refetchChildren: async () => {
+      return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
+    },
+    set: async <GKey extends keyof TListViewItem>(property: GKey, newValue: TListViewItem[GKey]) => {
+      switch (property) {
+        case 'getItems':
+        case 'onItemClick':
+        case 'onItemDoubleClick':
+        case 'getContextMenuItems':
+          this.internalValue[property] = newValue;
+          return;
+
+        default:
+          this.internalValue[property] = newValue;
+          return await EventLink.callStudioEvent(`listItem:${this.key}:set`, { property, newValue });
+      }
+    },
+  };
+
+
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`listItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.());
-    EventLink.setExtensionEvent(`listItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.());
+    EventLink.setExtensionEvent(`listItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
+    EventLink.setExtensionEvent(`listItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
     EventLink.setExtensionEvent(`listItem:${this.key}:getItems`, async () => {
-      const items = await this.internalValue.getItems?.() || [];
+      const items = await this.internalValue.getItems?.(this.#context) || [];
 
       for (const item of items) {
         item.register();
@@ -54,7 +75,7 @@ export class ListViewItem {
       }));
     });
     EventLink.setExtensionEvent(`listItem:${this.key}:getContextMenuItems`, async () => {
-      const items = await this.internalValue.getContextMenuItems?.() || [];
+      const items = await this.internalValue.getContextMenuItems?.(this.#context) || [];
 
       items.forEach(item => {
         if (item.onClick) EventLink.setExtensionEvent(`contextMenuItem:${item.key}:onClick`, item.onClick);
@@ -70,44 +91,26 @@ export class ListViewItem {
     });
 
 
-    this.onDidMount?.({
-      edit: async (value) => {
-        return await EventLink.callStudioEvent(`listItem:${this.key}:edit`, value);
-      },
-      select: async (value) => {
-        return await EventLink.callStudioEvent(`listItem:${this.key}:select`, value);
-      },
-      refetchChildren: async () => {
-        return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
-      },
-      set: async <GKey extends keyof TListViewItem>(property: GKey, newValue: TListViewItem[GKey]) => {
-        switch (property) {
-          case 'getItems':
-          case 'onItemClick':
-          case 'onItemDoubleClick':
-          case 'getContextMenuItems':
-            this.internalValue[property] = newValue;
-            return;
+    if (this.onDidMount) {
+      this.onDidMount?.({
+        ...this.#context,
+        onDidUnmount: (didUnmount) => {
+          const didUnmountAndRemoveEventListener = async () => {
+            await didUnmount();
 
-          default:
-            this.internalValue[property] = newValue;
-            return await EventLink.callStudioEvent(`listItem:${this.key}:set`, { property, newValue });
-        }
-      },
-      onDidUnmount: (didUnmount) => {
-        const didUnmountAndRemoveEventListener = async () => {
-          await didUnmount();
+            EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
+            EventLink.removeExtensionEvent(`listItem:${this.key}:onDidUnmount`);
+            EventLink.removeExtensionEvent(`listItem:${this.key}:onItemClick`);
+            EventLink.removeExtensionEvent(`listItem:${this.key}:onItemDoubleClick`);
+            EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
+          }
 
-          EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
-          EventLink.removeExtensionEvent(`listItem:${this.key}:onDidUnmount`);
-          EventLink.removeExtensionEvent(`listItem:${this.key}:onItemClick`);
-          EventLink.removeExtensionEvent(`listItem:${this.key}:onItemDoubleClick`);
-          EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
-        }
-
-        EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-      },
-    });
+          EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
+        },
+      });
+    } else {
+      EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, async () => { });
+    }
   }
 
 

@@ -8,16 +8,17 @@ export type TParserResult = {
   content: string | TFileOrFolder;
 }
 
+export type TParserMountContext = {
+  set<GKey extends keyof TParser>(property: GKey, value: TParser[GKey]): Promise<void>;
+}
+
 export type TParser = {
   label: string;
   icon?: string;
   description?: string;
-  onParse: () => Promise<TParserResult>;
+  onParse: (context: TParserMountContext) => Promise<TParserResult>;
 }
 
-type TParserMountContext = {
-  set<GKey extends keyof TParser>(property: GKey, value: TParser[GKey]): Promise<void>;
-}
 export type TParserConstructor = {
   key: string;
   initialValue?: Partial<TParser>,
@@ -39,31 +40,40 @@ export class Parser {
   }
 
 
+  readonly #context: TParserMountContext = {
+    set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
+      switch (property) {
+        case 'onParse':
+          this.internalValue[property] = newValue;
+          return;
+
+        default:
+          this.internalValue[property] = newValue;
+          return await EventLink.callStudioEvent(`parser:${this.key}:set`, { property, newValue });
+      }
+    },
+  };
+
+
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => this.internalValue?.onParse?.());
+    EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => this.internalValue?.onParse?.(this.#context));
 
-    this.onDidMount?.({
-      set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
-        switch (property) {
-          case 'onParse':
-            this.internalValue[property] = newValue;
-            return;
+    if (this.onDidMount) {
+      this.onDidMount?.({
+        ...this.#context,
+        onDidUnmount: (didUnmount) => {
+          const didUnmountAndRemoveEventListener = async () => {
+            await didUnmount();
 
-          default:
-            this.internalValue[property] = newValue;
-            return await EventLink.callStudioEvent(`parser:${this.key}:set`, { property, newValue });
-        }
-      },
-      onDidUnmount: (didUnmount) => {
-        const didUnmountAndRemoveEventListener = async () => {
-          await didUnmount();
+            EventLink.removeExtensionEvent(`parser:${this.key}:onParse`);
+          }
 
-          EventLink.removeExtensionEvent(`parser:${this.key}:onParse`);
-        }
-
-        EventLink.setExtensionEvent(`parser:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-      },
-    });
+          EventLink.setExtensionEvent(`parser:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
+        },
+      });
+    } else {
+      EventLink.setExtensionEvent(`parser:${this.key}:onDidUnmount`, async () => { });
+    }
   }
 
 

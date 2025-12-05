@@ -1,17 +1,13 @@
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { FieldDescriptor } from './shared/descriptors/FieldDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
-import { TDataProvider } from './shared/providers/TDataProvider';
-import { FormProvider } from './shared/providers/FormProvider';
-import { ListProvider } from './shared/providers/ListProvider';
-import { TabsView } from './shared/components/TabsView';
 import { EventLink } from './shared/services/EventLink';
 import { createDataProviders } from './data-providers';
+import { View } from './shared/components/views/View';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
 import { Editor } from './shared/components/Editor';
 import { TQuickPick } from './types/TQuickPick';
-import { View } from './shared/components/View';
 
 
 export abstract class ExtensionBase {
@@ -19,6 +15,7 @@ export abstract class ExtensionBase {
 
   private _platformActions: Set<PlatformAction> = new Set([]);
   private _parsers: Set<Parser> = new Set([]);
+  private _views: Set<View> = new Set([]);
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
@@ -45,6 +42,18 @@ export abstract class ExtensionBase {
       label: platformAction.internalValue.label,
       children: platformAction.internalValue.children,
       description: platformAction.internalValue.description,
+    })));
+    this._eventLink.setExtensionEvent('views:load', async () => Array.from(this._views).map(view => ({
+      key: view.key,
+      icon: view.internalValue.icon,
+      type: view.internalValue.type,
+      title: view.internalValue.title,
+      position: view.internalValue.position,
+      description: view.internalValue.description,
+      dataProvider: {
+        key: view.internalValue.dataProvider?.key,
+        type: view.internalValue.dataProvider?.type,
+      }
     })));
   }
 
@@ -146,34 +155,60 @@ export abstract class ExtensionBase {
       },
     },
     views: {
-      refresh: async (view: View | TabsView) => {
-        await this._eventLink.callStudioEvent(`views:${view.key}:refresh`);
+      reload: async () => {
+        return await this._eventLink.callStudioEvent(
+          `views:change`,
+          Array.from(this._views).map(view => ({
+            key: view.key,
+            icon: view.internalValue.icon,
+            type: view.internalValue.type,
+            title: view.internalValue.title,
+            position: view.internalValue.position,
+            description: view.internalValue.description,
+            dataProvider: {
+              key: view.internalValue.dataProvider?.key,
+              type: view.internalValue.dataProvider?.type,
+            }
+          })),
+        );
       },
-      register: (view: View | TabsView) => {
-        if (view instanceof TabsView) {
-          view.tabs.forEach(tabView => this._registerViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
-          view.actions?.forEach(action => {
-            this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
-          });
-        } else {
-          this._registerViewDataProvider(`views:${view.key}`, view.dataProvider);
-          view.actions?.forEach(action => {
-            this._eventLink.setExtensionEvent(`views:${view.key}:actions:${action.key}`, action.action);
-          });
-        }
+      register: (view: View) => {
+        view.register();
+        this._views.add(view);
+        this._eventLink.callStudioEvent(
+          `views:change`,
+          Array.from(this._views).map(view => ({
+            key: view.key,
+            icon: view.internalValue.icon,
+            type: view.internalValue.type,
+            title: view.internalValue.title,
+            position: view.internalValue.position,
+            description: view.internalValue.description,
+            dataProvider: {
+              key: view.internalValue.dataProvider?.key,
+              type: view.internalValue.dataProvider?.type,
+            }
+          })),
+        );
       },
-      unregister: (view: View | TabsView) => {
-        if (view instanceof TabsView) {
-          view.tabs.forEach(tabView => this._unregisterViewDataProvider(`views:${view.key}:tabsView:${tabView.key}`, tabView.dataProvider))
-          view.actions?.forEach(action => {
-            this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
-          });
-        } else {
-          this._unregisterViewDataProvider(`views:${view.key}`, view.dataProvider);
-          view.actions?.forEach(action => {
-            this._eventLink.removeExtensionEvent(`views:${view.key}:actions:${action.key}`);
-          });
-        }
+      unregister: (view: View) => {
+        view.unregister();
+        this._views.delete(view);
+        this._eventLink.callStudioEvent(
+          `views:change`,
+          Array.from(this._views).map(view => ({
+            key: view.key,
+            icon: view.internalValue.icon,
+            type: view.internalValue.type,
+            title: view.internalValue.title,
+            position: view.internalValue.position,
+            description: view.internalValue.description,
+            dataProvider: {
+              key: view.internalValue.dataProvider?.key,
+              type: view.internalValue.dataProvider?.type,
+            }
+          })),
+        );
       },
     },
     selection: {
@@ -392,22 +427,4 @@ export abstract class ExtensionBase {
     },
     dataProviders: createDataProviders(this._eventLink),
   } as const;
-
-
-  private _registerViewDataProvider(baseKey: string, dataProvider: TDataProvider) {
-    if (dataProvider instanceof FormProvider) {
-      this._eventLink.setExtensionEvent(`${baseKey}:getFields:${dataProvider.key}`, dataProvider.getFields);
-    } else if (dataProvider instanceof ListProvider) {
-      this._eventLink.setExtensionEvent(`${baseKey}:getItems:${dataProvider.key}`, dataProvider.getItems);
-    }
-  }
-
-  private _unregisterViewDataProvider(baseKey: string, dataProvider: TDataProvider) {
-    if (dataProvider instanceof FormProvider) {
-      this._eventLink.removeExtensionEvent(`${baseKey}:getFields:${dataProvider.key}`);
-    } else if (dataProvider instanceof ListProvider) {
-      (dataProvider as any).unregister();
-      this._eventLink.removeExtensionEvent(`${baseKey}:getItems:${dataProvider.key}`);
-    }
-  }
 }

@@ -2,16 +2,21 @@ import { TOnDidMount } from '../../types/TOnDidMount';
 import { EventLink } from '../services/EventLink';
 
 
+export type TPlatformActionMountContext = {
+  refetchChildren(): Promise<void>;
+  set<GKey extends keyof TPlatformAction>(property: GKey, value: TPlatformAction[GKey]): Promise<void>;
+}
+
 export type TSingleAction = {
   children: false;
   getActions?: undefined;
-  action(): Promise<void>;
+  action(context: TPlatformActionMountContext): Promise<void>;
 };
 
 export type TMultiAction = {
   children: true;
   action?: undefined;
-  getActions: () => Promise<PlatformAction[]>;
+  getActions: (context: TPlatformActionMountContext) => Promise<PlatformAction[]>;
 };
 
 export type TPlatformAction = (TSingleAction | TMultiAction) & {
@@ -19,19 +24,14 @@ export type TPlatformAction = (TSingleAction | TMultiAction) & {
   icon?: string;
   description?: string;
 };
-
-type TTPlatformActionMountContext = {
-  refetchChildren(): Promise<void>;
-  set<GKey extends keyof TPlatformAction>(property: GKey, value: TPlatformAction[GKey]): Promise<void>;
-}
 export type TPlatformActionConstructor = {
   key: string;
   initialValue?: Partial<TPlatformAction>,
-  onDidMount?: TOnDidMount<TTPlatformActionMountContext>;
+  onDidMount?: TOnDidMount<TPlatformActionMountContext>;
 }
 
 export class PlatformAction {
-  #registeredItems: Set<PlatformAction> = new Set([]);
+  #registered: Set<PlatformAction> = new Set([]);
 
   public readonly key: TPlatformActionConstructor['key'];
   public readonly onDidMount: TPlatformActionConstructor['onDidMount'];
@@ -47,18 +47,33 @@ export class PlatformAction {
   }
 
 
+  readonly #context: TPlatformActionMountContext = {
+    refetchChildren: async () => {
+      return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
+    },
+    set: async <GKey extends keyof TPlatformAction>(property: GKey, newValue: TPlatformAction[GKey]) => {
+      switch (property) {
+        case 'action':
+        case 'getActions':
+          this.internalValue[property] = newValue;
+          return;
+
+        default:
+          this.internalValue[property] = newValue;
+          return await EventLink.callStudioEvent(`platformAction:${this.key}:set`, { property, newValue });
+      }
+    },
+  };
+
+
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`platformAction:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.() : {});
+    EventLink.setExtensionEvent(`platformAction:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
     EventLink.setExtensionEvent(`platformAction:${this.key}:getActions`, async () => {
-
-      console.log(`platformAction:${this.key}:getActions`);
-
-      const actions = await this.internalValue.getActions?.() || [];
-      console.log(actions);
+      const actions = await this.internalValue.getActions?.(this.#context) || [];
 
       for (const action of actions) {
         action.register();
-        this.#registeredItems.add(action);
+        this.#registered.add(action);
       }
 
       return actions.map(field => ({
@@ -71,32 +86,22 @@ export class PlatformAction {
     });
 
 
-    this.onDidMount?.({
-      refetchChildren: async () => {
-        return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
-      },
-      set: async <GKey extends keyof TPlatformAction>(property: GKey, newValue: TPlatformAction[GKey]) => {
-        switch (property) {
-          case 'action':
-          case 'getActions':
-            this.internalValue[property] = newValue;
-            return;
+    if (this.onDidMount) {
+      this.onDidMount?.({
+        ...this.#context,
+        onDidUnmount: (didUnmount) => {
+          const didUnmountAndRemoveEventListener = async () => {
+            await didUnmount();
 
-          default:
-            this.internalValue[property] = newValue;
-            return await EventLink.callStudioEvent(`platformAction:${this.key}:set`, { property, newValue });
-        }
-      },
-      onDidUnmount: (didUnmount) => {
-        const didUnmountAndRemoveEventListener = async () => {
-          await didUnmount();
+            EventLink.removeExtensionEvent(`platformAction:${this.key}:action`);
+          }
 
-          EventLink.removeExtensionEvent(`platformAction:${this.key}:action`);
-        }
-
-        EventLink.setExtensionEvent(`platformAction:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-      },
-    });
+          EventLink.setExtensionEvent(`platformAction:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
+        },
+      });
+    } else {
+      EventLink.setExtensionEvent(`platformAction:${this.key}:onDidUnmount`, async () => { });
+    }
   }
 
 
@@ -110,7 +115,7 @@ export class PlatformAction {
     EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidUnmount`);
 
-    this.#registeredItems.forEach((field) => field.unregister());
-    this.#registeredItems.clear();
+    this.#registered.forEach((field) => field.unregister());
+    this.#registered.clear();
   }
 }
