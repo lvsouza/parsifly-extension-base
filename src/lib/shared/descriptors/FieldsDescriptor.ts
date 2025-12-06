@@ -42,13 +42,11 @@ export class FieldsDescriptor {
    * Static descriptor type used for system-level identification.
    */
   public readonly type = 'fields';
-
   /**
    * Unique identifier for this descriptor instance.
    * Mirrors the key provided in the constructor props.
    */
   public readonly key: IFieldsDescriptorProps['key'];
-
   /**
    * Loads all fields for a given key and prepares them for external use.
    *
@@ -64,18 +62,16 @@ export class FieldsDescriptor {
 
   /**
    * Internal registry of field descriptors keyed by field group.
-   *
-   * @private
    */
-  private _registeredFields: Map<string, Set<FieldDescriptor>> = new Map();
+  #registered: Map<string, Set<FieldDescriptor>> = new Map();
 
 
   constructor(props: IFieldsDescriptorProps) {
     this.key = props.key;
     this.unregister = this.unregister;
-    this.onGetFields = async (key: string) => {
-      const registeredFieldsByKey = this._registeredFields.get(key) || new Set();
-      this._registeredFields.set(key, registeredFieldsByKey);
+    this.onGetFields = async (key: string): Promise<any[]> => {
+      const registeredFieldsByKey = this.#registered.get(key) || new Set();
+      this.#registered.set(key, registeredFieldsByKey);
 
       registeredFieldsByKey.forEach((field) => {
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
@@ -91,11 +87,15 @@ export class FieldsDescriptor {
         registeredFieldsByKey.add(field);
       });
 
-
       return fields.map(field => ({
-        ...field,
-        getValue: undefined,
-        onDidChange: undefined,
+        key: field.key,
+        name: field.name,
+        type: field.type,
+        icon: field.icon,
+        label: field.label,
+        children: field.children,
+        description: field.description,
+        defaultValue: field.defaultValue,
       }));
     };
   }
@@ -104,11 +104,9 @@ export class FieldsDescriptor {
    * Unregisters all fields and their associated runtime handlers.
    * Intended for lifecycle cleanup when the descriptor instance
    * is no longer needed.
-   *
-   * @private
    */
-  private unregister() {
-    for (const [, registeredFieldsByKey] of this._registeredFields) {
+  public unregister() {
+    for (const [, registeredFieldsByKey] of this.#registered) {
       registeredFieldsByKey.forEach((field) => {
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
         EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:onDidChange`);
@@ -116,6 +114,6 @@ export class FieldsDescriptor {
       registeredFieldsByKey.clear();
     }
 
-    this._registeredFields.clear();
+    this.#registered.clear();
   }
 }

@@ -21,6 +21,7 @@ export abstract class ExtensionBase {
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
   private _fields: Map<string, Set<((fields: FieldDescriptor[]) => void)>> = new Map();
+  private _fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
 
 
   constructor() {
@@ -69,6 +70,18 @@ export abstract class ExtensionBase {
         file: editor.internalValue.entryPoint?.file,
       },
     })));
+    this._eventLink.setExtensionEvent('fields:get', async (key: string) => {
+      return await Promise
+        .all(
+          Array
+            .from(this._fieldsDescriptors)
+            .map(async fieldsDescriptor => {
+              const fields = await fieldsDescriptor.onGetFields(key);
+              return fields;
+            }),
+        )
+        .then(results => results.flatMap(result => result || []) || [])
+    });
   }
 
 
@@ -330,21 +343,21 @@ export abstract class ExtensionBase {
         return () => this._fields.get(key)?.delete(listener);
       },
       /**
-       * Register a fields descriptor to platform. Make sure that key is at the `manifest.json`
+       * Register a fields descriptor to platform.
        * 
-       * @param fields Descriptor to be registered
+       * @param fieldsDescriptor Descriptor to be registered
        */
-      register: (fields: FieldsDescriptor) => {
-        this._eventLink.setExtensionEvent(`fields:${fields.key}:get`, fields.onGetFields);
+      register: (fieldsDescriptor: FieldsDescriptor) => {
+        this._fieldsDescriptors.add(fieldsDescriptor);
       },
       /**
        * Unregister the descriptor
        * 
-       * @param fields Descriptor to be unregistered
+       * @param fieldsDescriptor Descriptor to be unregistered
        */
-      unregister: (fields: FieldsDescriptor) => {
-        (fields as any).unregister();
-        this._eventLink.removeExtensionEvent(`fields:${fields.key}:get`);
+      unregister: (fieldsDescriptor: FieldsDescriptor) => {
+        fieldsDescriptor.unregister();
+        this._fieldsDescriptors.delete(fieldsDescriptor);
       },
     },
     editors: {
