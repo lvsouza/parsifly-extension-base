@@ -3,12 +3,5 @@
   "authorName": "Lucas Souza Dev",
   "packageName": "parsifly-extension-base",
   "description": "",
-  "subscriptions": {
-    "fields": false,
-    "edition": false,
-    "selection": false
-  },
-  "editors": [],
-  "fields": [],
-  "views": []
+  "fields": []
 }
