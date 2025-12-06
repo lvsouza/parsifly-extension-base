@@ -56,7 +56,7 @@ export class Parser {
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => this.internalValue?.onParse?.(this.#context));
+    EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => await this.internalValue?.onParse?.(this.#context));
 
     if (this.onDidMount) {
       this.onDidMount?.({

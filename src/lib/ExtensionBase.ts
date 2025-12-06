@@ -1,12 +1,12 @@
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { FieldDescriptor } from './shared/descriptors/FieldDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
+import { Editor } from './shared/components/editors/Editor';
 import { EventLink } from './shared/services/EventLink';
 import { createDataProviders } from './data-providers';
 import { View } from './shared/components/views/View';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
-import { Editor } from './shared/components/Editor';
 import { TQuickPick } from './types/TQuickPick';
 
 
@@ -15,6 +15,7 @@ export abstract class ExtensionBase {
 
   private _platformActions: Set<PlatformAction> = new Set([]);
   private _parsers: Set<Parser> = new Set([]);
+  private _editors: Set<Editor> = new Set([]);
   private _views: Set<View> = new Set([]);
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
@@ -54,6 +55,19 @@ export abstract class ExtensionBase {
         key: view.internalValue.dataProvider?.key,
         type: view.internalValue.dataProvider?.type,
       }
+    })));
+    this._eventLink.setExtensionEvent('editors:load', async () => Array.from(this._editors).map(editor => ({
+      key: editor.key,
+      icon: editor.internalValue.icon,
+      type: editor.internalValue.type,
+      title: editor.internalValue.title,
+      position: editor.internalValue.position,
+      selector: editor.internalValue.selector,
+      description: editor.internalValue.description,
+      entryPoint: {
+        basePath: editor.internalValue.entryPoint?.basePath,
+        file: editor.internalValue.entryPoint?.file,
+      },
     })));
   }
 
@@ -334,27 +348,63 @@ export abstract class ExtensionBase {
       },
     },
     editors: {
-      register: (view: Editor) => {
-        this._eventLink.setExtensionEvent(`editors:${view.key}:resolve`, async (id: string) => view.resolve?.(id));
-        this._eventLink.setExtensionEvent(`editors:${view.key}:forwardEvents:receive`, async (...values) => view.onDidReceiveMessage?.(...values));
-
-        view.__internal_subscribeToSend(`editors:${view.key}:forwardEvents:send`, async (...values) => {
-          return await this._eventLink.callStudioEvent(`editors:${view.key}:forwardEvents:send`, ...values);
-        });
-
-        view.actions?.forEach(action => {
-          this._eventLink.setExtensionEvent(`editors:${view.key}:actions:${action.key}`, action.action);
-        });
+      reload: async () => {
+        return await this._eventLink.callStudioEvent(
+          `editors:change`,
+          Array.from(this._editors).map(editor => ({
+            key: editor.key,
+            icon: editor.internalValue.icon,
+            type: editor.internalValue.type,
+            title: editor.internalValue.title,
+            position: editor.internalValue.position,
+            selector: editor.internalValue.selector,
+            description: editor.internalValue.description,
+            entryPoint: {
+              basePath: editor.internalValue.entryPoint?.basePath,
+              file: editor.internalValue.entryPoint?.file,
+            },
+          })),
+        );
       },
-      unregister: (view: Editor) => {
-        this._eventLink.removeExtensionEvent(`editors:${view.key}:resolve`);
-        this._eventLink.removeExtensionEvent(`editors:${view.key}:forwardEvents:receive`);
-
-        view.__internal_removeSubscribeToSend(`editors:${view.key}:forwardEvents:send`);
-
-        view.actions?.forEach(action => {
-          this._eventLink.removeExtensionEvent(`editors:${view.key}:actions:${action.key}`);
-        });
+      register: (editor: Editor) => {
+        editor.register();
+        this._editors.add(editor);
+        this._eventLink.callStudioEvent(
+          `editors:change`,
+          Array.from(this._editors).map(editor => ({
+            key: editor.key,
+            icon: editor.internalValue.icon,
+            type: editor.internalValue.type,
+            title: editor.internalValue.title,
+            position: editor.internalValue.position,
+            selector: editor.internalValue.selector,
+            description: editor.internalValue.description,
+            entryPoint: {
+              basePath: editor.internalValue.entryPoint?.basePath,
+              file: editor.internalValue.entryPoint?.file,
+            },
+          })),
+        );
+      },
+      unregister: (editor: Editor) => {
+        editor.unregister();
+        this._editors.delete(editor);
+        this._eventLink.callStudioEvent(
+          `editors:change`,
+          Array.from(this._editors).map(editor => ({
+            key: editor.key,
+            icon: editor.internalValue.icon,
+            type: editor.internalValue.type,
+            title: editor.internalValue.title,
+            position: editor.internalValue.position,
+            selector: editor.internalValue.selector,
+            description: editor.internalValue.description,
+            entryPoint: {
+              basePath: editor.internalValue.entryPoint?.basePath,
+              file: editor.internalValue.entryPoint?.file,
+            },
+          })),
+        );
       },
     },
     commands: {
