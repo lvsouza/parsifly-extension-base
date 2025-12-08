@@ -1,5 +1,6 @@
 import { TOnDidMount } from '../../types/TOnDidMount';
 import { EventLink } from '../services/EventLink';
+import { TIcon } from '../../types/TIcon';
 
 
 export type TPlatformActionMountContext = {
@@ -20,8 +21,8 @@ export type TMultiAction = {
 };
 
 export type TPlatformAction = (TSingleAction | TMultiAction) & {
+  icon?: TIcon;
   label: string;
-  icon?: string;
   description?: string;
 };
 export type TPlatformActionConstructor = {

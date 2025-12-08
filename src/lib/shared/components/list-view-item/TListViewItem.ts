@@ -1,5 +1,6 @@
 import { ContextMenuItem } from '../ContextMenuItem';
 import { ListViewItem } from './ListViewItem';
+import { TIcon } from '../../../types/TIcon';
 
 
 export type TListItemMountContext = {
@@ -13,8 +14,7 @@ export type TListItemMountContext = {
 export type TListItemBase = {
   /** Identifier */
   key: string;
-  /** VS Code icons */
-  icon?: string;
+  icon?: TIcon;
   /** Show additional information in bold */
   extra?: string;
   /** Details of the record */

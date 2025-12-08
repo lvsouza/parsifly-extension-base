@@ -1,9 +1,10 @@
+import { TIcon } from '../../types/TIcon';
+
 
 export type TContextMenuItem = {
   /** Identifier */
   key: string;
-  /** VS Code icons */
-  icon?: string;
+  icon?: TIcon;
   /** Label, main information for the record  */
   label: string;
   /** Details of the record */
@@ -13,7 +14,7 @@ export type TContextMenuItem = {
 
 export class ContextMenuItem {
   public readonly key: TContextMenuItem['key'];
-  public readonly icon?: TContextMenuItem['icon'];
+  public readonly icon: TContextMenuItem['icon'];
   public readonly label: TContextMenuItem['label'];
   public readonly onClick: TContextMenuItem['onClick'];
   public readonly description?: TContextMenuItem['description'];
