@@ -19,6 +19,7 @@ export type TListItemBase = {
   extra?: string;
   /** Details of the record */
   description?: string;
+  disableSelect?: boolean;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
   getContextMenuItems?: (context: TListItemMountContext) => Promise<ContextMenuItem[]>;
@@ -27,6 +28,7 @@ export type TListItemBase = {
 export type TListItemWithTitle = {
   label?: undefined;
   getItems?: undefined;
+  opened?: false | undefined;
   children?: false | undefined;
   /** Title, main information for the record  */
   title: string;
@@ -35,6 +37,7 @@ export type TListItemWithTitle = {
 export type TListItemWithLabel = {
   /** Label, main information for the record  */
   label: string;
+  opened: boolean;
   title?: undefined;
   /** Define if a item can have a children list */
   children: boolean;

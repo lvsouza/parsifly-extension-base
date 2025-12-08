@@ -31,9 +31,11 @@ export class ListProvider {
         label: field.internalValue.label,
         extra: field.internalValue.extra,
         title: field.internalValue.title,
+        opened: field.internalValue.opened,
         children: field.internalValue.children,
         draggable: field.internalValue.draggable,
         description: field.internalValue.description,
+        disableSelect: field.internalValue.disableSelect,
       } as any));
     }) as typeof props.getItems
   }
