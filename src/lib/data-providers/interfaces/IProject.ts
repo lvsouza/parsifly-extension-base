@@ -1,13 +1,12 @@
 import { IComponent } from './IComponent';
+import { IStructure } from './IStructure';
 import { IAction } from './IAction';
 import { IFolder } from './IFolder';
 import { IPage } from './IPage';
 import { IBase } from './IBase';
 
 
-export type TProjectType = 'application' | 'package';
-
-export interface IProject<GType extends TProjectType> extends IBase<GType> {
+export interface IProject extends IBase<'application'> {
   /**
    * Version of the package
    */
@@ -28,4 +27,8 @@ export interface IProject<GType extends TProjectType> extends IBase<GType> {
    * Used to list all actions of the project
    */
   actions: (IAction | IFolder<IAction>)[];
+  /**
+   * Used to list all structures of the project
+   */
+  structures: (IStructure | IFolder<IStructure>)[];
 }

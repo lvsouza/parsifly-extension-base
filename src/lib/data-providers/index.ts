@@ -1,5 +1,5 @@
 import { EventLink } from '../shared/services/EventLink';
-import { IProject, TProjectType } from './interfaces/IProject';
+import { IProject } from './interfaces/IProject';
 
 // --- INTERFACES ---
 
@@ -325,8 +325,8 @@ export const createDataProviders = (eventLink: EventLink) => {
      * Gets a reference to a root Document (Singleton or starting point).
      * @example provider.project<IProject>().value()
      */
-    project: (): IDoc<IProject<TProjectType>> => {
-      return new DocRef<IProject<TProjectType>>(eventLink, 'project', []);
+    project: (): IDoc<IProject> => {
+      return new DocRef<IProject>(eventLink, 'project', []);
     },
   };
 };
