@@ -1,10 +1,10 @@
 import { IComponent } from './IComponent';
-import { IService } from './IService';
+import { IAction } from './IAction';
 import { IBase } from './IBase';
 import { IPage } from './IPage';
 
 
-export interface IFolder<GContentType extends IPage | IComponent | IService = IPage | IComponent | IService> extends IBase<'folder'> {
+export interface IFolder<GContentType extends IPage | IComponent | IAction = IPage | IComponent | IAction> extends IBase<'folder'> {
   /**
    * Can container others @type {IFolder} or @type {GContentType}
    */

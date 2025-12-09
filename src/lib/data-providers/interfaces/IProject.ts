@@ -1,5 +1,5 @@
 import { IComponent } from './IComponent';
-import { IService } from './IService';
+import { IAction } from './IAction';
 import { IFolder } from './IFolder';
 import { IPage } from './IPage';
 import { IBase } from './IBase';
@@ -25,7 +25,7 @@ export interface IProject<GType extends TProjectType> extends IBase<GType> {
    */
   components: (IComponent | IFolder<IComponent>)[];
   /**
-   * Used to list all services of the project
+   * Used to list all actions of the project
    */
-  services: (IService | IFolder<IService>)[];
+  actions: (IAction | IFolder<IAction>)[];
 }
