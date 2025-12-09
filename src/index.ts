@@ -19,6 +19,7 @@ export * from './lib/shared/components/Parser';
 export * from './lib/types/TFileOrFolder';
 export * from './lib/types/TQuickPick';
 
+export * from './lib/data-providers/interfaces/IStructureAttribute';
 export * from './lib/data-providers/interfaces/IComponent';
 export * from './lib/data-providers/interfaces/IStructure';
 export * from './lib/data-providers/interfaces/IProject';

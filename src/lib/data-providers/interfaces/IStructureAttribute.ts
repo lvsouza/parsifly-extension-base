@@ -1,8 +1,7 @@
-import { IStructureAttribute } from './IStructureAttribute';
 import { IBase } from './IBase';
 
 
-export interface IStructure extends IBase<'structure'> {
+export interface IStructureAttribute extends IBase<'structure_attribute'> {
   /**
    * Store the attributes reference
    */
