@@ -1,10 +1,10 @@
-import { TIcon } from '../../types/TIcon';
+import { TImage } from '../../types/TImage';
 
 
 export type TContextMenuItem = {
   /** Identifier */
   key: string;
-  icon?: TIcon;
+  icon?: TImage;
   /** Label, main information for the record  */
   label: string;
   /** Details of the record */

@@ -1,7 +1,7 @@
 import { TFileOrFolder } from '../../types/TFileOrFolder';
 import { TOnDidMount } from '../../types/TOnDidMount';
 import { EventLink } from '../services/EventLink';
-import { TIcon } from '../../types/TIcon';
+import { TImage } from '../../types/TImage';
 
 
 export type TParserResult = {
@@ -14,7 +14,7 @@ export type TParserMountContext = {
 }
 
 export type TParser = {
-  icon?: TIcon;
+  icon?: TImage;
   label: string;
   description?: string;
   onParse: (context: TParserMountContext) => Promise<TParserResult>;

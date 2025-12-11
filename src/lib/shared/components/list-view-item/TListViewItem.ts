@@ -1,6 +1,6 @@
 import { ContextMenuItem } from '../ContextMenuItem';
 import { ListViewItem } from './ListViewItem';
-import { TIcon } from '../../../types/TIcon';
+import { TImage } from '../../../types/TImage';
 
 
 export type TListItemMountContext = {
@@ -14,7 +14,7 @@ export type TListItemMountContext = {
 export type TListItemBase = {
   /** Identifier */
   key: string;
-  icon?: TIcon;
+  icon?: TImage;
   /** Show additional information in bold */
   extra?: string;
   /** Details of the record */

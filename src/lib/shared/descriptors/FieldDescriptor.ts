@@ -1,4 +1,4 @@
-import { TIcon } from '../../types/TIcon';
+import { TImage } from '../../types/TImage';
 
 export type TFieldDescriptorValue = string | number | boolean;
 
@@ -7,7 +7,7 @@ export type TFieldDescriptor<TValue extends TFieldDescriptorValue = TFieldDescri
   key: string;
   name: string;
   type: string;
-  icon?: TIcon;
+  icon?: TImage;
   /** Title, main information for the record  */
   label: string;
   /** Define if a item can have a children list */

@@ -1,7 +1,7 @@
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { PlatformAction } from '../PlatformActions';
-import { TIcon } from '../../../types/TIcon';
+import { TImage } from '../../../types/TImage';
 
 
 export type TEditorContext = {
@@ -11,7 +11,7 @@ export type TEditorContext = {
 }
 
 export type TEditor = {
-  icon?: TIcon;
+  icon?: TImage;
   type: 'editor';
   title: string;
   position: 'center';

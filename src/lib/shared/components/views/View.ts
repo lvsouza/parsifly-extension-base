@@ -4,7 +4,7 @@ import { ListProvider } from '../../providers/ListProvider';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { PlatformAction } from '../PlatformActions';
-import { TIcon } from '../../../types/TIcon';
+import { TImage } from '../../../types/TImage';
 
 
 export type TViewContext = {
@@ -14,7 +14,7 @@ export type TViewContext = {
 
 export type TView = {
   type: 'view';
-  icon?: TIcon;
+  icon?: TImage;
   title: string;
   description?: string;
   dataProvider: TDataProvider;
