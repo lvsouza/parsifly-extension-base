@@ -25,18 +25,7 @@ export class ListProvider {
         this.#registeredItems.add(item)
       }
 
-      return items.map(field => ({
-        key: field.key,
-        icon: field.internalValue.icon,
-        label: field.internalValue.label,
-        extra: field.internalValue.extra,
-        title: field.internalValue.title,
-        opened: field.internalValue.opened,
-        children: field.internalValue.children,
-        draggable: field.internalValue.draggable,
-        description: field.internalValue.description,
-        disableSelect: field.internalValue.disableSelect,
-      } as any));
+      return items.map(field => field.serialize() as unknown as ListViewItem);
     }) as typeof props.getItems
   }
 

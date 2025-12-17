@@ -95,7 +95,7 @@ export class EventLink {
     }
 
     if (!event) {
-      console.warn(`[EXTENSION] Event with key "${key}" was not found.`);
+      if (Envs.DEBUG) console.warn(`[EXTENSION] Event with key "${key}" was not found.`);
       return Promise.resolve(undefined as GReturn);
     }
 

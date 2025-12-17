@@ -1,7 +1,12 @@
+import { IStructureAttribute } from './interfaces/IStructureAttribute';
 import { EventLink } from '../shared/services/EventLink';
+import { IComponent } from './interfaces/IComponent';
+import { IStructure } from './interfaces/IStructure';
 import { IProject } from './interfaces/IProject';
+import { IAction } from './interfaces/IAction';
+import { IFolder } from './interfaces/IFolder';
+import { IPage } from './interfaces/IPage';
 
-// --- INTERFACES ---
 
 /**
  * @interface ISubscription
@@ -24,89 +29,74 @@ export interface ISubscription {
  */
 export interface IField<T> {
   /**
+   * A reference to the Document that contains this field.
+   * Returns null if this field was created as a root reference without a parent document.
+   * @example
+   * const docRef = field.parent;
+   * if (docRef) { ... }
+   */
+  readonly parent: IDoc<any> | null;
+
+  /**
    * Retrieves the current value of the field.
    * @returns A Promise that resolves with the field's value.
-   * @example
-   * const name = await provider.doc('project').field('name').value();
    */
   value(): Promise<T>;
 
   /**
    * Sets the value of the field.
    * @param newValue The new value to set.
-   * @returns A Promise that resolves when the operation is complete.
-   * @example
-   * await provider.doc('project').field('name').set('New Name');
    */
-  set(newValue: T): Promise<void>;
+  set<GValue = T>(newValue: GValue): Promise<void>;
 
   /**
    * Subscribes to real-time updates for this field.
    * @param callback The function to call when the value changes.
-   * @returns An object with an unsubscribe method.
-   * @example
-   * const sub = await provider.doc('project').field('name').onValue(name => console.log(name));
-   * await sub.unsubscribe();
    */
   onValue(callback: (value: T) => Promise<void>): Promise<ISubscription>;
 }
 
 /**
  * @interface IDoc
- * Represents a reference to a single Document (e.g., 'project' or 'page-123').
+ * Represents a reference to a single Document.
  * @template T The type of the document data.
  */
 export interface IDoc<T> {
   /**
-   * Retrieves the current data of the Document.
-   * @returns A Promise that resolves with the Document data.
+   * A reference to the Collection that contains this Document.
+   * Returns null if this document is a root-level reference.
    * @example
-   * const project = await provider.doc<IProject>('project').value();
+   * const collectionRef = doc.parent;
+   */
+  readonly parent: ICollection<T> | null;
+
+  /**
+   * Retrieves the current data of the Document.
    */
   value(): Promise<T>;
 
   /**
    * Overwrites the Document with new data.
-   * @param data The new data to set.
-   * @returns A Promise that resolves when the operation is complete.
-   * @example
-   * await provider.doc<IProject>('project').set({ id: 'proj', name: 'New Project' });
    */
-  set(data: T): Promise<void>;
+  set<GValue = T>(data: GValue): Promise<void>;
 
   /**
    * Updates specific fields of the Document without overwriting the entire document.
-   * Note: Implementation maps to 'set' in this model.
-   * @param data The partial data to update.
-   * @returns A Promise that resolves when the operation is complete.
-   * @example
-   * await provider.doc<IPage>('pages').doc('p1').update({ name: 'Updated Page Name' });
    */
   update(data: Partial<T>): Promise<void>;
 
   /**
    * Deletes the Document.
-   * @returns A Promise that resolves when the operation is complete.
-   * @example
-   * await provider.doc<IPage>('pages').doc('p1').delete();
    */
   delete(): Promise<void>;
 
   /**
    * Gets a reference to a specific field within this Document.
-   * @param key The key of the field.
-   * @returns An IField reference.
-   * @example
-   * const nameField = provider.doc('project').field('name');
    */
   field<K extends keyof T>(key: K | (string & {})): IField<T[K]>;
 
   /**
    * Gets a reference to a sub-collection nested under this Document.
-   * @param path The name of the sub-collection (e.g., 'pages').
-   * @returns An ICollection reference.
-   * @example
-   * const pagesCollection = provider.doc('project').collection<IPage>('pages');
    */
   collection<U = any>(path: string): ICollection<U>;
 }
@@ -118,38 +108,30 @@ export interface IDoc<T> {
  */
 export interface ICollection<T> {
   /**
-   * Retrieves all Documents in the Collection.
-   * @returns A Promise that resolves with an array of documents.
+   * A reference to the Document that contains this Collection (if it is a sub-collection).
+   * Returns null if this is a root-level collection.
    * @example
-   * const pages = await provider.collection<IPage>('pages').value();
+   * const parentDoc = collection.parent;
+   */
+  readonly parent: IDoc<any> | null;
+
+  /**
+   * Retrieves all Documents in the Collection.
    */
   value(): Promise<T[]>;
 
   /**
    * Adds a new Document to the Collection.
-   * @param data The data for the new document.
-   * @returns A Promise that resolves when the operation is complete.
-   * @example
-   * await provider.collection<IPage>('pages').add({ name: 'New Page', content: '...' });
    */
   add(data: T): Promise<void>;
 
   /**
-   * Subscribes to real-time updates for the entire Collection (list changes).
-   * @param callback The function to call when the list of documents changes.
-   * @returns An object with an unsubscribe method.
-   * @example
-   * const sub = await provider.collection<IPage>('pages').onValue(list => console.log('List updated:', list.length));
-   * await sub.unsubscribe();
+   * Subscribes to real-time updates for the entire Collection.
    */
   onValue(callback: (value: T[]) => Promise<void>): Promise<ISubscription>;
 
   /**
    * Gets a reference to a specific Document within the Collection by its ID.
-   * @param id The ID of the document.
-   * @returns An IDoc reference.
-   * @example
-   * const pageDoc = provider.collection<IPage>('pages').doc('page-123');
    */
   doc(id: string): IDoc<T>;
 }
@@ -159,8 +141,6 @@ export interface ICollection<T> {
 /**
  * @class ResourceBase
  * Base class providing core logic for event string construction, CRUD calls, and subscriptions.
- * It manages the distinction between singletons (no docId) and collection items (with docId).
- * @template T The type of data this resource handles.
  */
 class ResourceBase<T> {
   constructor(
@@ -169,11 +149,6 @@ class ResourceBase<T> {
     protected docId: string[]
   ) { }
 
-  /**
-   * Implements the subscription logic using eventLink.
-   * @param callback The function to be called on updates.
-   * @returns An ISubscription object.
-   */
   async onValue(callback: (value: T) => Promise<void>): Promise<ISubscription> {
     let method = 'onValue';
     let params = [...this.docId];
@@ -181,7 +156,6 @@ class ResourceBase<T> {
     const eventString = `${this.path}:${method}`;
     const subscriptionKey = crypto.randomUUID();
 
-    // The callback type casting is often necessary when dealing with generic types in event emitters
     this.eventLink.setExtensionEvent(subscriptionKey, callback as any);
     await this.eventLink.callStudioEvent<any, any>('subscribe-to-get-data', subscriptionKey, eventString, ...params);
 
@@ -193,68 +167,67 @@ class ResourceBase<T> {
     };
   }
 
-  /**
-   * Executes the remote command via callStudioEvent, handling the parameter array correctly.
-   * The docId is correctly inserted as the first parameter when required.
-   * @param actionSuffix The base action (e.g., 'get', 'set', 'del', 'getAll').
-   * @param args Additional arguments for the action (e.g., the data payload).
-   * @returns A Promise resolving with the result of the remote call.
-   */
   protected async callEvent(actionSuffix: string, ...args: any[]) {
     let method = actionSuffix;
     let params = args;
 
-    if (this.docId) {
-      // Map base actions to specific collection item actions
+    if (this.docId && this.docId.length > 0) {
       if (actionSuffix === 'get') method = 'getById';
       else if (actionSuffix === 'set') method = 'setById';
       else if (actionSuffix === 'del') method = 'delById';
 
-      // CRITICAL CHANGE: Prepend the docId to the parameters list
       params = [...this.docId, ...args];
     }
 
     const eventString = `${this.path}:${method}`;
-    // Pass the combined array (including docId if necessary) as parameters
     return this.eventLink.callStudioEvent<any, any>('get-or-set-data', eventString, ...params);
   }
 }
 
 /**
  * @class FieldRef
- * Implements IField interface for field-level operations.
- * @template T The type of the field's value.
+ * Implements IField interface.
+ * Can be instantiated with parent as null for root fields.
  */
 class FieldRef<T> extends ResourceBase<T> implements IField<T> {
+  public readonly parent: IDoc<any> | null;
+
+  constructor(eventLink: EventLink, path: string, docId: string[], parent: IDoc<any> | null = null) {
+    super(eventLink, path, docId);
+    this.parent = parent;
+  }
+
   async value(): Promise<T> {
-    // callEvent handles using getById if docId is present
     return this.callEvent('get');
   }
 
-  async set(newValue: T): Promise<void> {
-    // callEvent handles using setById if docId is present
+  async set<GValue = T>(newValue: GValue): Promise<void> {
     return this.callEvent('set', newValue);
   }
-
-  // onValue is inherited from ResourceBase
 }
 
 /**
  * @class DocRef
- * Implements IDoc interface for document-level operations.
- * @template T The type of the document data.
+ * Implements IDoc interface.
+ * Can be instantiated with parent as null for root documents.
  */
 class DocRef<T> extends ResourceBase<T> implements IDoc<T> {
+  public readonly parent: ICollection<T> | null;
+
+  constructor(eventLink: EventLink, path: string, docId: string[], parent: ICollection<T> | null = null) {
+    super(eventLink, path, docId);
+    this.parent = parent;
+  }
+
   async value(): Promise<T> {
     return this.callEvent('get');
   }
 
-  async set(data: T): Promise<void> {
+  async set<GValue = T>(data: GValue): Promise<void> {
     return this.callEvent('set', data);
   }
 
   async update(data: Partial<T>): Promise<void> {
-    // Uses 'set' action and expects the backend to handle the partial update/merge
     return this.callEvent('set', data);
   }
 
@@ -262,55 +235,54 @@ class DocRef<T> extends ResourceBase<T> implements IDoc<T> {
     return this.callEvent('del');
   }
 
-  /**
-   * @inheritdoc
-   * Creates a FieldRef, passing its current docId to maintain context.
-   */
   field<K extends keyof T>(key: K | (string & {})): IField<T[K]> {
-    return new FieldRef<T[K]>(this.eventLink, `${this.path}.${String(key)}`, this.docId);
+    return new FieldRef<T[K]>(
+      this.eventLink,
+      `${this.path}.${String(key)}`,
+      this.docId,
+      this as any // Parent is valid here
+    );
   }
 
-  /**
-   * @inheritdoc
-   * Creates a CollectionRef, appending the sub-collection name to the path.
-   * The docId is discarded since the collection itself is a list, not an item.
-   */
   collection<U>(subCollectionName: string): ICollection<U> {
-    return new CollectionRef<U>(this.eventLink, `${this.path}.${subCollectionName}`, this.docId);
+    return new CollectionRef<U>(
+      this.eventLink,
+      `${this.path}.${subCollectionName}`,
+      this.docId,
+      this as any // Parent is valid here
+    );
   }
-
-  // onValue is inherited from ResourceBase
 }
 
 /**
  * @class CollectionRef
- * Implements ICollection interface for collection-level operations.
- * @template T The type of the documents within the collection.
+ * Implements ICollection interface.
+ * Can be instantiated with parent as null for root collections.
  */
 class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
-  constructor(eventLink: EventLink, path: string, protected docId: string[]) {
+  public readonly parent: IDoc<any> | null;
+
+  constructor(eventLink: EventLink, path: string, docId: string[], parent: IDoc<any> | null = null) {
     super(eventLink, path, docId);
+    this.parent = parent;
   }
 
   async value(): Promise<T[]> {
-    // Uses 'getAll' action (e.g., project.pages:getAll). No ID required.
     return this.callEvent('getAll');
   }
 
   async add(data: T): Promise<void> {
-    // Uses 'add' action (e.g., project.pages:add). No ID required, data is the payload.
     return this.callEvent('add', data);
   }
 
-  /**
-   * @inheritdoc
-   * Creates a DocRef, passing the ID so that subsequent operations use the 'ById' suffix and include the ID in params.
-   */
   doc(id: string): IDoc<T> {
-    return new DocRef<T>(this.eventLink, this.path, [...this.docId, id]);
+    return new DocRef<T>(
+      this.eventLink,
+      this.path,
+      [...this.docId, id],
+      this // Parent is valid here
+    );
   }
-
-  // onValue is inherited from ResourceBase
 }
 
 /**
@@ -320,13 +292,67 @@ class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
  * @returns The root Data Provider object.
  */
 export const createDataProviders = (eventLink: EventLink) => {
+  type TAllTypes = IProject | IPage | IComponent | IAction | IFolder | IStructure | IStructureAttribute;
+
+  const deepSearch = <GResult extends TAllTypes>(base: ICollection<GResult>, key: string, items: GResult[]): [GResult | null, IDoc<GResult> | null] => {
+    for (const item of items) {
+      if (item.id === key) return [item, base.doc(item.id)];
+
+      if (item.type === 'folder') {
+        const [result, resultPath] = deepSearch(base.doc(item.id).collection('content'), key, item.content)
+        if (result) return [result, resultPath];
+      }
+      if (item.type === 'structure') {
+        const [result, resultPath] = deepSearch(base.doc(item.id).collection('attributes'), key, item.attributes)
+        if (result) return [result, resultPath];
+      }
+      if (item.type === 'structure_attribute') {
+        const [result, resultPath] = deepSearch(base.doc(item.id).collection('attributes'), key, item.attributes)
+        if (result) return [result, resultPath];
+      }
+    }
+
+    return [null, null];
+  }
+
+
   return {
     /**
      * Gets a reference to a root Document (Singleton or starting point).
      * @example provider.project<IProject>().value()
      */
     project: (): IDoc<IProject> => {
-      return new DocRef<IProject>(eventLink, 'project', []);
+      return new DocRef<IProject>(eventLink, 'project', [], null);
     },
+    /**
+     * Easy way to find a resource in the project by their key.
+     * 
+     * This will search in all resource to find the correct resource.
+     * 
+     * @param key The identification of the resource
+     * @returns Returns the element searched or null if the resource was not found
+     */
+    async findAnyResourceByKey<GResult extends TAllTypes>(key: string): Promise<[GResult, IDoc<GResult> | null]> {
+      const itemProject: any = await this.project().value();
+      const pathProject: IDoc<any> = this.project();
+
+      let item: any = itemProject;
+      let path: IDoc<any> | null = pathProject;
+
+      if (item.id !== key) {
+        [item, path = pathProject] = deepSearch(pathProject.collection('pages'), key, itemProject.pages);
+      }
+      if (!item) {
+        [item, path = pathProject] = deepSearch(pathProject.collection('components'), key, itemProject.components);
+      }
+      if (!item) {
+        [item, path = pathProject] = deepSearch(pathProject.collection('actions'), key, itemProject.actions);
+      }
+      if (!item) {
+        [item, path = pathProject] = deepSearch(pathProject.collection('structures'), key, itemProject.structures);
+      }
+
+      return [item, path];
+    }
   };
 };

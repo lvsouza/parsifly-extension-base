@@ -1,6 +1,7 @@
+import { TDropEvent } from '../../../types/TDropEvent';
 import { ContextMenuItem } from '../ContextMenuItem';
-import { ListViewItem } from './ListViewItem';
 import { TImage } from '../../../types/TImage';
+import { ListViewItem } from './ListViewItem';
 
 
 export type TListItemMountContext = {
@@ -44,14 +45,26 @@ export type TListItemWithLabel = {
   getItems?: (context: TListItemMountContext) => Promise<ListViewItem[]>;
 }
 
-export type TListItemWithoutDraggableData = {
-  draggable?: false | undefined;
-  draggableData?: void;
+export type TListItemWithoutDrag = {
+  dragProvides?: undefined;
 }
 
-export type TListItemWithDraggableData = {
-  draggable: boolean;
-  draggableData: Record<string, any>;
+export type TListItemWithDrag = {
+  dragProvides: string;
 }
 
-export type TListViewItem = (TListItemWithLabel | TListItemWithTitle) & (TListItemWithoutDraggableData | TListItemWithDraggableData) & TListItemBase;
+export type TListItemWithoutDrop = {
+  onDidDrop?: undefined;
+  dropAccepts?: undefined;
+}
+
+export type TListItemWithDrop = {
+  dropAccepts: string[];
+  onDidDrop: (context: TListItemMountContext, event: TDropEvent) => Promise<void>;
+}
+
+export type TListViewItem =
+  & TListItemBase
+  & (TListItemWithLabel | TListItemWithTitle)
+  & (TListItemWithoutDrag | TListItemWithDrag)
+  & (TListItemWithoutDrop | TListItemWithDrop);
