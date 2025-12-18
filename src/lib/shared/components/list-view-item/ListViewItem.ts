@@ -53,8 +53,15 @@ export class ListViewItem {
     },
   };
 
+  #mountId: string | undefined;
+  #onDidUnmount: ((checkMountId: string) => Promise<void>) = async () => { };
 
-  async #onDidMount(): Promise<void> {
+  async #onDidMount(mountId: string): Promise<void> {
+    if (this.#mountId) {
+      await this.#onDidUnmount(this.#mountId);
+      this.#mountId = mountId;
+    }
+
     EventLink.setExtensionEvent(`listItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
     EventLink.setExtensionEvent(`listItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
     EventLink.setExtensionEvent(`listItem:${this.key}:onDidDrop`, async (event: TDropEvent) => this.internalValue.onDidDrop?.(this.#context, event));
@@ -89,7 +96,10 @@ export class ListViewItem {
       this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
+          this.#onDidUnmount = async (checkMountId) => {
+            if (checkMountId !== this.#mountId) return;
+            this.#mountId = undefined;
+
             await didUnmount();
 
             EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
@@ -100,7 +110,7 @@ export class ListViewItem {
             EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
           }
 
-          EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
+          EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
         },
       });
     } else {
