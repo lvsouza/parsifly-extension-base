@@ -9,10 +9,11 @@ import { IBase } from './IBase';
  * - `object` refers to an inline anonymous structure.
  * - `array` represents a list whose item type is defined separately.
  * 
- * - Primitive kinds map directly to JSON-compatible types.
+ * - Primitive dataTypes map directly to JSON-compatible types.
  */
-export type TKind =
+export type TDataType =
   | 'structure'
+
   | 'string'
   | 'number'
   | 'boolean'
@@ -21,6 +22,7 @@ export type TKind =
   | 'binary'
 
   | 'array_structure'
+
   | 'array_string'
   | 'array_number'
   | 'array_boolean'
@@ -53,20 +55,13 @@ export interface IStructureAttribute extends IBase<'structure_attribute'> {
   required: boolean;
   /**
    * Defines the shape of this attribute.
-   *
-   * Examples:
-   * - `string`, `number`, `boolean`, `null`
-   * - `object`   → inline anonymous structure
-   * - `structure`→ reference to a named Structure
-   * - `array`    → list whose item shape is defined by `arrayItemKind`
-   * - `binary`   → opaque runtime payload (File, Blob, Stream, etc.)
    */
-  kind: TKind;
+  dataType: TDataType;
   /**
    * Default value applied at initialization time.
    *
    * Constraints:
-   * - Only allowed for primitive kinds
+   * - Only allowed for primitive data types
    * - Must be JSON-serializable
    *
    * Not applicable for:
@@ -77,20 +72,20 @@ export interface IStructureAttribute extends IBase<'structure_attribute'> {
    */
   defaultValue: TStructureAttributeDefaultValue | null;
   /**
-   * Identifier of the referenced Structure when `kind === 'structure'`.
+   * Identifier of the referenced Structure when `dataType === 'structure'`.
    *
    * This links the attribute to a globally defined Structure.
    *
-   * Ignored when `kind !== 'structure'`.
+   * Ignored when `dataType !== 'structure'`.
    */
   referenceId: string | null;
   /**
    * Child attributes of this node when it represents an object shape.
    *
    * Applies when:
-   * - `kind === 'object'`   (inline anonymous structure)
-   * - `kind === 'structure'` (resolved structure shape)
-   * - `kind === 'array_object'`   (inline anonymous list of structure)
+   * - `dataType === 'object'`   (inline anonymous structure)
+   * - `dataType === 'structure'` (resolved structure shape)
+   * - `dataType === 'array_object'`   (inline anonymous list of structure)
    *
    * Must be empty for:
    * - primitives

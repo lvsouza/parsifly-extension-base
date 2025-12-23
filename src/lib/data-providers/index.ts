@@ -1,11 +1,6 @@
-import { IStructureAttribute } from './interfaces/IStructureAttribute';
 import { EventLink } from '../shared/services/EventLink';
-import { IComponent } from './interfaces/IComponent';
-import { IStructure } from './interfaces/IStructure';
 import { IProject } from './interfaces/IProject';
-import { IAction } from './interfaces/IAction';
-import { IFolder } from './interfaces/IFolder';
-import { IPage } from './interfaces/IPage';
+import { TAllTypes } from './interfaces/TAllTypes';
 
 
 /**
@@ -292,8 +287,6 @@ class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
  * @returns The root Data Provider object.
  */
 export const createDataProviders = (eventLink: EventLink) => {
-  type TAllTypes = IProject | IPage | IComponent | IAction | IFolder | IStructure | IStructureAttribute;
-
   const deepSearch = <GResult extends TAllTypes>(base: ICollection<GResult>, key: string, items: GResult[]): [GResult | null, IDoc<GResult> | null] => {
     for (const item of items) {
       if (item.id === key) return [item, base.doc(item.id)];

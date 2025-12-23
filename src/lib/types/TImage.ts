@@ -9,7 +9,7 @@ type TImageTypes =
   | 'action-global' | 'action-global-folder' | 'action-global-add'
   | 'variable-local' | 'variable-local-folder' | 'variable-local-add' | 'variable-local-attribute' | 'variable-local-substructure-attribute'
   | 'variable-global' | 'variable-global-folder' | 'variable-global-add' | 'variable-global-attribute' | 'variable-global-substructure-attribute'
-  | 'structure' | 'structure-folder' | 'structure-add' | 'structure-attribute' | 'substructure'
+  | 'structure' | 'structure-folder' | 'structure-add' | 'structure-attribute' | 'structure-substructure-attribute'
   | 'shared' | 'shared-folder'
   | 'integrations' | 'integrations-folder'
   | 'attachment' | 'attachment-folder' | 'attachment-add'

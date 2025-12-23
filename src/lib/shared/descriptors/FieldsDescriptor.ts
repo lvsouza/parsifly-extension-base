@@ -1,5 +1,4 @@
 import { FieldDescriptor } from './FieldDescriptor';
-import { EventLink } from '../services/EventLink';
 
 
 export interface IFieldsDescriptorProps {
@@ -60,43 +59,20 @@ export class FieldsDescriptor {
    */
   public readonly onGetFields: IFieldsDescriptorProps['onGetFields'];
 
-  /**
-   * Internal registry of field descriptors keyed by field group.
-   */
-  #registered: Map<string, Set<FieldDescriptor>> = new Map();
-
+  #registered: Set<FieldDescriptor> = new Set();
 
   constructor(props: IFieldsDescriptorProps) {
     this.key = props.key;
     this.unregister = this.unregister;
     this.onGetFields = async (key: string): Promise<any[]> => {
-      const registeredFieldsByKey = this.#registered.get(key) || new Set();
-      this.#registered.set(key, registeredFieldsByKey);
-
-      registeredFieldsByKey.forEach((field) => {
-        EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
-        EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:onDidChange`);
-      });
-      registeredFieldsByKey.clear();
-
       const fields = await props.onGetFields(key);
 
-      fields.forEach(field => {
-        if (field.getValue) EventLink.setExtensionEvent(`fieldDescriptor:${field.key}:getValue`, field.getValue);
-        if (field.onDidChange) EventLink.setExtensionEvent(`fieldDescriptor:${field.key}:onDidChange`, field.onDidChange);
-        registeredFieldsByKey.add(field);
-      });
+      for (const field of fields) {
+        field.register();
+        this.#registered.add(field)
+      }
 
-      return fields.map(field => ({
-        key: field.key,
-        name: field.name,
-        type: field.type,
-        icon: field.icon,
-        label: field.label,
-        children: field.children,
-        description: field.description,
-        defaultValue: field.defaultValue,
-      }));
+      return fields.map(field => field.serialize());
     };
   }
 
@@ -106,14 +82,7 @@ export class FieldsDescriptor {
    * is no longer needed.
    */
   public unregister() {
-    for (const [, registeredFieldsByKey] of this.#registered) {
-      registeredFieldsByKey.forEach((field) => {
-        EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:getValue`);
-        EventLink.removeExtensionEvent(`fieldDescriptor:${field.key}:onDidChange`);
-      });
-      registeredFieldsByKey.clear();
-    }
-
+    this.#registered.forEach((field) => field.unregister());
     this.#registered.clear();
   }
 }

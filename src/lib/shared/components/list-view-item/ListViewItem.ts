@@ -146,7 +146,6 @@ export class ListViewItem {
   public serialize() {
     return {
       key: this.key,
-      instanceId: this.key,
       icon: this.internalValue.icon,
       label: this.internalValue.label,
       extra: this.internalValue.extra,
