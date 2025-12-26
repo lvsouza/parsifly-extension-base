@@ -1,12 +1,14 @@
-import { TImage } from '../../types/TImage';
+import { TSerializableCompletionViewItem } from '../../components/completion-view-item/TCompletionViewItem';
+import { TImage } from '../../../types/TImage';
 
 
 export type TFieldDescriptorMountContext = {
   reloadValue(): Promise<void>;
+  getCompletions(query?: string): Promise<TSerializableCompletionViewItem[]>;
   set<GKey extends keyof TFieldDescriptor>(property: GKey, value: TFieldDescriptor[GKey]): Promise<void>;
 }
 
-export type TFieldDescriptorValue = string | number | boolean;
+export type TFieldDescriptorValue = string | number | boolean | null | TSerializableCompletionViewItem;
 
 export type TFieldDescriptorType =
   | 'view'
@@ -15,11 +17,13 @@ export type TFieldDescriptorType =
   | 'boolean'
   | 'textarea'
   | 'expression'
+  | 'autocomplete'
+  ;
 
 export type TFieldDescriptor<TValue extends TFieldDescriptorValue = TFieldDescriptorValue> = {
   name: string;
   icon?: TImage;
-  type: TFieldDescriptorType | (string & {});
+  type: TFieldDescriptorType;
   /** Title, main information for the record  */
   label: string;
   disabled?: boolean;
@@ -29,4 +33,5 @@ export type TFieldDescriptor<TValue extends TFieldDescriptorValue = TFieldDescri
 
   getValue?(context: TFieldDescriptorMountContext): Promise<TValue>;
   onDidChange?(value: TValue, context: TFieldDescriptorMountContext): Promise<void>;
+  getCompletions?(query: string | undefined, context: TFieldDescriptorMountContext): Promise<TSerializableCompletionViewItem[]>;
 }

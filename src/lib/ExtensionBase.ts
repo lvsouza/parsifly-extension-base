@@ -1,5 +1,7 @@
-import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
-import { FieldDescriptor } from './shared/descriptors/FieldDescriptor';
+import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/descriptors/CompletionsDescriptor';
+import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
+import { FieldsDescriptor } from './shared/descriptors/fields/FieldsDescriptor';
+import { FieldDescriptor } from './shared/descriptors/fields/FieldDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
 import { Editor } from './shared/components/editors/Editor';
 import { EventLink } from './shared/services/EventLink';
@@ -7,6 +9,7 @@ import { createDataProviders } from './data-providers';
 import { View } from './shared/components/views/View';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
+import { TApplication } from './types/TApplication';
 import { TQuickPick } from './types/TQuickPick';
 
 
@@ -21,7 +24,9 @@ export abstract class ExtensionBase {
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
   private _fields: Map<string, Set<((fields: FieldDescriptor[]) => void)>> = new Map();
+
   private _fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
+  private _completionsDescriptors: Set<CompletionsDescriptor> = new Set([]);
 
 
   constructor() {
@@ -82,6 +87,18 @@ export abstract class ExtensionBase {
         )
         .then(results => results.flatMap(result => result || []) || [])
     });
+    this._eventLink.setExtensionEvent('completions:get', async (intent: ICompletionsDescriptorIntent) => {
+      return await Promise
+        .all(
+          Array
+            .from(this._completionsDescriptors)
+            .map(async completionsDescriptor => {
+              const completions = await completionsDescriptor.onGetCompletions(intent);
+              return completions;
+            }),
+        )
+        .then(results => results.flatMap(result => result || []) || [])
+    });
   }
 
 
@@ -99,7 +116,7 @@ export abstract class ExtensionBase {
     console.log('Extension deactivated (base implementation).');
   }
 
-  public readonly application = {
+  public readonly application: TApplication = {
     platformActions: {
       reload: async () => {
         return await this._eventLink.callStudioEvent(
@@ -358,6 +375,18 @@ export abstract class ExtensionBase {
       unregister: (fieldsDescriptor: FieldsDescriptor) => {
         fieldsDescriptor.unregister();
         this._fieldsDescriptors.delete(fieldsDescriptor);
+      },
+    },
+    completions: {
+      get: async (intent): Promise<TSerializableCompletionViewItem[]> => {
+        return await this._eventLink.callStudioEvent(`completions:get`, intent);
+      },
+      register: (completionsDescriptor) => {
+        this._completionsDescriptors.add(completionsDescriptor);
+      },
+      unregister: (completionsDescriptor) => {
+        completionsDescriptor.unregister();
+        this._completionsDescriptors.delete(completionsDescriptor);
       },
     },
     editors: {

@@ -1,3 +1,5 @@
+export * from './lib/shared/components/completion-view-item/TCompletionViewItem';
+export * from './lib/shared/components/completion-view-item/CompletionViewItem';
 export * from './lib/shared/components/list-view-item/TListViewItem';
 export * from './lib/shared/components/list-view-item/ListViewItem';
 export * from './lib/shared/components/ContextMenuItem';
@@ -10,8 +12,10 @@ export * from './lib/shared/providers/TDataProvider';
 export * from './lib/shared/providers/ListProvider';
 export * from './lib/shared/providers/FormProvider';
 
-export * from './lib/shared/descriptors/FieldsDescriptor';
-export * from './lib/shared/descriptors/FieldDescriptor';
+export * from './lib/shared/descriptors/fields/TFieldDescriptor';
+export * from './lib/shared/descriptors/fields/FieldsDescriptor';
+export * from './lib/shared/descriptors/fields/FieldDescriptor';
+export * from './lib/shared/descriptors/CompletionsDescriptor';
 
 export * from './lib/types/TFileOrFolder';
 export * from './lib/types/TApplication';

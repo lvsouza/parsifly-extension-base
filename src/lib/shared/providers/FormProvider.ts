@@ -1,4 +1,4 @@
-import { FieldDescriptor } from '../descriptors/FieldDescriptor';
+import { FieldDescriptor } from '../descriptors/fields/FieldDescriptor';
 
 
 export interface IFormProviderProps {
@@ -16,13 +16,7 @@ export class FormProvider {
     this.getFields = async (item?: FieldDescriptor | undefined) => {
       return props
         .getFields(item)
-        .then(fields => {
-          return fields.map(field => ({
-            ...field,
-            getValue: undefined,
-            onDidChange: undefined,
-          }))
-        })
+        .then(fields => fields.map(field => field as unknown as FieldDescriptor))
     };
   }
 }

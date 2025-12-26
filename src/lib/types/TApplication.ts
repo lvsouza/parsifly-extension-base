@@ -1,5 +1,7 @@
-import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
-import { FieldDescriptor } from '../shared/descriptors/FieldDescriptor';
+import { CompletionsDescriptor, ICompletionsDescriptorIntent } from '../shared/descriptors/CompletionsDescriptor';
+import { TSerializableCompletionViewItem } from '../shared/components/completion-view-item/TCompletionViewItem';
+import { FieldsDescriptor } from '../shared/descriptors/fields/FieldsDescriptor';
+import { FieldDescriptor } from '../shared/descriptors/fields/FieldDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
 import { TAllTypes } from '../data-providers/interfaces/TAllTypes';
 import { IProject } from '../data-providers/interfaces/IProject';
@@ -45,6 +47,27 @@ export type TApplication = {
     readonly subscribe: (key: string, listener: ((fields: FieldDescriptor[]) => Promise<void>)) => (() => void);
     readonly register: (fieldsDescriptor: FieldsDescriptor) => void;
     readonly unregister: (fieldsDescriptor: FieldsDescriptor) => void;
+  }
+  completions: {
+    /**
+     * Returns a list of completions
+     * 
+     * @param intent The intent of what need to suggest completions
+     * @returns {Promise<TSerializableCompletionViewItem[]>} List of completions
+     */
+    readonly get: (intent: ICompletionsDescriptorIntent) => Promise<TSerializableCompletionViewItem[]>;
+    /**
+     * Register a completions descriptor to platform.
+     * 
+     * @param completionsDescriptor Descriptor to be registered
+     */
+    readonly register: (completionsDescriptor: CompletionsDescriptor) => void;
+    /**
+     * Unregister the descriptor
+     * 
+     * @param completionsDescriptor Descriptor to be unregistered
+     */
+    readonly unregister: (completionsDescriptor: CompletionsDescriptor) => void;
   }
   editors: {
     readonly reload: () => Promise<unknown>;

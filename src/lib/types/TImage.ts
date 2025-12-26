@@ -22,6 +22,8 @@ type TImageTypes =
   | 'listener' | 'listener-folder' | 'listener-add'
   | 'emitter' | 'emitter-folder' | 'listener-add'
   | 'advanced' | 'advanced-folder'
+  | 'string' | 'number' | 'boolean' | 'null' | 'object' | 'array' | 'binary'
+  ;
 
 export type TTypeImage = {
   /**

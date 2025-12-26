@@ -1,6 +1,7 @@
 import { TFieldDescriptor, TFieldDescriptorMountContext, TFieldDescriptorValue } from './TFieldDescriptor';
-import { TOnDidMount } from '../../types/TOnDidMount';
-import { EventLink } from '../services/EventLink';
+import { CompletionViewItem } from '../../components/completion-view-item/CompletionViewItem';
+import { TOnDidMount } from '../../../types/TOnDidMount';
+import { EventLink } from '../../services/EventLink';
 
 
 export type TFieldDescriptorConstructor = {
@@ -23,8 +24,9 @@ export class FieldDescriptor {
 
 
   readonly #context: TFieldDescriptorMountContext = {
+    getCompletions: async (query) => (await this.internalValue.getCompletions?.(query, this.#context)) || [],
     reloadValue: async () => {
-      return await EventLink.callStudioEvent(`fieldDescriptor:${this.key}:refetchChildren`);
+      return await EventLink.callStudioEvent(`fieldDescriptor:${this.key}:reloadValue`);
     },
     set: async <GKey extends keyof TFieldDescriptor>(property: GKey, newValue: TFieldDescriptor[GKey]) => {
       switch (property) {
@@ -49,8 +51,14 @@ export class FieldDescriptor {
       this.#mountId = mountId;
     }
 
-    EventLink.setExtensionEvent(`fieldDescriptor:${this.key}:getValue`, async () => this.internalValue.getValue?.(this.#context));
+
     EventLink.setExtensionEvent(`fieldDescriptor:${this.key}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldDescriptorValue, this.#context));
+    EventLink.setExtensionEvent(`fieldDescriptor:${this.key}:getValue`, async () => {
+      return this.internalValue.getValue?.(this.#context).then(value => value instanceof CompletionViewItem ? value.serialize() : value);
+    });
+    EventLink.setExtensionEvent(`fieldDescriptor:${this.key}:getCompletions`, async (query: string) => {
+      return this.internalValue.getCompletions?.(query, this.#context)
+    });
 
 
     if (this.onDidMount) {
@@ -66,6 +74,7 @@ export class FieldDescriptor {
             EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:getValue`);
             EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:onDidChange`);
             EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:onDidUnmount`);
+            EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:getCompletions`);
           }
 
           EventLink.setExtensionEvent(`fieldDescriptor:${this.key}:onDidUnmount`, this.#onDidUnmount);
@@ -86,6 +95,7 @@ export class FieldDescriptor {
     EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:onDidChange`);
     EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:onDidUnmount`);
+    EventLink.removeExtensionEvent(`fieldDescriptor:${this.key}:getCompletions`);
   }
 
   public serialize() {
