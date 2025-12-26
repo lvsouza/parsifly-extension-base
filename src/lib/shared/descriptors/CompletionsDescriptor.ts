@@ -6,6 +6,7 @@ import { TSerializableCompletionViewItem } from '../components/completion-view-i
 
 export type TCompletionRequestKind =
   | 'type'
+  | 'type_of_array'
   | 'value'
   | 'reference'
   | 'callable'

@@ -14,6 +14,9 @@ import { IDoc } from '../data-providers';
 
 
 export type TApplication = {
+  quickPick: {
+    readonly show: <T = unknown>(props: TQuickPick) => Promise<T>;
+  };
   platformActions: {
     readonly reload: () => Promise<unknown>;
     readonly register: (platformAction: PlatformAction) => void;
@@ -80,7 +83,6 @@ export type TApplication = {
     readonly downloadFiles: (downloadName: string, files: TFileOrFolder[]) => Promise<void>;
     readonly editor: {
       readonly feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
-      readonly showQuickPick: (props: TQuickPick) => Promise<string | void>;
       readonly showPrimarySideBarByKey: (key: string) => Promise<void>;
       readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
     };

@@ -117,6 +117,26 @@ export abstract class ExtensionBase {
   }
 
   public readonly application: TApplication = {
+    quickPick: {
+      show: async <T = unknown>(props: TQuickPick): Promise<T> => {
+        await this._eventLink.callStudioEvent(`quickPick:show`, props);
+
+        return new Promise(resolve => {
+          this._eventLink.setExtensionEvent('quickPick:onConfirm', async (result: T) => {
+            this._eventLink.removeExtensionEvent('quickPick:onConfirm');
+            this._eventLink.removeExtensionEvent('quickPick:onCancel');
+            resolve(result);
+            return;
+          });
+          this._eventLink.setExtensionEvent('quickPick:onCancel', async (result: T) => {
+            this._eventLink.removeExtensionEvent('quickPick:onConfirm');
+            this._eventLink.removeExtensionEvent('quickPick:onCancel');
+            resolve(result);
+            return;
+          });
+        })
+      },
+    },
     platformActions: {
       reload: async () => {
         return await this._eventLink.callStudioEvent(
@@ -492,14 +512,6 @@ export abstract class ExtensionBase {
           return await this._eventLink.callStudioEvent<string, void>('editor:feedback', message, type);
         },
         /**
-         * Allow to capture user freeform text input
-         * 
-         * @param props Props to configure the quick pick
-         */
-        showQuickPick: async (props: TQuickPick): Promise<string | void> => {
-          return await this._eventLink.callStudioEvent<TQuickPick, string | void>('editor:quickPick:show', props);
-        },
-        /**
          * Allow to set primary side bar view by key
          * 
          * @param key Key to identify the view to show in the side bar
@@ -515,7 +527,7 @@ export abstract class ExtensionBase {
         showSecondarySideBarByKey: async (key: string): Promise<void> => {
           return await this._eventLink.callStudioEvent<string, void>('editor:secondarySideBar:showByKey', key);
         },
-      }
+      },
     },
     dataProviders: createDataProviders(this._eventLink),
   } as const;
