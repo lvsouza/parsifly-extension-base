@@ -121,6 +121,16 @@ export interface ICollection<T> {
   add(data: T): Promise<void>;
 
   /**
+   * Replace documents of the Collection.
+   */
+  set(data: T[]): Promise<void>;
+
+  /**
+   * Remove all documents of the Collection.
+   */
+  clear(): Promise<void>;
+
+  /**
    * Subscribes to real-time updates for the entire Collection.
    */
   onValue(callback: (value: T[]) => Promise<void>): Promise<ISubscription>;
@@ -267,7 +277,15 @@ class CollectionRef<T> extends ResourceBase<T[]> implements ICollection<T> {
   }
 
   async add(data: T): Promise<void> {
-    return this.callEvent('add', data);
+    return this.callEvent('listAdd', data);
+  }
+
+  async set(data: T[]): Promise<void> {
+    return this.callEvent('listSet', data);
+  }
+
+  async clear(): Promise<void> {
+    return this.callEvent('listClear');
   }
 
   doc(id: string): IDoc<T> {

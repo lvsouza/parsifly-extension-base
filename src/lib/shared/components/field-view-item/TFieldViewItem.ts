@@ -8,7 +8,7 @@ export type TFieldViewItemMountContext = {
   set<GKey extends keyof TFieldViewItem>(property: GKey, value: TFieldViewItem[GKey]): Promise<void>;
 }
 
-export type TFieldViewItemValue = string | number | boolean | null | TSerializableCompletionViewItem;
+export type TFieldViewItemValue = string | number | boolean | null | { type: 'structure', referenceId: string } | { type: 'array_structure', referenceId: string };
 
 export type TFieldViewItemType =
   | 'view'
@@ -31,7 +31,7 @@ export type TFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemVa
   description?: string;
   defaultValue?: TValue;
 
-  getValue?(context: TFieldViewItemMountContext): Promise<TValue>;
   onDidChange?(value: TValue, context: TFieldViewItemMountContext): Promise<void>;
+  getValue?(context: TFieldViewItemMountContext): Promise<TValue | TSerializableCompletionViewItem>;
   getCompletions?(query: string | undefined, context: TFieldViewItemMountContext): Promise<TSerializableCompletionViewItem[]>;
 }
