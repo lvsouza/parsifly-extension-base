@@ -1,6 +1,6 @@
 
 
-type TImageTypes =
+export type TImageTypes =
   | 'folder' | 'folder-add' | 'delete'
   | 'project' | 'project-folder' | 'project-folder-add'
   | 'page' | 'page-folder' | 'page-add'
@@ -79,7 +79,7 @@ export type TVisualStudioCode = {
    * icon: { name: "VscAdd" }
    * ```
    * 
-   *  @link https://react-icons.github.io/react-icons/icons/vsc/
+   *  @link Find all icons on https://react-icons.github.io/react-icons/icons/vsc/
    */
   name: string;
   url?: undefined;

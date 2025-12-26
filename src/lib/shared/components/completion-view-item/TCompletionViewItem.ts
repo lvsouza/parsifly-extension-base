@@ -6,7 +6,6 @@ export type TCompletionViewItemMountContext = {
 }
 
 export type TCompletionViewItem = {
-  key: string;
   icon?: TImage;
   label: string;
   value: unknown;

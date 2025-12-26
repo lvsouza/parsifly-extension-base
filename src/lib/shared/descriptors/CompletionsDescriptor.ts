@@ -142,7 +142,7 @@ export interface ICompletionsDescriptorProps {
    * The returned descriptors may contain runtime handlers such as
    * `getValue` or `onDidChange`, which will be registered internally.
    *
-   * @param key - Identifier used to retrieve the completions.
+   * @param intent - Identifier representing the completion group to load.
    * @returns A Promise resolving to the full list of completion descriptors.
    */
   onGetCompletions: (intent: ICompletionsDescriptorIntent) => Promise<CompletionViewItem[]>;
@@ -181,7 +181,7 @@ export class CompletionsDescriptor {
    *
    * Returned completion objects will not include runtime callback handlers.
    *
-   * @param key - Identifier representing the completion group to load.
+   * @param intent - Identifier representing the completion group to load.
    * @returns A Promise resolving to the sanitized list of completion descriptors.
    */
   public readonly onGetCompletions: (intent: ICompletionsDescriptorIntent) => Promise<TSerializableCompletionViewItem[]>;

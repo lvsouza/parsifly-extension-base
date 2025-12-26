@@ -1,7 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from '../shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from '../shared/components/completion-view-item/TCompletionViewItem';
-import { FieldsDescriptor } from '../shared/descriptors/fields/FieldsDescriptor';
-import { FieldDescriptor } from '../shared/descriptors/fields/FieldDescriptor';
+import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
+import { FieldViewItem } from '../shared/components/field-view-item/FieldViewItem';
 import { PlatformAction } from '../shared/components/PlatformActions';
 import { TAllTypes } from '../data-providers/interfaces/TAllTypes';
 import { IProject } from '../data-providers/interfaces/IProject';
@@ -42,9 +42,9 @@ export type TApplication = {
     readonly subscribe: (listener: (key: string | undefined) => Promise<void>) => () => void;
   }
   fields: {
-    readonly get: (key: string) => Promise<FieldDescriptor[]>;
+    readonly get: (key: string) => Promise<FieldViewItem[]>;
     readonly refresh: (key: string) => Promise<void>;
-    readonly subscribe: (key: string, listener: ((fields: FieldDescriptor[]) => Promise<void>)) => (() => void);
+    readonly subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)) => (() => void);
     readonly register: (fieldsDescriptor: FieldsDescriptor) => void;
     readonly unregister: (fieldsDescriptor: FieldsDescriptor) => void;
   }

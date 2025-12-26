@@ -1,7 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
-import { FieldsDescriptor } from './shared/descriptors/fields/FieldsDescriptor';
-import { FieldDescriptor } from './shared/descriptors/fields/FieldDescriptor';
+import { FieldViewItem } from './shared/components/field-view-item/FieldViewItem';
+import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
 import { Editor } from './shared/components/editors/Editor';
 import { EventLink } from './shared/services/EventLink';
@@ -23,7 +23,7 @@ export abstract class ExtensionBase {
 
   private _selection: Set<((key: string[]) => void)> = new Set([]);
   private _edition: Set<((key: string | undefined) => void)> = new Set([]);
-  private _fields: Map<string, Set<((fields: FieldDescriptor[]) => void)>> = new Map();
+  private _fields: Map<string, Set<((fields: FieldViewItem[]) => void)>> = new Map();
 
   private _fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
   private _completionsDescriptors: Set<CompletionsDescriptor> = new Set([]);
@@ -35,7 +35,7 @@ export abstract class ExtensionBase {
 
     this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
     this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
-    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FieldDescriptor[])));
+    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FieldViewItem[])));
 
     this._eventLink.setExtensionEvent('parsers:load', async () => Array.from(this._parsers).map(parser => ({
       key: parser.key,
@@ -330,9 +330,9 @@ export abstract class ExtensionBase {
        * Returns a list of fields
        * 
        * @param key Resource key to be refreshed
-       * @returns {Promise<FieldDescriptor[]>} List of fields
+       * @returns {Promise<FieldViewItem[]>} List of fields
        */
-      get: async (key: string): Promise<FieldDescriptor[]> => {
+      get: async (key: string): Promise<FieldViewItem[]> => {
         return await this._eventLink.callStudioEvent(`fields:get`, key);
       },
       /**
@@ -348,7 +348,7 @@ export abstract class ExtensionBase {
        * 
        * @returns {() => void} Unsubscribe function
        */
-      subscribe: (key: string, listener: ((fields: FieldDescriptor[]) => Promise<void>)): (() => void) => {
+      subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)): (() => void) => {
         const listeners = this._fields.get(key)
 
         if (listeners) {

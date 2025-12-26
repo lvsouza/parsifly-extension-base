@@ -13,8 +13,6 @@ export type TListItemMountContext = {
 
 
 export type TListItemBase = {
-  /** Identifier */
-  key: string;
   icon?: TImage;
   /** Show additional information in bold */
   extra?: string;

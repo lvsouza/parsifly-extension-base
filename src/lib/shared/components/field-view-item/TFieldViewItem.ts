@@ -1,0 +1,37 @@
+import { TSerializableCompletionViewItem } from '../completion-view-item/TCompletionViewItem';
+import { TImage } from '../../../types/TImage';
+
+
+export type TFieldViewItemMountContext = {
+  reloadValue(): Promise<void>;
+  getCompletions(query?: string): Promise<TSerializableCompletionViewItem[]>;
+  set<GKey extends keyof TFieldViewItem>(property: GKey, value: TFieldViewItem[GKey]): Promise<void>;
+}
+
+export type TFieldViewItemValue = string | number | boolean | null | TSerializableCompletionViewItem;
+
+export type TFieldViewItemType =
+  | 'view'
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'textarea'
+  | 'expression'
+  | 'autocomplete'
+  ;
+
+export type TFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemValue> = {
+  name: string;
+  icon?: TImage;
+  type: TFieldViewItemType;
+  /** Title, main information for the record  */
+  label: string;
+  disabled?: boolean;
+  /** Details of the record */
+  description?: string;
+  defaultValue?: TValue;
+
+  getValue?(context: TFieldViewItemMountContext): Promise<TValue>;
+  onDidChange?(value: TValue, context: TFieldViewItemMountContext): Promise<void>;
+  getCompletions?(query: string | undefined, context: TFieldViewItemMountContext): Promise<TSerializableCompletionViewItem[]>;
+}

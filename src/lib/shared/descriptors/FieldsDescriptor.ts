@@ -1,4 +1,4 @@
-import { FieldDescriptor } from './FieldDescriptor';
+import { FieldViewItem } from '../components/field-view-item/FieldViewItem';
 
 
 export interface IFieldsDescriptorProps {
@@ -18,7 +18,7 @@ export interface IFieldsDescriptorProps {
    * @param key - Identifier used to retrieve the fields.
    * @returns A Promise resolving to the full list of field descriptors.
    */
-  onGetFields: (key: string) => Promise<FieldDescriptor[]>;
+  onGetFields: (key: string) => Promise<FieldViewItem[]>;
 }
 
 /**
@@ -59,7 +59,7 @@ export class FieldsDescriptor {
    */
   public readonly onGetFields: IFieldsDescriptorProps['onGetFields'];
 
-  #registered: Set<FieldDescriptor> = new Set();
+  #registered: Set<FieldViewItem> = new Set();
 
   constructor(props: IFieldsDescriptorProps) {
     this.key = props.key;

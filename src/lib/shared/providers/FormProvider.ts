@@ -1,9 +1,9 @@
-import { FieldDescriptor } from '../descriptors/fields/FieldDescriptor';
+import { FieldViewItem } from '../components/field-view-item/FieldViewItem';
 
 
 export interface IFormProviderProps {
   key: string;
-  getFields: (item?: FieldDescriptor) => Promise<FieldDescriptor[]>;
+  getFields: (item?: FieldViewItem) => Promise<FieldViewItem[]>;
 }
 export class FormProvider {
   public readonly type = 'form';
@@ -13,10 +13,10 @@ export class FormProvider {
   constructor(props: IFormProviderProps) {
     this.key = props.key;
 
-    this.getFields = async (item?: FieldDescriptor | undefined) => {
+    this.getFields = async (item?: FieldViewItem | undefined) => {
       return props
         .getFields(item)
-        .then(fields => fields.map(field => field as unknown as FieldDescriptor))
+        .then(fields => fields.map(field => field as unknown as FieldViewItem))
     };
   }
 }
