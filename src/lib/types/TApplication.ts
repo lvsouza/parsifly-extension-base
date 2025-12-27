@@ -31,6 +31,18 @@ export type TApplication = {
     readonly reload: () => Promise<unknown>;
     readonly register: (view: View) => void;
     readonly unregister: (view: View) => void;
+    /**
+     * Allow to set primary side bar view by key
+     * 
+     * @param key Key to identify the view to show in the side bar
+     */
+    readonly showPrimarySideBarByKey: (key: string) => Promise<void>;
+    /**
+     * Allow to set secondary side bar view by key
+     * 
+     * @param key Key to identify the view to show in the side bar
+     */
+    readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
   }
   selection: {
     readonly select: (key: string) => Promise<void>;
@@ -77,16 +89,39 @@ export type TApplication = {
     readonly register: (editor: Editor) => void;
     readonly unregister: (editor: Editor) => void;
   }
-  commands: {
-    readonly callCustomCommand: <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]) => Promise<GReturn>;
+  download: {
+    /**
+     * Allow you to download some content in a file
+     * 
+     * @param fileName Name of the generated file
+     * @param fileType extension of the file
+     * @param fileContent file content in string
+     */
     readonly downloadFile: (fileName: string, fileType: string, fileContent: string) => Promise<void>;
+    /**
+     * Allow you to download a lot of files and folders as zip
+     * 
+     * @param downloadName Name of the download as zip
+     * @param files List of files or folders to download
+     */
     readonly downloadFiles: (downloadName: string, files: TFileOrFolder[]) => Promise<void>;
-    readonly editor: {
-      readonly feedback: (message: string, type: "warning" | "success" | "error" | "info") => Promise<void>;
-      readonly showPrimarySideBarByKey: (key: string) => Promise<void>;
-      readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
-    };
-  };
+  },
+  /**
+   * Allow to show some feedback to the platform user
+   * 
+   * - `info` information feedback
+   * - `warning` warning feedback
+   * - `success` success feedback
+   * - `error` error feedback
+   * 
+   * @param message Message of the feedback
+   */
+  feedback: {
+    readonly info: (message: string) => Promise<void>;
+    readonly warning: (message: string) => Promise<void>;
+    readonly success: (message: string) => Promise<void>;
+    readonly error: (message: string) => Promise<void>;
+  },
   dataProviders: {
     project: () => IDoc<IProject>;
     findAnyResourceByKey<GResult extends TAllTypes>(key: string): Promise<[GResult, IDoc<GResult> | null]>;

@@ -274,6 +274,12 @@ export abstract class ExtensionBase {
           })),
         );
       },
+      showPrimarySideBarByKey: async (key: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent<string, void>('views:primarySideBar:showByKey', key);
+      },
+      showSecondarySideBarByKey: async (key: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent<string, void>('views:secondarySideBar:showByKey', key);
+      },
     },
     selection: {
       /**
@@ -469,64 +475,26 @@ export abstract class ExtensionBase {
         );
       },
     },
-    commands: {
-      /**
-       * Allow you to call a custom command from application
-       * 
-       * @param key Name of the command
-       * @param args List of arguments to be forwarded to the command call
-       */
-      callCustomCommand: async <GParam = unknown, GReturn = unknown>(key: string, ...args: GParam[]): Promise<GReturn> => {
-        return await this._eventLink.callStudioEvent(key, ...args);
-      },
-      /**
-       * Allow you to download some content in a file
-       * 
-       * @param fileName Name of the generated file
-       * @param fileType extension of the file
-       * @param fileContent file content in string
-       */
+    download: {
       downloadFile: async (fileName: string, fileType: string, fileContent: string): Promise<void> => {
         return await this._eventLink.callStudioEvent<string, void>('download:file', fileName, fileType, fileContent);
       },
-      /**
-       * Allow you to download a lot of files and folders as zip
-       * 
-       * @param downloadName Name of the download as zip
-       * @param files List of files or folders to download
-       */
       downloadFiles: async (downloadName: string, files: TFileOrFolder[]): Promise<void> => {
         return await this._eventLink.callStudioEvent<string | TFileOrFolder[], void>('download:files', downloadName, files);
       },
-      /**
-       * Grouped methods to editor configuration
-       */
-      editor: {
-        /**
-         * Allow to show some feedback to the platform user
-         * 
-         * @param message Message of the feedback
-         * @param type type of the feedback
-         */
-        feedback: async (message: string, type: "warning" | "success" | "error" | "info"): Promise<void> => {
-          return await this._eventLink.callStudioEvent<string, void>('editor:feedback', message, type);
-        },
-        /**
-         * Allow to set primary side bar view by key
-         * 
-         * @param key Key to identify the view to show in the side bar
-         */
-        showPrimarySideBarByKey: async (key: string): Promise<void> => {
-          return await this._eventLink.callStudioEvent<string, void>('editor:primarySideBar:showByKey', key);
-        },
-        /**
-         * Allow to set secondary side bar view by key
-         * 
-         * @param key Key to identify the view to show in the side bar
-         */
-        showSecondarySideBarByKey: async (key: string): Promise<void> => {
-          return await this._eventLink.callStudioEvent<string, void>('editor:secondarySideBar:showByKey', key);
-        },
+    },
+    feedback: {
+      info: async (message: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent('feedback:show', message, 'info');
+      },
+      warning: async (message: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent('feedback:show', message, 'warning');
+      },
+      success: async (message: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent('feedback:show', message, 'success');
+      },
+      error: async (message: string): Promise<void> => {
+        return await this._eventLink.callStudioEvent('feedback:show', message, 'error');
       },
     },
     dataProviders: createDataProviders(this._eventLink),
