@@ -15,6 +15,7 @@ export * from './lib/shared/providers/ListProvider';
 export * from './lib/shared/providers/FormProvider';
 
 export * from './lib/shared/descriptors/CompletionsDescriptor';
+export * from './lib/shared/descriptors/ProjectDescriptor';
 export * from './lib/shared/descriptors/FieldsDescriptor';
 
 export * from './lib/types/TFileOrFolder';

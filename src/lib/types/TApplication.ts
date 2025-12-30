@@ -1,7 +1,8 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from '../shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from '../shared/components/completion-view-item/TCompletionViewItem';
-import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
+import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/descriptors/ProjectDescriptor';
 import { FieldViewItem } from '../shared/components/field-view-item/FieldViewItem';
+import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
 import { TAllTypes } from '../data-providers/interfaces/TAllTypes';
 import { IProject } from '../data-providers/interfaces/IProject';
@@ -72,7 +73,7 @@ export type TApplication = {
      */
     readonly get: (intent: ICompletionsDescriptorIntent) => Promise<TSerializableCompletionViewItem[]>;
     /**
-     * Register a completions descriptor to platform.
+     * Register a completions descriptor to the platform.
      * 
      * @param completionsDescriptor Descriptor to be registered
      */
@@ -83,6 +84,26 @@ export type TApplication = {
      * @param completionsDescriptor Descriptor to be unregistered
      */
     readonly unregister: (completionsDescriptor: CompletionsDescriptor) => void;
+  }
+  projects: {
+    /**
+     * Returns a list of projects
+     * 
+     * @returns {Promise<TSerializableCompletionViewItem[]>} List of projects
+     */
+    readonly get: () => Promise<TSerializableProjectDescriptor[]>;
+    /**
+     * Register a project descriptor to the platform.
+     * 
+     * @param projectDescriptor Descriptor to be registered
+     */
+    readonly register: (projectDescriptor: ProjectDescriptor) => void;
+    /**
+     * Unregister the descriptor
+     * 
+     * @param projectDescriptor Descriptor to be unregistered
+     */
+    readonly unregister: (projectDescriptor: ProjectDescriptor) => void;
   }
   editors: {
     readonly reload: () => Promise<unknown>;

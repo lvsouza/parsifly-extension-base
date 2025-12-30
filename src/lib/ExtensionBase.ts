@@ -1,5 +1,6 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
+import { ProjectDescriptor, TSerializableProjectDescriptor } from './shared/descriptors/ProjectDescriptor';
 import { FieldViewItem } from './shared/components/field-view-item/FieldViewItem';
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
@@ -14,43 +15,44 @@ import { TQuickPick } from './types/TQuickPick';
 
 
 export abstract class ExtensionBase {
-  private _eventLink: EventLink = new EventLink();
+  #eventLink: EventLink = new EventLink();
 
-  private _platformActions: Set<PlatformAction> = new Set([]);
-  private _parsers: Set<Parser> = new Set([]);
-  private _editors: Set<Editor> = new Set([]);
-  private _views: Set<View> = new Set([]);
+  #platformActions: Set<PlatformAction> = new Set([]);
+  #parsers: Set<Parser> = new Set([]);
+  #editors: Set<Editor> = new Set([]);
+  #views: Set<View> = new Set([]);
 
-  private _selection: Set<((key: string[]) => void)> = new Set([]);
-  private _edition: Set<((key: string | undefined) => void)> = new Set([]);
-  private _fields: Map<string, Set<((fields: FieldViewItem[]) => void)>> = new Map();
+  #selection: Set<((key: string[]) => void)> = new Set([]);
+  #edition: Set<((key: string | undefined) => void)> = new Set([]);
+  #fields: Map<string, Set<((fields: FieldViewItem[]) => void)>> = new Map();
 
-  private _fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
-  private _completionsDescriptors: Set<CompletionsDescriptor> = new Set([]);
+  #fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
+  #projectsDescriptors: Set<ProjectDescriptor> = new Set([]);
+  #completionsDescriptors: Set<CompletionsDescriptor> = new Set([]);
 
 
   constructor() {
-    this._eventLink.setExtensionEvent('activate', this.activate.bind(this));
-    this._eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
+    this.#eventLink.setExtensionEvent('activate', this.activate.bind(this));
+    this.#eventLink.setExtensionEvent('deactivate', this.deactivate.bind(this));
 
-    this._eventLink.setExtensionEvent('selection:subscription', async keys => this._selection.forEach(listener => listener(keys as string[])));
-    this._eventLink.setExtensionEvent('edition:subscription', async key => this._edition.forEach(listener => listener(key as string | undefined)));
-    this._eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this._fields.get(key as string)?.forEach(listener => listener(fields as FieldViewItem[])));
+    this.#eventLink.setExtensionEvent('selection:subscription', async keys => this.#selection.forEach(listener => listener(keys as string[])));
+    this.#eventLink.setExtensionEvent('edition:subscription', async key => this.#edition.forEach(listener => listener(key as string | undefined)));
+    this.#eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this.#fields.get(key as string)?.forEach(listener => listener(fields as FieldViewItem[])));
 
-    this._eventLink.setExtensionEvent('parsers:load', async () => Array.from(this._parsers).map(parser => ({
+    this.#eventLink.setExtensionEvent('parsers:load', async () => Array.from(this.#parsers).map(parser => ({
       key: parser.key,
       icon: parser.internalValue.icon,
       label: parser.internalValue.label,
       description: parser.internalValue.description,
     })));
-    this._eventLink.setExtensionEvent('platformActions:load', async () => Array.from(this._platformActions).map(platformAction => ({
+    this.#eventLink.setExtensionEvent('platformActions:load', async () => Array.from(this.#platformActions).map(platformAction => ({
       key: platformAction.key,
       icon: platformAction.internalValue.icon,
       label: platformAction.internalValue.label,
       children: platformAction.internalValue.children,
       description: platformAction.internalValue.description,
     })));
-    this._eventLink.setExtensionEvent('views:load', async () => Array.from(this._views).map(view => ({
+    this.#eventLink.setExtensionEvent('views:load', async () => Array.from(this.#views).map(view => ({
       key: view.key,
       icon: view.internalValue.icon,
       type: view.internalValue.type,
@@ -62,7 +64,7 @@ export abstract class ExtensionBase {
         type: view.internalValue.dataProvider?.type,
       }
     })));
-    this._eventLink.setExtensionEvent('editors:load', async () => Array.from(this._editors).map(editor => ({
+    this.#eventLink.setExtensionEvent('editors:load', async () => Array.from(this.#editors).map(editor => ({
       key: editor.key,
       icon: editor.internalValue.icon,
       type: editor.internalValue.type,
@@ -75,11 +77,11 @@ export abstract class ExtensionBase {
         file: editor.internalValue.entryPoint?.file,
       },
     })));
-    this._eventLink.setExtensionEvent('fields:get', async (key: string) => {
+    this.#eventLink.setExtensionEvent('fields:get', async (key: string) => {
       return await Promise
         .all(
           Array
-            .from(this._fieldsDescriptors)
+            .from(this.#fieldsDescriptors)
             .map(async fieldsDescriptor => {
               const fields = await fieldsDescriptor.onGetFields(key);
               return fields;
@@ -87,17 +89,22 @@ export abstract class ExtensionBase {
         )
         .then(results => results.flatMap(result => result || []) || [])
     });
-    this._eventLink.setExtensionEvent('completions:get', async (intent: ICompletionsDescriptorIntent) => {
+    this.#eventLink.setExtensionEvent('completions:get', async (intent: ICompletionsDescriptorIntent) => {
       return await Promise
         .all(
           Array
-            .from(this._completionsDescriptors)
+            .from(this.#completionsDescriptors)
             .map(async completionsDescriptor => {
               const completions = await completionsDescriptor.onGetCompletions(intent);
               return completions;
             }),
         )
         .then(results => results.flatMap(result => result || []) || [])
+    });
+    this.#eventLink.setExtensionEvent('projects:get', async () => {
+      return Array
+        .from(this.#projectsDescriptors)
+        .map(projectDescriptor => projectDescriptor.serialize())
     });
   }
 
@@ -119,18 +126,18 @@ export abstract class ExtensionBase {
   public readonly application: TApplication = {
     quickPick: {
       show: async <T = unknown>(props: TQuickPick): Promise<T> => {
-        await this._eventLink.callStudioEvent(`quickPick:show`, props);
+        await this.#eventLink.callStudioEvent(`quickPick:show`, props);
 
         return new Promise(resolve => {
-          this._eventLink.setExtensionEvent('quickPick:onConfirm', async (result: T) => {
-            this._eventLink.removeExtensionEvent('quickPick:onConfirm');
-            this._eventLink.removeExtensionEvent('quickPick:onCancel');
+          this.#eventLink.setExtensionEvent('quickPick:onConfirm', async (result: T) => {
+            this.#eventLink.removeExtensionEvent('quickPick:onConfirm');
+            this.#eventLink.removeExtensionEvent('quickPick:onCancel');
             resolve(result);
             return;
           });
-          this._eventLink.setExtensionEvent('quickPick:onCancel', async (result: T) => {
-            this._eventLink.removeExtensionEvent('quickPick:onConfirm');
-            this._eventLink.removeExtensionEvent('quickPick:onCancel');
+          this.#eventLink.setExtensionEvent('quickPick:onCancel', async (result: T) => {
+            this.#eventLink.removeExtensionEvent('quickPick:onConfirm');
+            this.#eventLink.removeExtensionEvent('quickPick:onCancel');
             resolve(result);
             return;
           });
@@ -139,9 +146,9 @@ export abstract class ExtensionBase {
     },
     platformActions: {
       reload: async () => {
-        return await this._eventLink.callStudioEvent(
+        return await this.#eventLink.callStudioEvent(
           `platformActions:change`,
-          Array.from(this._platformActions).map(platformAction => ({
+          Array.from(this.#platformActions).map(platformAction => ({
             key: platformAction.key,
             icon: platformAction.internalValue.icon,
             label: platformAction.internalValue.label,
@@ -152,10 +159,10 @@ export abstract class ExtensionBase {
       },
       register: (platformAction: PlatformAction) => {
         platformAction.register();
-        this._platformActions.add(platformAction);
-        this._eventLink.callStudioEvent(
+        this.#platformActions.add(platformAction);
+        this.#eventLink.callStudioEvent(
           `platformActions:change`,
-          Array.from(this._platformActions).map(platformActions => ({
+          Array.from(this.#platformActions).map(platformActions => ({
             key: platformActions.key,
             icon: platformActions.internalValue.icon,
             label: platformActions.internalValue.label,
@@ -166,10 +173,10 @@ export abstract class ExtensionBase {
       },
       unregister: (platformAction: PlatformAction) => {
         platformAction.unregister();
-        this._platformActions.delete(platformAction);
-        this._eventLink.callStudioEvent(
+        this.#platformActions.delete(platformAction);
+        this.#eventLink.callStudioEvent(
           `platformActions:change`,
-          Array.from(this._platformActions).map(platformAction => ({
+          Array.from(this.#platformActions).map(platformAction => ({
             key: platformAction.key,
             icon: platformAction.internalValue.icon,
             label: platformAction.internalValue.label,
@@ -181,9 +188,9 @@ export abstract class ExtensionBase {
     },
     parsers: {
       reload: async () => {
-        return await this._eventLink.callStudioEvent(
+        return await this.#eventLink.callStudioEvent(
           `parsers:change`,
-          Array.from(this._parsers).map(parser => ({
+          Array.from(this.#parsers).map(parser => ({
             key: parser.key,
             icon: parser.internalValue.icon,
             label: parser.internalValue.label,
@@ -193,10 +200,10 @@ export abstract class ExtensionBase {
       },
       register: (parser: Parser) => {
         parser.register();
-        this._parsers.add(parser);
-        this._eventLink.callStudioEvent(
+        this.#parsers.add(parser);
+        this.#eventLink.callStudioEvent(
           `parsers:change`,
-          Array.from(this._parsers).map(parser => ({
+          Array.from(this.#parsers).map(parser => ({
             key: parser.key,
             icon: parser.internalValue.icon,
             label: parser.internalValue.label,
@@ -206,10 +213,10 @@ export abstract class ExtensionBase {
       },
       unregister: (parser: Parser) => {
         parser.unregister();
-        this._parsers.delete(parser);
-        this._eventLink.callStudioEvent(
+        this.#parsers.delete(parser);
+        this.#eventLink.callStudioEvent(
           `parsers:change`,
-          Array.from(this._parsers).map(parser => ({
+          Array.from(this.#parsers).map(parser => ({
             key: parser.key,
             icon: parser.internalValue.icon,
             label: parser.internalValue.label,
@@ -220,9 +227,9 @@ export abstract class ExtensionBase {
     },
     views: {
       reload: async () => {
-        return await this._eventLink.callStudioEvent(
+        return await this.#eventLink.callStudioEvent(
           `views:change`,
-          Array.from(this._views).map(view => ({
+          Array.from(this.#views).map(view => ({
             key: view.key,
             icon: view.internalValue.icon,
             type: view.internalValue.type,
@@ -238,10 +245,10 @@ export abstract class ExtensionBase {
       },
       register: (view: View) => {
         view.register();
-        this._views.add(view);
-        this._eventLink.callStudioEvent(
+        this.#views.add(view);
+        this.#eventLink.callStudioEvent(
           `views:change`,
-          Array.from(this._views).map(view => ({
+          Array.from(this.#views).map(view => ({
             key: view.key,
             icon: view.internalValue.icon,
             type: view.internalValue.type,
@@ -257,10 +264,10 @@ export abstract class ExtensionBase {
       },
       unregister: (view: View) => {
         view.unregister();
-        this._views.delete(view);
-        this._eventLink.callStudioEvent(
+        this.#views.delete(view);
+        this.#eventLink.callStudioEvent(
           `views:change`,
-          Array.from(this._views).map(view => ({
+          Array.from(this.#views).map(view => ({
             key: view.key,
             icon: view.internalValue.icon,
             type: view.internalValue.type,
@@ -275,10 +282,10 @@ export abstract class ExtensionBase {
         );
       },
       showPrimarySideBarByKey: async (key: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent<string, void>('views:primarySideBar:showByKey', key);
+        return await this.#eventLink.callStudioEvent<string, void>('views:primarySideBar:showByKey', key);
       },
       showSecondarySideBarByKey: async (key: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent<string, void>('views:secondarySideBar:showByKey', key);
+        return await this.#eventLink.callStudioEvent<string, void>('views:secondarySideBar:showByKey', key);
       },
     },
     selection: {
@@ -288,7 +295,7 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be selected
        */
       select: async (key: string) => {
-        await this._eventLink.callStudioEvent(`selection:select`, key);
+        await this.#eventLink.callStudioEvent(`selection:select`, key);
       },
       /**
        * Allow you to unselect a item
@@ -296,7 +303,7 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be unselected
        */
       unselect: async (key: string) => {
-        await this._eventLink.callStudioEvent(`selection:unselect`, key);
+        await this.#eventLink.callStudioEvent(`selection:unselect`, key);
       },
       /**
        * Returns a list of selected items in the platform
@@ -304,7 +311,7 @@ export abstract class ExtensionBase {
        * @returns {Promise<string[]>} List of selected items
        */
       get: async (): Promise<string[]> => {
-        return await this._eventLink.callStudioEvent(`selection:get`);
+        return await this.#eventLink.callStudioEvent(`selection:get`);
       },
       /**
        * Subscribe to selection item key change
@@ -312,8 +319,8 @@ export abstract class ExtensionBase {
        * @returns {() => void} Unsubscribe function
        */
       subscribe: (listener: ((key: string[]) => Promise<void>)): (() => void) => {
-        this._selection.add(listener);
-        return () => this._selection.delete(listener);
+        this.#selection.add(listener);
+        return () => this.#selection.delete(listener);
       },
     },
     edition: {
@@ -323,7 +330,7 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be opened for some editor
        */
       open: async (key: string) => {
-        await this._eventLink.callStudioEvent(`edition:open`, key);
+        await this.#eventLink.callStudioEvent(`edition:open`, key);
       },
       /**
        * Allow you to close a item if it is opened in the editor
@@ -331,7 +338,7 @@ export abstract class ExtensionBase {
        * @param key Identifier of a item to be closed
        */
       close: async (key: string) => {
-        await this._eventLink.callStudioEvent(`edition:close`, key);
+        await this.#eventLink.callStudioEvent(`edition:close`, key);
       },
       /**
        * Returns a edited item id in the platform
@@ -339,7 +346,7 @@ export abstract class ExtensionBase {
        * @returns {Promise<string>} Edited item id
        */
       get: async (): Promise<string> => {
-        return await this._eventLink.callStudioEvent(`edition:get`);
+        return await this.#eventLink.callStudioEvent(`edition:get`);
       },
       /**
        * Subscribe to edition item key change
@@ -347,8 +354,8 @@ export abstract class ExtensionBase {
        * @returns {() => void} Unsubscribe function
        */
       subscribe: (listener: ((key: string | undefined) => Promise<void>)): (() => void) => {
-        this._edition.add(listener);
-        return () => this._edition.delete(listener);
+        this.#edition.add(listener);
+        return () => this.#edition.delete(listener);
       },
     },
     fields: {
@@ -359,7 +366,7 @@ export abstract class ExtensionBase {
        * @returns {Promise<FieldViewItem[]>} List of fields
        */
       get: async (key: string): Promise<FieldViewItem[]> => {
-        return await this._eventLink.callStudioEvent(`fields:get`, key);
+        return await this.#eventLink.callStudioEvent(`fields:get`, key);
       },
       /**
        * Request the platform to get again all fields for this resource
@@ -367,7 +374,7 @@ export abstract class ExtensionBase {
        * @param key Resource key to be refreshed
        */
       refresh: async (key: string) => {
-        await this._eventLink.callStudioEvent(`fields:refresh`, key);
+        await this.#eventLink.callStudioEvent(`fields:refresh`, key);
       },
       /**
        * Subscribe to form fields
@@ -375,15 +382,15 @@ export abstract class ExtensionBase {
        * @returns {() => void} Unsubscribe function
        */
       subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)): (() => void) => {
-        const listeners = this._fields.get(key)
+        const listeners = this.#fields.get(key)
 
         if (listeners) {
           listeners.add(listener);
         } else {
-          this._fields.set(key, new Set([listener]))
+          this.#fields.set(key, new Set([listener]))
         }
 
-        return () => this._fields.get(key)?.delete(listener);
+        return () => this.#fields.get(key)?.delete(listener);
       },
       /**
        * Register a fields descriptor to platform.
@@ -391,7 +398,7 @@ export abstract class ExtensionBase {
        * @param fieldsDescriptor Descriptor to be registered
        */
       register: (fieldsDescriptor: FieldsDescriptor) => {
-        this._fieldsDescriptors.add(fieldsDescriptor);
+        this.#fieldsDescriptors.add(fieldsDescriptor);
       },
       /**
        * Unregister the descriptor
@@ -400,26 +407,38 @@ export abstract class ExtensionBase {
        */
       unregister: (fieldsDescriptor: FieldsDescriptor) => {
         fieldsDescriptor.unregister();
-        this._fieldsDescriptors.delete(fieldsDescriptor);
+        this.#fieldsDescriptors.delete(fieldsDescriptor);
       },
     },
     completions: {
       get: async (intent): Promise<TSerializableCompletionViewItem[]> => {
-        return await this._eventLink.callStudioEvent(`completions:get`, intent);
+        return await this.#eventLink.callStudioEvent(`completions:get`, intent);
       },
       register: (completionsDescriptor) => {
-        this._completionsDescriptors.add(completionsDescriptor);
+        this.#completionsDescriptors.add(completionsDescriptor);
       },
       unregister: (completionsDescriptor) => {
         completionsDescriptor.unregister();
-        this._completionsDescriptors.delete(completionsDescriptor);
+        this.#completionsDescriptors.delete(completionsDescriptor);
+      },
+    },
+    projects: {
+      get: async (): Promise<TSerializableProjectDescriptor[]> => {
+        return await this.#eventLink.callStudioEvent(`projects:get`);
+      },
+      register: (projectsDescriptor) => {
+        this.#projectsDescriptors.add(projectsDescriptor);
+      },
+      unregister: (projectsDescriptor) => {
+        projectsDescriptor.unregister();
+        this.#projectsDescriptors.delete(projectsDescriptor);
       },
     },
     editors: {
       reload: async () => {
-        return await this._eventLink.callStudioEvent(
+        return await this.#eventLink.callStudioEvent(
           `editors:change`,
-          Array.from(this._editors).map(editor => ({
+          Array.from(this.#editors).map(editor => ({
             key: editor.key,
             icon: editor.internalValue.icon,
             type: editor.internalValue.type,
@@ -436,10 +455,10 @@ export abstract class ExtensionBase {
       },
       register: (editor: Editor) => {
         editor.register();
-        this._editors.add(editor);
-        this._eventLink.callStudioEvent(
+        this.#editors.add(editor);
+        this.#eventLink.callStudioEvent(
           `editors:change`,
-          Array.from(this._editors).map(editor => ({
+          Array.from(this.#editors).map(editor => ({
             key: editor.key,
             icon: editor.internalValue.icon,
             type: editor.internalValue.type,
@@ -456,10 +475,10 @@ export abstract class ExtensionBase {
       },
       unregister: (editor: Editor) => {
         editor.unregister();
-        this._editors.delete(editor);
-        this._eventLink.callStudioEvent(
+        this.#editors.delete(editor);
+        this.#eventLink.callStudioEvent(
           `editors:change`,
-          Array.from(this._editors).map(editor => ({
+          Array.from(this.#editors).map(editor => ({
             key: editor.key,
             icon: editor.internalValue.icon,
             type: editor.internalValue.type,
@@ -477,26 +496,26 @@ export abstract class ExtensionBase {
     },
     download: {
       downloadFile: async (fileName: string, fileType: string, fileContent: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent<string, void>('download:file', fileName, fileType, fileContent);
+        return await this.#eventLink.callStudioEvent<string, void>('download:file', fileName, fileType, fileContent);
       },
       downloadFiles: async (downloadName: string, files: TFileOrFolder[]): Promise<void> => {
-        return await this._eventLink.callStudioEvent<string | TFileOrFolder[], void>('download:files', downloadName, files);
+        return await this.#eventLink.callStudioEvent<string | TFileOrFolder[], void>('download:files', downloadName, files);
       },
     },
     feedback: {
       info: async (message: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent('feedback:show', message, 'info');
+        return await this.#eventLink.callStudioEvent('feedback:show', message, 'info');
       },
       warning: async (message: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent('feedback:show', message, 'warning');
+        return await this.#eventLink.callStudioEvent('feedback:show', message, 'warning');
       },
       success: async (message: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent('feedback:show', message, 'success');
+        return await this.#eventLink.callStudioEvent('feedback:show', message, 'success');
       },
       error: async (message: string): Promise<void> => {
-        return await this._eventLink.callStudioEvent('feedback:show', message, 'error');
+        return await this.#eventLink.callStudioEvent('feedback:show', message, 'error');
       },
     },
-    dataProviders: createDataProviders(this._eventLink),
+    dataProviders: createDataProviders(this.#eventLink),
   } as const;
 }
