@@ -4,14 +4,12 @@ import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/des
 import { FieldViewItem } from '../shared/components/field-view-item/FieldViewItem';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
-import { TAllTypes } from '../data-providers/interfaces/TAllTypes';
-import { IProject } from '../data-providers/interfaces/IProject';
 import { Editor } from '../shared/components/editors/Editor';
 import { View } from '../shared/components/views/View';
 import { Parser } from '../shared/components/Parser';
 import { TFileOrFolder } from './TFileOrFolder';
+import { TQuery, TWatchQuery } from './TQuery';
 import { TQuickPick } from './TQuickPick';
-import { IDoc } from '../data-providers';
 
 
 export type TApplication = {
@@ -46,24 +44,90 @@ export type TApplication = {
     readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
   }
   selection: {
+    /**
+     * Allow you to select a item
+     * 
+     * @param key Identifier of a item to be selected
+     */
     readonly select: (key: string) => Promise<void>;
+    /**
+     * Allow you to unselect a item
+     * 
+     * @param key Identifier of a item to be unselected
+     */
     readonly unselect: (key: string) => Promise<void>;
+    /**
+     * Returns a list of selected items in the platform
+     * 
+     * @returns {Promise<string[]>} List of selected items
+     */
     readonly get: () => Promise<string[]>;
+    /**
+     * Subscribe to selection item key change
+     * 
+     * @returns {() => void} Unsubscribe function
+     */
     readonly subscribe: (listener: (key: string[]) => Promise<void>) => () => void;
-  }
+  };
   edition: {
+    /**
+     * Allow you to open a item in a editor based on the item type
+     * 
+     * @param key Identifier of a item to be opened for some editor
+     */
     readonly open: (key: string) => Promise<void>;
+    /**
+     * Allow you to close a item if it is opened in the editor
+     * 
+     * @param key Identifier of a item to be closed
+     */
     readonly close: (key: string) => Promise<void>;
+    /**
+     * Returns a edited item id in the platform
+     * 
+     * @returns {Promise<string>} Edited item id
+     */
     readonly get: () => Promise<string>;
+    /**
+     * Subscribe to edition item key change
+     * 
+     * @returns {() => void} Unsubscribe function
+     */
     readonly subscribe: (listener: (key: string | undefined) => Promise<void>) => () => void;
-  }
+  };
   fields: {
+    /**
+     * Returns a list of fields
+     * 
+     * @param key Resource key to be refreshed
+     * @returns {Promise<FieldViewItem[]>} List of fields
+     */
     readonly get: (key: string) => Promise<FieldViewItem[]>;
+    /**
+     * Request the platform to get again all fields for this resource
+     * 
+     * @param key Resource key to be refreshed
+     */
     readonly refresh: (key: string) => Promise<void>;
+    /**
+     * Subscribe to form fields
+     * 
+     * @returns {() => void} Unsubscribe function
+     */
     readonly subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)) => (() => void);
+    /**
+     * Register a fields descriptor to platform.
+     * 
+     * @param fieldsDescriptor Descriptor to be registered
+     */
     readonly register: (fieldsDescriptor: FieldsDescriptor) => void;
+    /**
+     * Unregister the descriptor
+     * 
+     * @param fieldsDescriptor Descriptor to be unregistered
+     */
     readonly unregister: (fieldsDescriptor: FieldsDescriptor) => void;
-  }
+  };
   completions: {
     /**
      * Returns a list of completions
@@ -84,7 +148,7 @@ export type TApplication = {
      * @param completionsDescriptor Descriptor to be unregistered
      */
     readonly unregister: (completionsDescriptor: CompletionsDescriptor) => void;
-  }
+  };
   projects: {
     /**
      * Returns a list of projects
@@ -104,12 +168,12 @@ export type TApplication = {
      * @param projectDescriptor Descriptor to be unregistered
      */
     readonly unregister: (projectDescriptor: ProjectDescriptor) => void;
-  }
+  };
   editors: {
     readonly reload: () => Promise<unknown>;
     readonly register: (editor: Editor) => void;
     readonly unregister: (editor: Editor) => void;
-  }
+  };
   download: {
     /**
      * Allow you to download some content in a file
@@ -126,7 +190,7 @@ export type TApplication = {
      * @param files List of files or folders to download
      */
     readonly downloadFiles: (downloadName: string, files: TFileOrFolder[]) => Promise<void>;
-  },
+  };
   /**
    * Allow to show some feedback to the platform user
    * 
@@ -142,9 +206,9 @@ export type TApplication = {
     readonly warning: (message: string) => Promise<void>;
     readonly success: (message: string) => Promise<void>;
     readonly error: (message: string) => Promise<void>;
-  },
-  dataProviders: {
-    project: () => IDoc<IProject>;
-    findAnyResourceByKey<GResult extends TAllTypes>(key: string): Promise<[GResult, IDoc<GResult> | null]>;
+  };
+  data: {
+    execute(query: TQuery): Promise<any>;
+    subscribe(props: TWatchQuery): Promise<() => Promise<void>>;
   };
 }

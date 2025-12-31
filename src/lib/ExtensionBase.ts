@@ -2,11 +2,11 @@ import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/de
 import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from './shared/descriptors/ProjectDescriptor';
 import { FieldViewItem } from './shared/components/field-view-item/FieldViewItem';
+import { createDeterministicKey } from './shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
 import { Editor } from './shared/components/editors/Editor';
 import { EventLink } from './shared/services/EventLink';
-import { createDataProviders } from './data-providers';
 import { View } from './shared/components/views/View';
 import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
@@ -24,6 +24,7 @@ export abstract class ExtensionBase {
 
   #selection: Set<((key: string[]) => void)> = new Set([]);
   #edition: Set<((key: string | undefined) => void)> = new Set([]);
+  #data: Map<string, Set<((data: any) => Promise<void>)>> = new Map();
   #fields: Map<string, Set<((fields: FieldViewItem[]) => void)>> = new Map();
 
   #fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
@@ -105,6 +106,18 @@ export abstract class ExtensionBase {
       return Array
         .from(this.#projectsDescriptors)
         .map(projectDescriptor => projectDescriptor.serialize())
+    });
+    this.#eventLink.setExtensionEvent('data:watch', async (key: string, data: any) => {
+      const listenerTriggers = Array.from(
+        this
+          .#data
+          .entries()
+          .filter(([listenersKey]) => listenersKey === key)
+          .flatMap(([, listeners]) => listeners)
+          .map(listener => listener(data))
+      );
+
+      return await Promise.all(listenerTriggers)
     });
   }
 
@@ -289,98 +302,42 @@ export abstract class ExtensionBase {
       },
     },
     selection: {
-      /**
-       * Allow you to select a item
-       * 
-       * @param key Identifier of a item to be selected
-       */
       select: async (key: string) => {
         await this.#eventLink.callStudioEvent(`selection:select`, key);
       },
-      /**
-       * Allow you to unselect a item
-       * 
-       * @param key Identifier of a item to be unselected
-       */
       unselect: async (key: string) => {
         await this.#eventLink.callStudioEvent(`selection:unselect`, key);
       },
-      /**
-       * Returns a list of selected items in the platform
-       * 
-       * @returns {Promise<string[]>} List of selected items
-       */
       get: async (): Promise<string[]> => {
         return await this.#eventLink.callStudioEvent(`selection:get`);
       },
-      /**
-       * Subscribe to selection item key change
-       * 
-       * @returns {() => void} Unsubscribe function
-       */
       subscribe: (listener: ((key: string[]) => Promise<void>)): (() => void) => {
         this.#selection.add(listener);
         return () => this.#selection.delete(listener);
       },
     },
     edition: {
-      /**
-       * Allow you to open a item in a editor based on the item type
-       * 
-       * @param key Identifier of a item to be opened for some editor
-       */
       open: async (key: string) => {
         await this.#eventLink.callStudioEvent(`edition:open`, key);
       },
-      /**
-       * Allow you to close a item if it is opened in the editor
-       * 
-       * @param key Identifier of a item to be closed
-       */
       close: async (key: string) => {
         await this.#eventLink.callStudioEvent(`edition:close`, key);
       },
-      /**
-       * Returns a edited item id in the platform
-       * 
-       * @returns {Promise<string>} Edited item id
-       */
       get: async (): Promise<string> => {
         return await this.#eventLink.callStudioEvent(`edition:get`);
       },
-      /**
-       * Subscribe to edition item key change
-       * 
-       * @returns {() => void} Unsubscribe function
-       */
       subscribe: (listener: ((key: string | undefined) => Promise<void>)): (() => void) => {
         this.#edition.add(listener);
         return () => this.#edition.delete(listener);
       },
     },
     fields: {
-      /**
-       * Returns a list of fields
-       * 
-       * @param key Resource key to be refreshed
-       * @returns {Promise<FieldViewItem[]>} List of fields
-       */
       get: async (key: string): Promise<FieldViewItem[]> => {
         return await this.#eventLink.callStudioEvent(`fields:get`, key);
       },
-      /**
-       * Request the platform to get again all fields for this resource
-       * 
-       * @param key Resource key to be refreshed
-       */
       refresh: async (key: string) => {
         await this.#eventLink.callStudioEvent(`fields:refresh`, key);
       },
-      /**
-       * Subscribe to form fields
-       * 
-       * @returns {() => void} Unsubscribe function
-       */
       subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)): (() => void) => {
         const listeners = this.#fields.get(key)
 
@@ -392,19 +349,9 @@ export abstract class ExtensionBase {
 
         return () => this.#fields.get(key)?.delete(listener);
       },
-      /**
-       * Register a fields descriptor to platform.
-       * 
-       * @param fieldsDescriptor Descriptor to be registered
-       */
       register: (fieldsDescriptor: FieldsDescriptor) => {
         this.#fieldsDescriptors.add(fieldsDescriptor);
       },
-      /**
-       * Unregister the descriptor
-       * 
-       * @param fieldsDescriptor Descriptor to be unregistered
-       */
       unregister: (fieldsDescriptor: FieldsDescriptor) => {
         fieldsDescriptor.unregister();
         this.#fieldsDescriptors.delete(fieldsDescriptor);
@@ -516,6 +463,29 @@ export abstract class ExtensionBase {
         return await this.#eventLink.callStudioEvent('feedback:show', message, 'error');
       },
     },
-    dataProviders: createDataProviders(this.#eventLink),
+    data: {
+      execute: async (query) => {
+        return await this.#eventLink.callStudioEvent('data:execute', query);
+      },
+      subscribe: async ({ listener, query }) => {
+        const key = createDeterministicKey(query.sql, query.parameters as []);
+
+        const listeners = this.#data.get(key);
+        if (listeners) {
+          listeners.add(listener);
+        } else {
+          await this.#eventLink.callStudioEvent<any>('data:watch:add', key, query);
+          this.#data.set(key, new Set([listener]))
+        }
+
+        return async () => {
+          this.#data.get(key)?.delete(listener);
+
+          if (this.#data.size === 0) {
+            await this.#eventLink.callStudioEvent<any>('data:watch:remove', key, query);
+          }
+        };
+      },
+    },
   } as const;
 }
