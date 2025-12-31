@@ -13,12 +13,12 @@ export type TListItemMountContext = {
 
 
 export type TListItemBase = {
-  icon?: TImage;
+  icon?: TImage | null;
   /** Show additional information in bold */
-  extra?: string;
+  extra?: string | null;
   /** Details of the record */
-  description?: string;
-  disableSelect?: boolean;
+  description?: string | null;
+  disableSelect?: boolean | null;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
   getContextMenuItems?: (context: TListItemMountContext) => Promise<ContextMenuItem[]>;
