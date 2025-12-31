@@ -25,17 +25,6 @@ export * from './lib/types/TDropEvent';
 export * from './lib/types/TQuickPick';
 export * from './lib/types/TImage';
 
-export * from './lib/data-providers/interfaces/IStructureAttribute';
-export * from './lib/data-providers/interfaces/IComponent';
-export * from './lib/data-providers/interfaces/IStructure';
-export * from './lib/data-providers/interfaces/TAllTypes';
-export * from './lib/data-providers/interfaces/IProject';
-export * from './lib/data-providers/interfaces/IAction';
-export * from './lib/data-providers/interfaces/IFolder';
-export * from './lib/data-providers/interfaces/IPage';
-export * from './lib/data-providers/interfaces/IBase';
-export * from './lib/data-providers';
-
 export * from './lib/shared/services/EventLink';
 export * from './lib/ExtensionBase';
 export * from './lib/Envs';

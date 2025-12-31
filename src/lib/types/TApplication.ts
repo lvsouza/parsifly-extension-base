@@ -73,9 +73,10 @@ export type TApplication = {
     /**
      * Allow you to open a item in a editor based on the item type
      * 
+     * @param type Type of the editor to be used to open this content
      * @param key Identifier of a item to be opened for some editor
      */
-    readonly open: (key: string) => Promise<void>;
+    readonly open: (type: string, key: string) => Promise<void>;
     /**
      * Allow you to close a item if it is opened in the editor
      * 

@@ -317,8 +317,8 @@ export abstract class ExtensionBase {
       },
     },
     edition: {
-      open: async (key: string) => {
-        await this.#eventLink.callStudioEvent(`edition:open`, key);
+      open: async (type: string, key: string) => {
+        await this.#eventLink.callStudioEvent(`edition:open`, type, key);
       },
       close: async (key: string) => {
         await this.#eventLink.callStudioEvent(`edition:close`, key);
