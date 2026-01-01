@@ -1,7 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from '../shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from '../shared/components/completion-view-item/TCompletionViewItem';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/descriptors/ProjectDescriptor';
-import { FieldViewItem } from '../shared/components/field-view-item/FieldViewItem';
+import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
 import { TQuery, TQueryResults, TWatchQuery } from './TQuery';
@@ -101,9 +101,9 @@ export type TApplication = {
      * Returns a list of fields
      * 
      * @param key Resource key to be refreshed
-     * @returns {Promise<FieldViewItem[]>} List of fields
+     * @returns {Promise<TSerializableFieldViewItem[]>} List of fields
      */
-    readonly get: (key: string) => Promise<FieldViewItem[]>;
+    readonly get: (key: string) => Promise<TSerializableFieldViewItem[]>;
     /**
      * Request the platform to get again all fields for this resource
      * 
@@ -115,7 +115,7 @@ export type TApplication = {
      * 
      * @returns {() => void} Unsubscribe function
      */
-    readonly subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)) => (() => void);
+    readonly subscribe: (key: string, listener: ((fields: TSerializableFieldViewItem[]) => Promise<void>)) => (() => void);
     /**
      * Register a fields descriptor to platform.
      * 

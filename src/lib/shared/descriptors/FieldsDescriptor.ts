@@ -1,3 +1,4 @@
+import { TSerializableFieldViewItem } from '../components/field-view-item/TFieldViewItem';
 import { FieldViewItem } from '../components/field-view-item/FieldViewItem';
 
 
@@ -57,7 +58,7 @@ export class FieldsDescriptor {
    * @param key - Identifier representing the field group to load.
    * @returns A Promise resolving to the sanitized list of field descriptors.
    */
-  public readonly onGetFields: IFieldsDescriptorProps['onGetFields'];
+  public readonly onGetFields: (key: string) => Promise<TSerializableFieldViewItem[]>;
 
   #registered: Set<FieldViewItem> = new Set();
 
@@ -77,7 +78,7 @@ export class FieldsDescriptor {
   }
 
   /**
-   * Unregisters all fields and their associated runtime handlers.
+   * Unregister all fields and their associated runtime handlers.
    * Intended for lifecycle cleanup when the descriptor instance
    * is no longer needed.
    */

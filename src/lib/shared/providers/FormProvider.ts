@@ -1,9 +1,9 @@
-import { FieldViewItem } from '../components/field-view-item/FieldViewItem';
+import { TSerializableFieldViewItem } from '../components/field-view-item/TFieldViewItem';
 
 
 export interface IFormProviderProps {
   key: string;
-  getFields: () => Promise<FieldViewItem[]>;
+  getFields: () => Promise<TSerializableFieldViewItem[]>;
 }
 export class FormProvider {
   public readonly type = 'form';
@@ -16,7 +16,7 @@ export class FormProvider {
     this.getFields = async () => {
       return props
         .getFields()
-        .then(fields => fields.map(field => field as unknown as FieldViewItem))
+        .then(fields => fields.map(field => field as unknown as TSerializableFieldViewItem))
     };
   }
 }

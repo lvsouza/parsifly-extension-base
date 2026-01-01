@@ -35,3 +35,14 @@ export type TFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemVa
   getValue?(context: TFieldViewItemMountContext): Promise<TValue | TSerializableCompletionViewItem>;
   getCompletions?(query: string | undefined, context: TFieldViewItemMountContext): Promise<TSerializableCompletionViewItem[]>;
 }
+
+export type TSerializableFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemValue> = {
+  key: string;
+  name: string;
+  icon?: TImage;
+  type: TFieldViewItemType;
+  label: string;
+  disabled?: boolean;
+  description?: string;
+  defaultValue?: TValue;
+}

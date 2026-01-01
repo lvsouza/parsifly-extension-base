@@ -1,4 +1,4 @@
-import { TFieldViewItem, TFieldViewItemMountContext, TFieldViewItemValue } from './TFieldViewItem';
+import { TFieldViewItem, TFieldViewItemMountContext, TFieldViewItemValue, TSerializableFieldViewItem } from './TFieldViewItem';
 import { CompletionViewItem } from '../completion-view-item/CompletionViewItem';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
@@ -98,14 +98,14 @@ export class FieldViewItem {
     EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:getCompletions`);
   }
 
-  public serialize() {
+  public serialize(): TSerializableFieldViewItem {
     return {
       key: this.key,
       icon: this.internalValue.icon,
-      name: this.internalValue.name,
-      type: this.internalValue.type,
-      label: this.internalValue.label,
+      name: this.internalValue.name || '',
+      label: this.internalValue.label || '',
       disabled: this.internalValue.disabled,
+      type: this.internalValue.type || 'view',
       description: this.internalValue.description,
       defaultValue: this.internalValue.defaultValue,
     };

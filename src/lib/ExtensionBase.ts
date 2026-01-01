@@ -1,7 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from './shared/descriptors/ProjectDescriptor';
-import { FieldViewItem } from './shared/components/field-view-item/FieldViewItem';
+import { TSerializableFieldViewItem } from './shared/components/field-view-item/TFieldViewItem';
 import { createDeterministicKey } from './shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
@@ -25,7 +25,7 @@ export abstract class ExtensionBase {
   #selection: Set<((key: string[]) => void)> = new Set([]);
   #edition: Set<((key: string | undefined) => void)> = new Set([]);
   #data: Map<string, Set<((data: any) => Promise<void>)>> = new Map();
-  #fields: Map<string, Set<((fields: FieldViewItem[]) => void)>> = new Map();
+  #fields: Map<string, Set<((fields: TSerializableFieldViewItem[]) => void)>> = new Map();
 
   #fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
   #projectsDescriptors: Set<ProjectDescriptor> = new Set([]);
@@ -38,7 +38,7 @@ export abstract class ExtensionBase {
 
     this.#eventLink.setExtensionEvent('selection:subscription', async keys => this.#selection.forEach(listener => listener(keys as string[])));
     this.#eventLink.setExtensionEvent('edition:subscription', async key => this.#edition.forEach(listener => listener(key as string | undefined)));
-    this.#eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this.#fields.get(key as string)?.forEach(listener => listener(fields as FieldViewItem[])));
+    this.#eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this.#fields.get(key as string)?.forEach(listener => listener(fields as TSerializableFieldViewItem[])));
 
     this.#eventLink.setExtensionEvent('parsers:load', async () => Array.from(this.#parsers).map(parser => ({
       key: parser.key,
@@ -332,13 +332,13 @@ export abstract class ExtensionBase {
       },
     },
     fields: {
-      get: async (key: string): Promise<FieldViewItem[]> => {
+      get: async (key: string): Promise<TSerializableFieldViewItem[]> => {
         return await this.#eventLink.callStudioEvent(`fields:get`, key);
       },
       refresh: async (key: string) => {
         await this.#eventLink.callStudioEvent(`fields:refresh`, key);
       },
-      subscribe: (key: string, listener: ((fields: FieldViewItem[]) => Promise<void>)): (() => void) => {
+      subscribe: (key: string, listener: ((fields: TSerializableFieldViewItem[]) => Promise<void>)): (() => void) => {
         const listeners = this.#fields.get(key)
 
         if (listeners) {
