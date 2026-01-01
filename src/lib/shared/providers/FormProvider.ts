@@ -3,7 +3,7 @@ import { FieldViewItem } from '../components/field-view-item/FieldViewItem';
 
 export interface IFormProviderProps {
   key: string;
-  getFields: (item?: FieldViewItem) => Promise<FieldViewItem[]>;
+  getFields: () => Promise<FieldViewItem[]>;
 }
 export class FormProvider {
   public readonly type = 'form';
@@ -13,9 +13,9 @@ export class FormProvider {
   constructor(props: IFormProviderProps) {
     this.key = props.key;
 
-    this.getFields = async (item?: FieldViewItem | undefined) => {
+    this.getFields = async () => {
       return props
-        .getFields(item)
+        .getFields()
         .then(fields => fields.map(field => field as unknown as FieldViewItem))
     };
   }

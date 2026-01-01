@@ -4,11 +4,11 @@ import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/des
 import { FieldViewItem } from '../shared/components/field-view-item/FieldViewItem';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
+import { TQuery, TQueryResults, TWatchQuery } from './TQuery';
 import { Editor } from '../shared/components/editors/Editor';
 import { View } from '../shared/components/views/View';
 import { Parser } from '../shared/components/Parser';
 import { TFileOrFolder } from './TFileOrFolder';
-import { TQuery, TWatchQuery } from './TQuery';
 import { TQuickPick } from './TQuickPick';
 
 
@@ -209,7 +209,7 @@ export type TApplication = {
     readonly error: (message: string) => Promise<void>;
   };
   data: {
-    execute(query: TQuery): Promise<any>;
+    execute(query: TQuery): Promise<TQueryResults>;
     subscribe(props: TWatchQuery): Promise<() => Promise<void>>;
   };
 }

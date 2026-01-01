@@ -1,7 +1,5 @@
-import { CompletionViewItem } from '../components/completion-view-item/CompletionViewItem';
-import { TDataType } from '../../data-providers/interfaces/IStructureAttribute';
-import { TAllResourceTypes } from '../../data-providers/interfaces/TAllTypes';
 import { TSerializableCompletionViewItem } from '../components/completion-view-item/TCompletionViewItem';
+import { CompletionViewItem } from '../components/completion-view-item/CompletionViewItem';
 
 
 export type TCompletionRequestKind =
@@ -32,7 +30,7 @@ export type TCompletionTypeDescriptor = {
    *
    * This value expresses intent, not validation rules.
    */
-  type: TDataType
+  type: string
 
   /**
    * Identifies an external type definition when the expected type is not
@@ -73,7 +71,7 @@ export type TCompletionVisibilityIntent = {
    * the request originates inside an action, a component, or another
    * conceptual area of the application.
    */
-  type: TAllResourceTypes
+  type: string
 
   /**
    * Reference to the parent structural intent.
