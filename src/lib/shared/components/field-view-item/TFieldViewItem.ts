@@ -8,7 +8,7 @@ export type TFieldViewItemMountContext = {
   set<GKey extends keyof TFieldViewItem>(property: GKey, value: TFieldViewItem[GKey]): Promise<void>;
 }
 
-export type TFieldViewItemValue = string | number | boolean | null | { type: 'structure', referenceId: string } | { type: 'array_structure', referenceId: string };
+export type TFieldViewItemValue = string | number | boolean | null | object;
 
 export type TFieldViewItemType =
   | 'view'
