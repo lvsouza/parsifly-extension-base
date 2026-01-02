@@ -54,4 +54,14 @@ export class DatabaseError {
     this.line = error.line;
     this.routine = error.routine;
   }
+
+  /**
+   * Force DatabaseError for the given unknown error 
+   * 
+   * @param error Unknown error 
+   * @returns error as DatabaseError
+   */
+  public static as(error: unknown) {
+    return error as DatabaseError
+  }
 }
