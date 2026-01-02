@@ -23,8 +23,8 @@ export * from './lib/types/TApplication';
 export * from './lib/types/TOnDidMount';
 export * from './lib/types/TDropEvent';
 export * from './lib/types/TQuickPick';
+export * from './lib/types/TQuery';
 export * from './lib/types/TImage';
 
-export * from './lib/shared/services/EventLink';
 export * from './lib/ExtensionBase';
 export * from './lib/Envs';

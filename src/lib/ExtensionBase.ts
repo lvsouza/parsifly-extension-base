@@ -12,6 +12,7 @@ import { TFileOrFolder } from './types/TFileOrFolder';
 import { Parser } from './shared/components/Parser';
 import { TApplication } from './types/TApplication';
 import { TQuickPick } from './types/TQuickPick';
+import { DatabaseError } from './types/TQuery';
 
 
 export abstract class ExtensionBase {
@@ -465,7 +466,9 @@ export abstract class ExtensionBase {
     },
     data: {
       execute: async (query) => {
-        return await this.#eventLink.callStudioEvent('data:execute', query);
+        const result: any = await this.#eventLink.callStudioEvent('data:execute', query);
+        if ('severity' in result) throw new DatabaseError(result);
+        return result;
       },
       subscribe: async ({ listener, query }) => {
         const key = createDeterministicKey(query.sql, query.parameters as []);
