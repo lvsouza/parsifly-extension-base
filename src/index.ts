@@ -1,4 +1,6 @@
 export * from './lib/shared/components/completion-view-item/TCompletionViewItem';
+export * from './lib/shared/components/diagnostic-view-item/TDiagnosticViewItem';
+export * from './lib/shared/components/diagnostic-view-item/DiagnosticViewItem';
 export * from './lib/shared/components/completion-view-item/CompletionViewItem';
 export * from './lib/shared/components/field-view-item/TFieldViewItem';
 export * from './lib/shared/components/field-view-item/FieldViewItem';
@@ -13,6 +15,8 @@ export * from './lib/shared/components/Parser';
 export * from './lib/shared/providers/TDataProvider';
 export * from './lib/shared/providers/ListProvider';
 export * from './lib/shared/providers/FormProvider';
+
+export * from './lib/shared/analyzers/DiagnosticAnalyzer';
 
 export * from './lib/shared/descriptors/CompletionsDescriptor';
 export * from './lib/shared/descriptors/ProjectDescriptor';

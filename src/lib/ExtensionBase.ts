@@ -1,5 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from './shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from './shared/components/completion-view-item/TCompletionViewItem';
+import { TSerializableDiagnosticViewItem } from './shared/components/diagnostic-view-item/TDiagnosticViewItem';
+import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from './shared/analyzers/DiagnosticAnalyzer';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from './shared/descriptors/ProjectDescriptor';
 import { TSerializableFieldViewItem } from './shared/components/field-view-item/TFieldViewItem';
 import { createDeterministicKey } from './shared/services/CreateDeterministicKey';
@@ -27,10 +29,13 @@ export abstract class ExtensionBase {
   #edition: Set<((key: string | undefined) => void)> = new Set([]);
   #data: Map<string, Set<((data: any) => Promise<void>)>> = new Map();
   #fields: Map<string, Set<((fields: TSerializableFieldViewItem[]) => void)>> = new Map();
+  #diagnostics: Set<((diagnostics: Record<string, TSerializableDiagnosticViewItem[]>) => void)> = new Set();
 
   #fieldsDescriptors: Set<FieldsDescriptor> = new Set([]);
   #projectsDescriptors: Set<ProjectDescriptor> = new Set([]);
   #completionsDescriptors: Set<CompletionsDescriptor> = new Set([]);
+
+  #diagnosticAnalyzers: Set<DiagnosticAnalyzer> = new Set([]);
 
 
   constructor() {
@@ -40,6 +45,7 @@ export abstract class ExtensionBase {
     this.#eventLink.setExtensionEvent('selection:subscription', async keys => this.#selection.forEach(listener => listener(keys as string[])));
     this.#eventLink.setExtensionEvent('edition:subscription', async key => this.#edition.forEach(listener => listener(key as string | undefined)));
     this.#eventLink.setExtensionEvent('fields:subscription', async (key, fields) => this.#fields.get(key as string)?.forEach(listener => listener(fields as TSerializableFieldViewItem[])));
+    this.#eventLink.setExtensionEvent('diagnostics:subscription', async (diagnostic) => this.#diagnostics.forEach(listener => listener(diagnostic as Record<string, TSerializableDiagnosticViewItem[]>)));
 
     this.#eventLink.setExtensionEvent('parsers:load', async () => Array.from(this.#parsers).map(parser => ({
       key: parser.key,
@@ -107,6 +113,14 @@ export abstract class ExtensionBase {
       return Array
         .from(this.#projectsDescriptors)
         .map(projectDescriptor => projectDescriptor.serialize())
+    });
+    this.#eventLink.setExtensionEvent('diagnostics:get', async () => {
+      return Array
+        .from(this.#diagnosticAnalyzers)
+        .reduce((current, projectDescriptor) => {
+          current[projectDescriptor.key] = projectDescriptor.diagnostics();
+          return current;
+        }, {} as Record<string, TSerializableDiagnosticViewItem[]>)
     });
     this.#eventLink.setExtensionEvent('data:watch', async (key: string, data: any) => {
       const listenerTriggers = Array.from(
@@ -488,6 +502,23 @@ export abstract class ExtensionBase {
             await this.#eventLink.callStudioEvent<any>('data:watch:remove', key, query);
           }
         };
+      },
+    },
+    diagnostics: {
+      get: async (key: string): Promise<Record<string, TSerializableDiagnosticViewItem[]>> => {
+        return await this.#eventLink.callStudioEvent(`diagnostics:get`, key);
+      },
+      subscribe: (listener: ((diagnostic: Record<string, TSerializableDiagnosticViewItem[]>) => Promise<void>)): (() => void) => {
+        this.#diagnostics.add(listener);
+        return () => this.#diagnostics.delete(listener);
+      },
+      register: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => {
+        analyzer.register(this.application);
+        this.#diagnosticAnalyzers.add(analyzer as DiagnosticAnalyzer);
+      },
+      unregister: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => {
+        analyzer.unregister();
+        this.#diagnosticAnalyzers.delete(analyzer as DiagnosticAnalyzer);
       },
     },
   } as const;

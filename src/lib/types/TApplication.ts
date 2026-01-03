@@ -1,5 +1,7 @@
 import { CompletionsDescriptor, ICompletionsDescriptorIntent } from '../shared/descriptors/CompletionsDescriptor';
 import { TSerializableCompletionViewItem } from '../shared/components/completion-view-item/TCompletionViewItem';
+import { TSerializableDiagnosticViewItem } from '../shared/components/diagnostic-view-item/TDiagnosticViewItem';
+import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from '../shared/analyzers/DiagnosticAnalyzer';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/descriptors/ProjectDescriptor';
 import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
@@ -210,6 +212,12 @@ export type TApplication = {
   };
   data: {
     execute(query: TQuery): Promise<TQueryResults>;
-    subscribe(props: TWatchQuery): Promise<() => Promise<void>>;
+    subscribe<T extends Record<string, any>>(props: TWatchQuery<T>): Promise<() => Promise<void>>;
+  };
+  diagnostics: {
+    readonly get: (key: string) => Promise<Record<string, TSerializableDiagnosticViewItem[]>>;
+    readonly subscribe: (listener: (diagnostic: Record<string, TSerializableDiagnosticViewItem[]>) => Promise<void>) => (() => void);
+    readonly register: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;
+    readonly unregister: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;
   };
 }

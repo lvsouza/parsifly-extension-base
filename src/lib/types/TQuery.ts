@@ -11,9 +11,9 @@ export type TQuery = {
   parameters: ReadonlyArray<unknown>
 }
 
-export type TWatchQuery = {
+export type TWatchQuery<T extends Record<string, any>> = {
   query: TQuery;
-  listener: (data: TQueryResults) => Promise<void>;
+  listener: (data: TQueryResults<T>) => Promise<void>;
 }
 
 export class DatabaseError {
