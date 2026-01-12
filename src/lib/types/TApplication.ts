@@ -215,7 +215,7 @@ export type TApplication = {
     subscribe<T extends Record<string, any>>(props: TWatchQuery<T>): Promise<() => Promise<void>>;
   };
   diagnostics: {
-    readonly get: (key: string) => Promise<Record<string, TSerializableDiagnosticViewItem[]>>;
+    readonly get: () => Promise<Record<string, TSerializableDiagnosticViewItem[]>>;
     readonly subscribe: (listener: (diagnostic: Record<string, TSerializableDiagnosticViewItem[]>) => Promise<void>) => (() => void);
     readonly register: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;
     readonly unregister: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;

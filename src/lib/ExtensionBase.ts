@@ -505,8 +505,8 @@ export abstract class ExtensionBase {
       },
     },
     diagnostics: {
-      get: async (key: string): Promise<Record<string, TSerializableDiagnosticViewItem[]>> => {
-        return await this.#eventLink.callStudioEvent(`diagnostics:get`, key);
+      get: async (): Promise<Record<string, TSerializableDiagnosticViewItem[]>> => {
+        return await this.#eventLink.callStudioEvent(`diagnostics:get`);
       },
       subscribe: (listener: ((diagnostic: Record<string, TSerializableDiagnosticViewItem[]>) => Promise<void>)): (() => void) => {
         this.#diagnostics.add(listener);

@@ -12,7 +12,7 @@ export type TDiagnosticViewItemMountContext = {
 export type TDiagnosticViewItem = {
   ruleId: string;
   message: string;
-  severity: 'error' | 'warning' | 'info' | 'hint'
+  severity: 'error' | 'warning' | 'info'
   target: {
     resourceType: string;
     resourceId: string;
@@ -42,22 +42,22 @@ export type TSerializableDiagnosticViewItem = {
 
   ruleId: string;
   message: string;
-  severity: 'error' | 'warning' | 'info' | 'hint'
+  severity: 'error' | 'warning' | 'info'
   target: {
     resourceType: string;
     resourceId: string;
-    property?: string;
+    property: string | undefined;
   };
 
-  code?: string;      // ex: "duplicate-name"
-  category?: string;  // ex: "naming", "structure"
-  documentation?: {
-    summary?: string;
-    url?: string;
+  code: string | undefined;      // ex: "duplicate-name"
+  category: string | undefined;  // ex: "naming", "structure"
+  documentation: undefined | {
+    summary: string | undefined;
+    url: string | undefined;
   };
 
-  icon?: TImage | null;
-  opened?: boolean | null;
-  children?: boolean | null;
-  disableSelect?: boolean | null;
+  icon: TImage | undefined;
+  opened: boolean | undefined;
+  children: boolean | undefined;
+  disableSelect: boolean | undefined;
 };

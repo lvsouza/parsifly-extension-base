@@ -15,9 +15,9 @@ export type TCompletionViewItem = {
 
 export type TSerializableCompletionViewItem = {
   key: string;
-  icon?: TImage;
   label: string;
   value: unknown;
-  disabled?: boolean;
-  description?: string;
+  icon: TImage | undefined;
+  disabled: boolean | undefined;
+  description: string | undefined;
 }

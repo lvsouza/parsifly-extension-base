@@ -26,6 +26,9 @@ export type TFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemVa
   type: TFieldViewItemType;
   /** Title, main information for the record  */
   label: string;
+  info?: string;
+  error?: string;
+  warning?: string;
   disabled?: boolean;
   /** Details of the record */
   description?: string;
@@ -39,10 +42,13 @@ export type TFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemVa
 export type TSerializableFieldViewItem<TValue extends TFieldViewItemValue = TFieldViewItemValue> = {
   key: string;
   name: string;
-  icon?: TImage;
-  type: TFieldViewItemType;
   label: string;
-  disabled?: boolean;
-  description?: string;
-  defaultValue?: TValue;
+  icon: TImage | undefined;
+  type: TFieldViewItemType;
+  info: string | undefined;
+  error: string | undefined;
+  warning: string | undefined;
+  disabled: boolean | undefined;
+  description: string | undefined;
+  defaultValue: TValue | undefined;
 }

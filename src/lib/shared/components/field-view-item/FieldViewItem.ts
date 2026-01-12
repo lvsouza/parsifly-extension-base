@@ -32,6 +32,7 @@ export class FieldViewItem {
       switch (property) {
         case 'getValue':
         case 'onDidChange':
+        case 'getCompletions':
           this.internalValue[property] = newValue;
           return;
 
@@ -102,6 +103,9 @@ export class FieldViewItem {
     return {
       key: this.key,
       icon: this.internalValue.icon,
+      info: this.internalValue.info,
+      error: this.internalValue.error,
+      warning: this.internalValue.warning,
       name: this.internalValue.name || '',
       label: this.internalValue.label || '',
       disabled: this.internalValue.disabled,

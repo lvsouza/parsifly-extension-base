@@ -23,9 +23,9 @@ export type TMigration = {
 
 export type TSerializableMigration = {
   id: string;
+  sql: string;
   order: number;
   description: string;
-  sql: string;
   parameters: unknown[];
 }
 
@@ -33,12 +33,12 @@ export type TSerializableProjectDescriptor = {
   key: string;
   name: string;
   type: string;
-  icon?: TImage;
-  color?: string;
   version: number;
-  thumbnail?: TImage;
-  description?: string;
   models: TModel[];
+  icon: TImage | undefined;
+  color: string | undefined;
+  thumbnail: TImage | undefined;
+  description: string | undefined;
   migrations: TSerializableMigration[];
 }
 
