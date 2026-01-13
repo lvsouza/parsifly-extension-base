@@ -21,6 +21,7 @@ export class View {
 
   constructor(props: TViewConstructor) {
     this.key = props.key;
+    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
     this.internalValue.type = 'view';
   }
@@ -68,13 +69,11 @@ export class View {
     });
 
 
-    if (this.internalValue.dataProvider) {
-      this.internalValue.dataProvider.register();
-    }
+    this.internalValue.dataProvider?.register();
 
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {

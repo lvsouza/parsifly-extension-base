@@ -21,8 +21,6 @@ export class Editor {
 
   constructor(props: TEditorConstructor) {
     this.key = props.key;
-    this.register = this.register;
-    this.unregister = this.unregister;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
     this.internalValue.type = 'editor';
@@ -68,7 +66,7 @@ export class Editor {
 
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {

@@ -18,6 +18,7 @@ export class PlatformAction {
 
   constructor(props: TPlatformActionConstructor) {
     this.key = props.key;
+    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
 
@@ -56,7 +57,7 @@ export class PlatformAction {
 
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {

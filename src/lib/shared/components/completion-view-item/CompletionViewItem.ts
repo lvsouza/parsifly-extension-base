@@ -16,7 +16,6 @@ export class CompletionViewItem {
 
   constructor(props: TCompletionViewItemConstructor) {
     this.key = props.key;
-    this.unregister = this.unregister;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
@@ -42,7 +41,7 @@ export class CompletionViewItem {
     }
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           this.#onDidUnmount = async (checkMountId) => {

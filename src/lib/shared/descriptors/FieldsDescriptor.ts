@@ -68,9 +68,12 @@ export class FieldsDescriptor {
     this.onGetFields = async (key: string): Promise<any[]> => {
       const fields = await props.onGetFields(key);
 
+      this.#registered.forEach((item) => item.unregister());
+      this.#registered.clear();
+
       for (const field of fields) {
         field.register();
-        this.#registered.add(field)
+        this.#registered.add(field);
       }
 
       return fields.map(field => field.serialize());

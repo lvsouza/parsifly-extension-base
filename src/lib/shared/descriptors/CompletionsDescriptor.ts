@@ -193,6 +193,9 @@ export class CompletionsDescriptor {
     this.onGetCompletions = async (intent): Promise<TSerializableCompletionViewItem[]> => {
       const completions = await props.onGetCompletions(intent);
 
+      this.#registered.forEach((item) => item.unregister());
+      this.#registered.clear();
+
       for (const completion of completions) {
         completion.register();
         this.#registered.add(completion)

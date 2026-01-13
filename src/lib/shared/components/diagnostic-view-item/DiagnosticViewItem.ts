@@ -19,7 +19,6 @@ export class DiagnosticViewItem {
 
   constructor(props: TDiagnosticItemConstructor) {
     this.key = props.key;
-    this.unregister = this.unregister;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
@@ -82,7 +81,7 @@ export class DiagnosticViewItem {
 
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           this.#onDidUnmount = async (checkMountId) => {

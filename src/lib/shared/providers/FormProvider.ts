@@ -37,7 +37,7 @@ export class FormProvider {
           }
 
           return field;
-        }))
+        }));
     };
   }
 

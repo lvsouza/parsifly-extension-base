@@ -16,8 +16,6 @@ export class Parser {
 
   constructor(props: TParserConstructor) {
     this.key = props.key;
-    this.register = this.register;
-    this.unregister = this.unregister;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
@@ -42,7 +40,7 @@ export class Parser {
     EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => await this.internalValue?.onParse?.(this.#context));
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {

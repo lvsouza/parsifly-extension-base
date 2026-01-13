@@ -18,6 +18,7 @@ export class StatusBarItem {
 
   constructor(props: TStatusBarItemConstructor) {
     this.key = props.key;
+    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
 
@@ -41,7 +42,7 @@ export class StatusBarItem {
     EventLink.setExtensionEvent(`statusBarItem:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
 
     if (this.onDidMount) {
-      this.onDidMount?.({
+      await this.onDidMount?.({
         ...this.#context,
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {
