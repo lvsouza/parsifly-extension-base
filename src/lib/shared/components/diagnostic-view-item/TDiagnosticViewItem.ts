@@ -26,10 +26,10 @@ export type TDiagnosticViewItem = {
     url?: string;
   };
 
-  icon?: TImage | null;
-  opened?: boolean | null;
-  children?: boolean | null;
-  disableSelect?: boolean | null;
+  icon?: TImage;
+  opened?: boolean;
+  children?: boolean;
+  disableSelect?: boolean;
 
   onItemClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;

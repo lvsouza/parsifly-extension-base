@@ -6,6 +6,7 @@ import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/des
 import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from '../shared/components/PlatformActions';
+import { StatusBarItem } from '../shared/components/StatusBarItems';
 import { TQuery, TQueryResults, TWatchQuery } from './TQuery';
 import { Editor } from '../shared/components/editors/Editor';
 import { View } from '../shared/components/views/View';
@@ -22,6 +23,11 @@ export type TApplication = {
     readonly reload: () => Promise<unknown>;
     readonly register: (platformAction: PlatformAction) => void;
     readonly unregister: (platformAction: PlatformAction) => void;
+  };
+  statusBarItems: {
+    readonly reload: () => Promise<unknown>;
+    readonly register: (statusBarItem: StatusBarItem) => void;
+    readonly unregister: (statusBarItem: StatusBarItem) => void;
   };
   parsers: {
     readonly reload: () => Promise<unknown>;

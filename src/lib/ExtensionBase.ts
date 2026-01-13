@@ -7,6 +7,7 @@ import { TSerializableFieldViewItem } from './shared/components/field-view-item/
 import { createDeterministicKey } from './shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
 import { PlatformAction } from './shared/components/PlatformActions';
+import { StatusBarItem } from './shared/components/StatusBarItems';
 import { Editor } from './shared/components/editors/Editor';
 import { EventLink } from './shared/services/EventLink';
 import { View } from './shared/components/views/View';
@@ -21,6 +22,7 @@ export abstract class ExtensionBase {
   #eventLink: EventLink = new EventLink();
 
   #platformActions: Set<PlatformAction> = new Set([]);
+  #statusBarItems: Set<StatusBarItem> = new Set([]);
   #parsers: Set<Parser> = new Set([]);
   #editors: Set<Editor> = new Set([]);
   #views: Set<View> = new Set([]);
@@ -60,6 +62,7 @@ export abstract class ExtensionBase {
       children: platformAction.internalValue.children,
       description: platformAction.internalValue.description,
     })));
+    this.#eventLink.setExtensionEvent('statusBarItems:load', async () => Array.from(this.#statusBarItems).map(statusBarItem => statusBarItem.serialize()));
     this.#eventLink.setExtensionEvent('views:load', async () => Array.from(this.#views).map(view => ({
       key: view.key,
       icon: view.internalValue.icon,
@@ -212,6 +215,21 @@ export abstract class ExtensionBase {
             description: platformAction.internalValue.description,
           })),
         );
+      },
+    },
+    statusBarItems: {
+      reload: async () => {
+        return await this.#eventLink.callStudioEvent(`statusBarItems:change`, Array.from(this.#statusBarItems).map(statusBarItem => statusBarItem.serialize()));
+      },
+      register: (statusBarItem: StatusBarItem) => {
+        statusBarItem.register();
+        this.#statusBarItems.add(statusBarItem);
+        this.#eventLink.callStudioEvent(`statusBarItems:change`, Array.from(this.#statusBarItems).map(statusBarItem => statusBarItem.serialize()));
+      },
+      unregister: (statusBarItem: StatusBarItem) => {
+        statusBarItem.unregister();
+        this.#statusBarItems.delete(statusBarItem);
+        this.#eventLink.callStudioEvent(`statusBarItems:change`, Array.from(this.#statusBarItems).map(statusBarItem => statusBarItem.serialize()));
       },
     },
     parsers: {

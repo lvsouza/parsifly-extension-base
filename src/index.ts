@@ -8,6 +8,7 @@ export * from './lib/shared/components/list-view-item/TListViewItem';
 export * from './lib/shared/components/list-view-item/ListViewItem';
 export * from './lib/shared/components/ContextMenuItem';
 export * from './lib/shared/components/PlatformActions';
+export * from './lib/shared/components/StatusBarItems';
 export * from './lib/shared/components/editors/Editor';
 export * from './lib/shared/components/views/View';
 export * from './lib/shared/components/Parser';
