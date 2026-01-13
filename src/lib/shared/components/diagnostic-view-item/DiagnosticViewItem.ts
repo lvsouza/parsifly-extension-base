@@ -1,5 +1,5 @@
 import { TDiagnosticViewItemMountContext, TDiagnosticViewItem, TSerializableDiagnosticViewItem } from './TDiagnosticViewItem';
-import { ContextMenuItem, TContextMenuItem } from '../ContextMenuItem';
+import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 
@@ -73,16 +73,11 @@ export class DiagnosticViewItem {
       const items = await this.internalValue.getActions?.(this.#context) || [];
 
       items.forEach(item => {
-        if (item.onClick) EventLink.setExtensionEvent(`contextMenuItem:${item.key}:onClick`, item.onClick);
+        item.register();
         this.#registered.add(item);
       });
 
-      return items.map(item => ({
-        ...item,
-        onClick: undefined,
-        unregister: undefined,
-        _registeredItems: undefined,
-      })) as Partial<TContextMenuItem>[];
+      return items.map(item => item.serialize());
     });
 
 
@@ -96,11 +91,14 @@ export class DiagnosticViewItem {
 
             await didUnmount();
 
+            this.#registered.forEach((item) => item.unregister());
+            this.#registered.clear();
+
             EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getRelated`);
+            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getActions`);
             EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemClick`);
             EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`);
             EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getActions`);
           }
 
           EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
@@ -124,14 +122,7 @@ export class DiagnosticViewItem {
     EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`);
     EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
 
-    this.#registered.forEach((field) => {
-      if (field instanceof DiagnosticViewItem) {
-        field.unregister();
-      } else {
-        EventLink.removeExtensionEvent(`contextMenuItem:${field.key}:onClick`);
-      }
-    });
-
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
   }
 

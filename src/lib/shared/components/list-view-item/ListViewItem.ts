@@ -1,5 +1,5 @@
-import { ContextMenuItem, TContextMenuItem } from '../ContextMenuItem';
-import { TListItemMountContext, TListViewItem } from './TListViewItem';
+import { TListItemMountContext, TListViewItem, TSerializableListViewItem } from './TListViewItem';
+import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { TDropEvent } from '../../../types/TDropEvent';
 import { EventLink } from '../../services/EventLink';
@@ -73,22 +73,17 @@ export class ListViewItem {
         this.#registered.add(item);
       }
 
-      return items.map(field => field.serialize());
+      return items.map(item => item.serialize());
     });
     EventLink.setExtensionEvent(`listItem:${this.key}:getContextMenuItems`, async () => {
       const items = await this.internalValue.getContextMenuItems?.(this.#context) || [];
 
       items.forEach(item => {
-        if (item.onClick) EventLink.setExtensionEvent(`contextMenuItem:${item.key}:onClick`, item.onClick);
+        item.register();
         this.#registered.add(item);
       });
 
-      return items.map(item => ({
-        ...item,
-        onClick: undefined,
-        unregister: undefined,
-        _registeredItems: undefined,
-      })) as Partial<TContextMenuItem>[];
+      return items.map(item => item.serialize());
     });
 
 
@@ -132,18 +127,11 @@ export class ListViewItem {
     EventLink.removeExtensionEvent(`listItem:${this.key}:onItemDoubleClick`);
     EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
 
-    this.#registered.forEach((field) => {
-      if (field instanceof ListViewItem) {
-        field.unregister();
-      } else {
-        EventLink.removeExtensionEvent(`contextMenuItem:${field.key}:onClick`);
-      }
-    });
-
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
   }
 
-  public serialize() {
+  public serialize(): TSerializableListViewItem {
     return {
       key: this.key,
       icon: this.internalValue.icon,

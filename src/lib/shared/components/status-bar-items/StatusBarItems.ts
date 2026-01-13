@@ -1,32 +1,13 @@
-import { TOnDidMount } from '../../types/TOnDidMount';
-import { EventLink } from '../services/EventLink';
-import { TImage } from '../../types/TImage';
+import { TSerializableStatusBarItem, TStatusBarItem, TStatusBarItemMountContext } from './TStatusBarItems';
+import { TOnDidMount } from '../../../types/TOnDidMount';
+import { EventLink } from '../../services/EventLink';
 
 
-export type TStatusBarItemMountContext = {
-  set<GKey extends keyof TStatusBarItem>(property: GKey, value: TStatusBarItem[GKey]): Promise<void>;
-}
 
-
-export type TStatusBarItem = {
-  icon?: TImage;
-  label: string;
-  description?: string;
-  side: 'right' | 'left';
-  action(context: TStatusBarItemMountContext): Promise<void>;
-};
 export type TStatusBarItemConstructor = {
   key: string;
-  initialValue?: Partial<TStatusBarItem>,
+  initialValue?: Partial<TStatusBarItem>;
   onDidMount?: TOnDidMount<TStatusBarItemMountContext>;
-}
-
-export type TSerializableStatusBarItem = {
-  key: string;
-  label: string;
-  side: 'right' | 'left';
-  icon: TImage | undefined;
-  description: string | undefined;
 }
 
 export class StatusBarItem {
@@ -37,9 +18,6 @@ export class StatusBarItem {
 
   constructor(props: TStatusBarItemConstructor) {
     this.key = props.key;
-    this.register = this.register;
-    this.unregister = this.unregister;
-    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
 
@@ -92,11 +70,14 @@ export class StatusBarItem {
   }
 
   public serialize(): TSerializableStatusBarItem {
+    if (!this.internalValue.label) throw new Error(`Label not defined for "${this.key}" status bar item`);
+    if (!this.internalValue.side) throw new Error(`Side not defined for "${this.key}" status bar item`);
+
     return {
       key: this.key,
       icon: this.internalValue.icon,
-      label: this.internalValue.label || '',
-      side: this.internalValue.side || 'right',
+      side: this.internalValue.side,
+      label: this.internalValue.label,
       description: this.internalValue.description,
     };
   }

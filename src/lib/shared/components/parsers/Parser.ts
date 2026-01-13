@@ -1,24 +1,7 @@
-import { TFileOrFolder } from '../../types/TFileOrFolder';
-import { TOnDidMount } from '../../types/TOnDidMount';
-import { EventLink } from '../services/EventLink';
-import { TImage } from '../../types/TImage';
+import { TParser, TParserMountContext, TSerializableParser } from './TParser';
+import { TOnDidMount } from '../../../types/TOnDidMount';
+import { EventLink } from '../../services/EventLink';
 
-
-export type TParserResult = {
-  name: string;
-  content: string | TFileOrFolder;
-}
-
-export type TParserMountContext = {
-  set<GKey extends keyof TParser>(property: GKey, value: TParser[GKey]): Promise<void>;
-}
-
-export type TParser = {
-  icon?: TImage;
-  label: string;
-  description?: string;
-  onParse: (context: TParserMountContext) => Promise<TParserResult>;
-}
 
 export type TParserConstructor = {
   key: string;
@@ -26,7 +9,6 @@ export type TParserConstructor = {
   onDidMount?: TOnDidMount<TParserMountContext>;
 }
 export class Parser {
-
   public readonly key: TParserConstructor['key'];
   public readonly onDidMount: TParserConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TParserConstructor['initialValue']>>;
@@ -86,5 +68,16 @@ export class Parser {
     EventLink.removeExtensionEvent(`parser:${this.key}:onParse`)
     EventLink.removeExtensionEvent(`parser:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`parser:${this.key}:onDidUnmount`);
+  }
+
+  public serialize(): TSerializableParser {
+    if (!this.internalValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
+
+    return {
+      key: this.key,
+      icon: this.internalValue.icon,
+      label: this.internalValue.label,
+      description: this.internalValue.description,
+    };
   }
 }

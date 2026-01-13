@@ -1,5 +1,5 @@
+import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
 import { TDropEvent } from '../../../types/TDropEvent';
-import { ContextMenuItem } from '../ContextMenuItem';
 import { TImage } from '../../../types/TImage';
 import { ListViewItem } from './ListViewItem';
 
@@ -13,12 +13,12 @@ export type TListItemMountContext = {
 
 
 export type TListItemBase = {
-  icon?: TImage | null;
+  icon?: TImage;
   /** Show additional information in bold */
-  extra?: string | null;
+  extra?: string;
   /** Details of the record */
-  description?: string | null;
-  disableSelect?: boolean | null;
+  description?: string;
+  disableSelect?: boolean;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
   getContextMenuItems?: (context: TListItemMountContext) => Promise<ContextMenuItem[]>;
@@ -66,3 +66,18 @@ export type TListViewItem =
   & (TListItemWithLabel | TListItemWithTitle)
   & (TListItemWithoutDrag | TListItemWithDrag)
   & (TListItemWithoutDrop | TListItemWithDrop);
+
+
+export type TSerializableListViewItem = {
+  key: string;
+  icon: TImage | undefined;
+  extra: string | undefined;
+  label: string | undefined;
+  title: string | undefined;
+  opened: boolean | undefined;
+  children: boolean | undefined;
+  description: string | undefined;
+  dragProvides: string | undefined;
+  dropAccepts: string[] | undefined;
+  disableSelect: boolean | undefined;
+}

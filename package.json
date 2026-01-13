@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "vite build",
+    "build": "tsc && vite build",
     "doc": "typedoc"
   },
   "dependencies": {

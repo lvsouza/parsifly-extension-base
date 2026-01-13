@@ -1,29 +1,8 @@
+import { TEditor, TEditorContext, TSerializableEditor } from './TEditor';
+import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
-import { PlatformAction } from '../PlatformActions';
-import { TImage } from '../../../types/TImage';
 
-
-export type TEditorContext = {
-  reload(): Promise<void>;
-  sendMessage(...values: unknown[]): Promise<unknown>;
-  set<GKey extends keyof TEditor>(property: GKey, value: TEditor[GKey]): Promise<void>;
-}
-
-export type TEditor = {
-  icon?: TImage;
-  type: 'editor';
-  title: string;
-  position: 'center';
-  selector: string[];
-  description?: string;
-  onDidMessage: (context: TEditorContext, ...values: unknown[]) => Promise<unknown>;
-  getActions?: (context: TEditorContext) => Promise<PlatformAction[]>;
-  entryPoint: {
-    basePath: string;
-    file: string;
-  };
-}
 
 export type TEditorConstructor = {
   key: string;
@@ -74,7 +53,7 @@ export class Editor {
 
   async #onDidMount(): Promise<void> {
     EventLink.setExtensionEvent(`editor:${this.key}:onDidMessage`, async (...values) => {
-      return await this.internalValue?.onDidMessage?.(this.#context, ...values)
+      return await this.internalValue?.onDidMessage?.(this.#context, ...values);
     });
     EventLink.setExtensionEvent(`editor:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
@@ -84,13 +63,7 @@ export class Editor {
         this.#registered.add(action);
       }
 
-      return actions.map(action => ({
-        key: action.key,
-        icon: action.internalValue.icon,
-        label: action.internalValue.label,
-        children: action.internalValue.children,
-        description: action.internalValue.description,
-      }));
+      return actions.map(action => action.serialize());
     });
 
 
@@ -100,6 +73,9 @@ export class Editor {
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {
             await didUnmount();
+
+            this.#registered.forEach((item) => item.unregister());
+            this.#registered.clear();
 
             EventLink.removeExtensionEvent(`editor:${this.key}:getActions`);
           }
@@ -122,7 +98,25 @@ export class Editor {
     EventLink.removeExtensionEvent(`editor:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`editor:${this.key}:onDidUnmount`);
 
-    this.#registered.forEach((action) => action.unregister());
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
+  }
+
+  public serialize(): TSerializableEditor {
+    if (!this.internalValue.title) throw new Error(`Title not defined for "${this.key}" editor`)
+    if (!this.internalValue.selector) throw new Error(`Selector not defined for "${this.key}" editor`)
+    if (!this.internalValue.position) throw new Error(`Position not defined for "${this.key}" editor`)
+    if (!this.internalValue.entryPoint) throw new Error(`Entrypoint not defined for "${this.key}" editor`)
+
+    return {
+      key: this.key,
+      type: 'editor',
+      icon: this.internalValue.icon,
+      title: this.internalValue.title,
+      selector: this.internalValue.selector,
+      position: this.internalValue.position,
+      entryPoint: this.internalValue.entryPoint,
+      description: this.internalValue.description,
+    };
   }
 }

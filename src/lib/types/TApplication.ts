@@ -4,13 +4,13 @@ import { TSerializableDiagnosticViewItem } from '../shared/components/diagnostic
 import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from '../shared/analyzers/DiagnosticAnalyzer';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/descriptors/ProjectDescriptor';
 import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
+import { PlatformAction } from '../shared/components/platform-actions/PlatformActions';
+import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarItems';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
-import { PlatformAction } from '../shared/components/PlatformActions';
-import { StatusBarItem } from '../shared/components/StatusBarItems';
 import { TQuery, TQueryResults, TWatchQuery } from './TQuery';
 import { Editor } from '../shared/components/editors/Editor';
+import { Parser } from '../shared/components/parsers/Parser';
 import { View } from '../shared/components/views/View';
-import { Parser } from '../shared/components/Parser';
 import { TFileOrFolder } from './TFileOrFolder';
 import { TQuickPick } from './TQuickPick';
 

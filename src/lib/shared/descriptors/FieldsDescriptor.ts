@@ -83,7 +83,7 @@ export class FieldsDescriptor {
    * is no longer needed.
    */
   public unregister() {
-    this.#registered.forEach((field) => field.unregister());
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
   }
 }

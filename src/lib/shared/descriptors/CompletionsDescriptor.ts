@@ -208,7 +208,7 @@ export class CompletionsDescriptor {
    * is no longer needed.
    */
   public unregister() {
-    this.#registered.forEach((completion) => completion.unregister());
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
   }
 }

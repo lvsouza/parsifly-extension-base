@@ -1,27 +1,8 @@
-import { TDataProvider } from '../../providers/TDataProvider';
-import { FormProvider } from '../../providers/FormProvider';
-import { ListProvider } from '../../providers/ListProvider';
+import { PlatformAction } from '../platform-actions/PlatformActions';
+import { TSerializableView, TView, TViewContext } from './TView';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
-import { PlatformAction } from '../PlatformActions';
-import { TImage } from '../../../types/TImage';
 
-
-export type TViewContext = {
-  refetchData(): Promise<void>;
-  set<GKey extends keyof TView>(property: GKey, value: TView[GKey]): Promise<void>;
-}
-
-export type TView = {
-  type: 'view';
-  icon?: TImage;
-  title: string;
-  description?: string;
-  dataProvider: TDataProvider;
-  position: 'primary' | 'secondary';
-  getTabs?: (context: TViewContext) => Promise<PlatformAction[]>;
-  getActions?: (context: TViewContext) => Promise<PlatformAction[]>;
-}
 
 export type TViewConstructor = {
   key: string;
@@ -40,9 +21,6 @@ export class View {
 
   constructor(props: TViewConstructor) {
     this.key = props.key;
-    this.register = this.register;
-    this.unregister = this.unregister;
-    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
     this.internalValue.type = 'view';
   }
@@ -76,13 +54,7 @@ export class View {
         this.#registered.add(action);
       }
 
-      return actions.map(action => ({
-        key: action.key,
-        icon: action.internalValue.icon,
-        label: action.internalValue.label,
-        children: action.internalValue.children,
-        description: action.internalValue.description,
-      }));
+      return actions.map(action => action.serialize());
     });
     EventLink.setExtensionEvent(`view:${this.key}:getTabs`, async () => {
       const tabs = await this.internalValue.getTabs?.(this.#context) || [];
@@ -92,20 +64,12 @@ export class View {
         this.#registered.add(tab);
       }
 
-      return tabs.map(action => ({
-        key: action.key,
-        icon: action.internalValue.icon,
-        label: action.internalValue.label,
-        children: action.internalValue.children,
-        description: action.internalValue.description,
-      }));
+      return tabs.map(tab => tab.serialize());
     });
 
 
-    if (this.internalValue.dataProvider instanceof FormProvider) {
-      EventLink.setExtensionEvent(`dataProvider:${this.internalValue.dataProvider.key}:getFields`, this.internalValue.dataProvider.getFields);
-    } else if (this.internalValue.dataProvider instanceof ListProvider) {
-      EventLink.setExtensionEvent(`dataProvider:${this.internalValue.dataProvider.key}:getItems`, this.internalValue.dataProvider.getItems);
+    if (this.internalValue.dataProvider) {
+      this.internalValue.dataProvider.register();
     }
 
 
@@ -116,10 +80,10 @@ export class View {
           const didUnmountAndRemoveEventListener = async () => {
             await didUnmount();
 
-            EventLink.removeExtensionEvent(`view:${this.key}:getTabs`);
-            EventLink.removeExtensionEvent(`view:${this.key}:getActions`);
-            EventLink.removeExtensionEvent(`dataProvider:${this.internalValue.dataProvider?.key}:getItems`);
-            EventLink.removeExtensionEvent(`dataProvider:${this.internalValue.dataProvider?.key}:getFields`);
+            this.internalValue.dataProvider?.unregister();
+
+            this.#registered.forEach((item) => item.unregister());
+            this.#registered.clear();
           }
 
           EventLink.setExtensionEvent(`view:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
@@ -136,14 +100,28 @@ export class View {
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`view:${this.key}:getTabs`)
-    EventLink.removeExtensionEvent(`view:${this.key}:getActions`)
     EventLink.removeExtensionEvent(`view:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`view:${this.key}:onDidUnmount`);
-    EventLink.removeExtensionEvent(`dataProvider:${this.internalValue.dataProvider?.key}:getItems`);
-    EventLink.removeExtensionEvent(`dataProvider:${this.internalValue.dataProvider?.key}:getFields`);
 
-    this.#registered.forEach((action) => action.unregister());
+    this.internalValue.dataProvider?.unregister();
+
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
+  }
+
+  public serialize(): TSerializableView {
+    if (!this.internalValue.title) throw new Error(`Title not defined for "${this.key}" view`);
+    if (!this.internalValue.position) throw new Error(`Position not defined for "${this.key}" view`);
+    if (!this.internalValue.dataProvider) throw new Error(`Data provider not defined for "${this.key}" view`);
+
+    return {
+      type: 'view',
+      key: this.key,
+      icon: this.internalValue.icon,
+      title: this.internalValue.title,
+      position: this.internalValue.position,
+      description: this.internalValue.description,
+      dataProvider: this.internalValue.dataProvider.serialize(),
+    };
   }
 }

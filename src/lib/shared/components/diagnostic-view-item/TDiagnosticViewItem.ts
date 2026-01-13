@@ -1,5 +1,5 @@
+import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
 import { DiagnosticViewItem } from './DiagnosticViewItem';
-import { ContextMenuItem } from '../ContextMenuItem';
 import { TImage } from '../../../types/TImage';
 
 

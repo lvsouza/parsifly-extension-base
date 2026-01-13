@@ -4,15 +4,15 @@ import { TSerializableDiagnosticViewItem } from './shared/components/diagnostic-
 import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from './shared/analyzers/DiagnosticAnalyzer';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from './shared/descriptors/ProjectDescriptor';
 import { TSerializableFieldViewItem } from './shared/components/field-view-item/TFieldViewItem';
+import { PlatformAction } from './shared/components/platform-actions/PlatformActions';
+import { StatusBarItem } from './shared/components/status-bar-items/StatusBarItems';
 import { createDeterministicKey } from './shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from './shared/descriptors/FieldsDescriptor';
-import { PlatformAction } from './shared/components/PlatformActions';
-import { StatusBarItem } from './shared/components/StatusBarItems';
 import { Editor } from './shared/components/editors/Editor';
+import { Parser } from './shared/components/parsers/Parser';
 import { EventLink } from './shared/services/EventLink';
 import { View } from './shared/components/views/View';
 import { TFileOrFolder } from './types/TFileOrFolder';
-import { Parser } from './shared/components/Parser';
 import { TApplication } from './types/TApplication';
 import { TQuickPick } from './types/TQuickPick';
 import { DatabaseError } from './types/TQuery';
@@ -55,39 +55,10 @@ export abstract class ExtensionBase {
       label: parser.internalValue.label,
       description: parser.internalValue.description,
     })));
-    this.#eventLink.setExtensionEvent('platformActions:load', async () => Array.from(this.#platformActions).map(platformAction => ({
-      key: platformAction.key,
-      icon: platformAction.internalValue.icon,
-      label: platformAction.internalValue.label,
-      children: platformAction.internalValue.children,
-      description: platformAction.internalValue.description,
-    })));
+    this.#eventLink.setExtensionEvent('platformActions:load', async () => Array.from(this.#platformActions).map(platformAction => platformAction.serialize()));
     this.#eventLink.setExtensionEvent('statusBarItems:load', async () => Array.from(this.#statusBarItems).map(statusBarItem => statusBarItem.serialize()));
-    this.#eventLink.setExtensionEvent('views:load', async () => Array.from(this.#views).map(view => ({
-      key: view.key,
-      icon: view.internalValue.icon,
-      type: view.internalValue.type,
-      title: view.internalValue.title,
-      position: view.internalValue.position,
-      description: view.internalValue.description,
-      dataProvider: {
-        key: view.internalValue.dataProvider?.key,
-        type: view.internalValue.dataProvider?.type,
-      }
-    })));
-    this.#eventLink.setExtensionEvent('editors:load', async () => Array.from(this.#editors).map(editor => ({
-      key: editor.key,
-      icon: editor.internalValue.icon,
-      type: editor.internalValue.type,
-      title: editor.internalValue.title,
-      position: editor.internalValue.position,
-      selector: editor.internalValue.selector,
-      description: editor.internalValue.description,
-      entryPoint: {
-        basePath: editor.internalValue.entryPoint?.basePath,
-        file: editor.internalValue.entryPoint?.file,
-      },
-    })));
+    this.#eventLink.setExtensionEvent('views:load', async () => Array.from(this.#views).map(view => view.serialize()));
+    this.#eventLink.setExtensionEvent('editors:load', async () => Array.from(this.#editors).map(editor => editor.serialize()));
     this.#eventLink.setExtensionEvent('fields:get', async (key: string) => {
       return await Promise
         .all(
@@ -177,44 +148,17 @@ export abstract class ExtensionBase {
     },
     platformActions: {
       reload: async () => {
-        return await this.#eventLink.callStudioEvent(
-          `platformActions:change`,
-          Array.from(this.#platformActions).map(platformAction => ({
-            key: platformAction.key,
-            icon: platformAction.internalValue.icon,
-            label: platformAction.internalValue.label,
-            children: platformAction.internalValue.children,
-            description: platformAction.internalValue.description,
-          })),
-        );
+        return await this.#eventLink.callStudioEvent(`platformActions:change`, Array.from(this.#platformActions).map(platformAction => platformAction.serialize()));
       },
       register: (platformAction: PlatformAction) => {
         platformAction.register();
         this.#platformActions.add(platformAction);
-        this.#eventLink.callStudioEvent(
-          `platformActions:change`,
-          Array.from(this.#platformActions).map(platformActions => ({
-            key: platformActions.key,
-            icon: platformActions.internalValue.icon,
-            label: platformActions.internalValue.label,
-            children: platformAction.internalValue.children,
-            description: platformActions.internalValue.description,
-          })),
-        );
+        this.#eventLink.callStudioEvent(`platformActions:change`, Array.from(this.#platformActions).map(platformActions => platformActions.serialize()));
       },
       unregister: (platformAction: PlatformAction) => {
         platformAction.unregister();
         this.#platformActions.delete(platformAction);
-        this.#eventLink.callStudioEvent(
-          `platformActions:change`,
-          Array.from(this.#platformActions).map(platformAction => ({
-            key: platformAction.key,
-            icon: platformAction.internalValue.icon,
-            label: platformAction.internalValue.label,
-            children: platformAction.internalValue.children,
-            description: platformAction.internalValue.description,
-          })),
-        );
+        this.#eventLink.callStudioEvent(`platformActions:change`, Array.from(this.#platformActions).map(platformAction => platformAction.serialize()));
       },
     },
     statusBarItems: {
@@ -234,98 +178,32 @@ export abstract class ExtensionBase {
     },
     parsers: {
       reload: async () => {
-        return await this.#eventLink.callStudioEvent(
-          `parsers:change`,
-          Array.from(this.#parsers).map(parser => ({
-            key: parser.key,
-            icon: parser.internalValue.icon,
-            label: parser.internalValue.label,
-            description: parser.internalValue.description,
-          })),
-        );
+        return await this.#eventLink.callStudioEvent(`parsers:change`, Array.from(this.#parsers).map(parser => parser.serialize()));
       },
       register: (parser: Parser) => {
         parser.register();
         this.#parsers.add(parser);
-        this.#eventLink.callStudioEvent(
-          `parsers:change`,
-          Array.from(this.#parsers).map(parser => ({
-            key: parser.key,
-            icon: parser.internalValue.icon,
-            label: parser.internalValue.label,
-            description: parser.internalValue.description,
-          })),
-        );
+        this.#eventLink.callStudioEvent(`parsers:change`, Array.from(this.#parsers).map(parser => parser.serialize()));
       },
       unregister: (parser: Parser) => {
         parser.unregister();
         this.#parsers.delete(parser);
-        this.#eventLink.callStudioEvent(
-          `parsers:change`,
-          Array.from(this.#parsers).map(parser => ({
-            key: parser.key,
-            icon: parser.internalValue.icon,
-            label: parser.internalValue.label,
-            description: parser.internalValue.description,
-          })),
-        );
+        this.#eventLink.callStudioEvent(`parsers:change`, Array.from(this.#parsers).map(parser => parser.serialize()));
       },
     },
     views: {
       reload: async () => {
-        return await this.#eventLink.callStudioEvent(
-          `views:change`,
-          Array.from(this.#views).map(view => ({
-            key: view.key,
-            icon: view.internalValue.icon,
-            type: view.internalValue.type,
-            title: view.internalValue.title,
-            position: view.internalValue.position,
-            description: view.internalValue.description,
-            dataProvider: {
-              key: view.internalValue.dataProvider?.key,
-              type: view.internalValue.dataProvider?.type,
-            }
-          })),
-        );
+        return await this.#eventLink.callStudioEvent(`views:change`, Array.from(this.#views).map(view => view.serialize()));
       },
       register: (view: View) => {
         view.register();
         this.#views.add(view);
-        this.#eventLink.callStudioEvent(
-          `views:change`,
-          Array.from(this.#views).map(view => ({
-            key: view.key,
-            icon: view.internalValue.icon,
-            type: view.internalValue.type,
-            title: view.internalValue.title,
-            position: view.internalValue.position,
-            description: view.internalValue.description,
-            dataProvider: {
-              key: view.internalValue.dataProvider?.key,
-              type: view.internalValue.dataProvider?.type,
-            }
-          })),
-        );
+        this.#eventLink.callStudioEvent(`views:change`, Array.from(this.#views).map(view => view.serialize()));
       },
       unregister: (view: View) => {
         view.unregister();
         this.#views.delete(view);
-        this.#eventLink.callStudioEvent(
-          `views:change`,
-          Array.from(this.#views).map(view => ({
-            key: view.key,
-            icon: view.internalValue.icon,
-            type: view.internalValue.type,
-            title: view.internalValue.title,
-            position: view.internalValue.position,
-            description: view.internalValue.description,
-            dataProvider: {
-              key: view.internalValue.dataProvider?.key,
-              type: view.internalValue.dataProvider?.type,
-            }
-          })),
-        );
+        this.#eventLink.callStudioEvent(`views:change`, Array.from(this.#views).map(view => view.serialize()));
       },
       showPrimarySideBarByKey: async (key: string): Promise<void> => {
         return await this.#eventLink.callStudioEvent<string, void>('views:primarySideBar:showByKey', key);
@@ -416,62 +294,17 @@ export abstract class ExtensionBase {
     },
     editors: {
       reload: async () => {
-        return await this.#eventLink.callStudioEvent(
-          `editors:change`,
-          Array.from(this.#editors).map(editor => ({
-            key: editor.key,
-            icon: editor.internalValue.icon,
-            type: editor.internalValue.type,
-            title: editor.internalValue.title,
-            position: editor.internalValue.position,
-            selector: editor.internalValue.selector,
-            description: editor.internalValue.description,
-            entryPoint: {
-              basePath: editor.internalValue.entryPoint?.basePath,
-              file: editor.internalValue.entryPoint?.file,
-            },
-          })),
-        );
+        return await this.#eventLink.callStudioEvent(`editors:change`, Array.from(this.#editors).map(editor => editor.serialize()));
       },
       register: (editor: Editor) => {
         editor.register();
         this.#editors.add(editor);
-        this.#eventLink.callStudioEvent(
-          `editors:change`,
-          Array.from(this.#editors).map(editor => ({
-            key: editor.key,
-            icon: editor.internalValue.icon,
-            type: editor.internalValue.type,
-            title: editor.internalValue.title,
-            position: editor.internalValue.position,
-            selector: editor.internalValue.selector,
-            description: editor.internalValue.description,
-            entryPoint: {
-              basePath: editor.internalValue.entryPoint?.basePath,
-              file: editor.internalValue.entryPoint?.file,
-            },
-          })),
-        );
+        this.#eventLink.callStudioEvent(`editors:change`, Array.from(this.#editors).map(editor => editor.serialize()));
       },
       unregister: (editor: Editor) => {
         editor.unregister();
         this.#editors.delete(editor);
-        this.#eventLink.callStudioEvent(
-          `editors:change`,
-          Array.from(this.#editors).map(editor => ({
-            key: editor.key,
-            icon: editor.internalValue.icon,
-            type: editor.internalValue.type,
-            title: editor.internalValue.title,
-            position: editor.internalValue.position,
-            selector: editor.internalValue.selector,
-            description: editor.internalValue.description,
-            entryPoint: {
-              basePath: editor.internalValue.entryPoint?.basePath,
-              file: editor.internalValue.entryPoint?.file,
-            },
-          })),
-        );
+        this.#eventLink.callStudioEvent(`editors:change`, Array.from(this.#editors).map(editor => editor.serialize()));
       },
     },
     download: {

@@ -1,36 +1,13 @@
-import { TOnDidMount } from '../../types/TOnDidMount';
-import { EventLink } from '../services/EventLink';
-import { TImage } from '../../types/TImage';
+import { TPlatformAction, TPlatformActionMountContext, TSerializablePlatformAction } from './TPlatformActions';
+import { TOnDidMount } from '../../../types/TOnDidMount';
+import { EventLink } from '../../services/EventLink';
 
 
-export type TPlatformActionMountContext = {
-  refetchChildren(): Promise<void>;
-  set<GKey extends keyof TPlatformAction>(property: GKey, value: TPlatformAction[GKey]): Promise<void>;
-}
-
-export type TSingleAction = {
-  children: false;
-  getActions?: undefined;
-  action(context: TPlatformActionMountContext): Promise<void>;
-};
-
-export type TMultiAction = {
-  children: true;
-  action?: undefined;
-  getActions: (context: TPlatformActionMountContext) => Promise<PlatformAction[]>;
-};
-
-export type TPlatformAction = (TSingleAction | TMultiAction) & {
-  icon?: TImage;
-  label: string;
-  description?: string;
-};
 export type TPlatformActionConstructor = {
   key: string;
   initialValue?: Partial<TPlatformAction>,
   onDidMount?: TOnDidMount<TPlatformActionMountContext>;
 }
-
 export class PlatformAction {
   #registered: Set<PlatformAction> = new Set([]);
 
@@ -41,9 +18,6 @@ export class PlatformAction {
 
   constructor(props: TPlatformActionConstructor) {
     this.key = props.key;
-    this.register = this.register;
-    this.unregister = this.unregister;
-    this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
   }
 
@@ -77,13 +51,7 @@ export class PlatformAction {
         this.#registered.add(action);
       }
 
-      return actions.map(field => ({
-        key: field.key,
-        icon: field.internalValue.icon,
-        label: field.internalValue.label,
-        children: field.internalValue.children,
-        description: field.internalValue.description,
-      }));
+      return actions.map(action => action.serialize());
     });
 
 
@@ -93,6 +61,9 @@ export class PlatformAction {
         onDidUnmount: (didUnmount) => {
           const didUnmountAndRemoveEventListener = async () => {
             await didUnmount();
+
+            this.#registered.forEach((item) => item.unregister());
+            this.#registered.clear();
 
             EventLink.removeExtensionEvent(`platformAction:${this.key}:action`);
           }
@@ -116,7 +87,19 @@ export class PlatformAction {
     EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidMount`);
     EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidUnmount`);
 
-    this.#registered.forEach((field) => field.unregister());
+    this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();
+  }
+
+  public serialize(): TSerializablePlatformAction {
+    if (!this.internalValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
+
+    return {
+      key: this.key,
+      icon: this.internalValue.icon,
+      label: this.internalValue.label,
+      children: this.internalValue.children,
+      description: this.internalValue.description,
+    };
   }
 }
