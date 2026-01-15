@@ -11,9 +11,6 @@ export type TEditorConstructor = {
 }
 
 export class Editor {
-  #registered: Set<PlatformAction> = new Set([]);
-
-
   public readonly key: TEditorConstructor['key'];
   public readonly onDidMount: TEditorConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TEditorConstructor['initialValue']>>;
@@ -29,10 +26,10 @@ export class Editor {
 
   readonly #context: TEditorContext = {
     sendMessage: async (...values) => {
-      return await EventLink.callStudioEvent(`editor:${this.key}:sendMessage`, ...values);
+      return await EventLink.sendEvent(`editor:${this.key}:sendMessage`, ...values);
     },
     reload: async () => {
-      return await EventLink.callStudioEvent(`editor:${this.key}:reload`);
+      return await EventLink.sendEvent(`editor:${this.key}:reload`);
     },
     set: async <GKey extends keyof TEditor>(property: GKey, newValue: TEditor[GKey]) => {
       switch (property) {
@@ -43,61 +40,54 @@ export class Editor {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`editor:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`editor:${this.key}:set`, { property, newValue });
       }
     },
   };
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`editor:${this.key}:onDidMessage`, async (...values) => {
+    EventLink.addEventListener(`editor:${this.key}:onDidMessage`, async (...values) => {
       return await this.internalValue?.onDidMessage?.(this.#context, ...values);
     });
-    EventLink.setExtensionEvent(`editor:${this.key}:getActions`, async () => {
+
+    const registeredActions = new Set<PlatformAction>();
+    EventLink.addEventListener(`editor:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
+
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
       for (const action of actions) {
         action.register();
-        this.#registered.add(action);
+        registeredActions.add(action);
       }
 
       return actions.map(action => action.serialize());
     });
 
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
-            await didUnmount();
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-            this.#registered.forEach((item) => item.unregister());
-            this.#registered.clear();
+    EventLink.addEventListener(`editor:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            EventLink.removeExtensionEvent(`editor:${this.key}:getActions`);
-          }
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
-          EventLink.setExtensionEvent(`editor:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`editor:${this.key}:onDidUnmount`, async () => { });
-    }
+      EventLink.removeEventListener(`editor:${this.key}:getActions`);
+      EventLink.removeEventListener(`editor:${this.key}:onDidMessage`);
+      EventLink.removeEventListener(`editor:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`editor:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`editor:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`editor:${this.key}:getActions`)
-    EventLink.removeExtensionEvent(`editor:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`editor:${this.key}:onDidUnmount`);
-
-    this.#registered.forEach((item) => item.unregister());
-    this.#registered.clear();
+    EventLink.removeEventListener(`editor:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableEditor {

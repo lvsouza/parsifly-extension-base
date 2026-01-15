@@ -11,9 +11,6 @@ export type TViewConstructor = {
 }
 
 export class View {
-  #registered: Set<PlatformAction> = new Set([]);
-
-
   public readonly key: TViewConstructor['key'];
   public readonly onDidMount: TViewConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TViewConstructor['initialValue']>>;
@@ -29,7 +26,7 @@ export class View {
 
   readonly #context: TViewContext = {
     refetchData: async () => {
-      return await EventLink.callStudioEvent(`view:${this.key}:refetchData`);
+      return await EventLink.sendEvent(`view:${this.key}:refetchData`);
     },
     set: async <GKey extends keyof TView>(property: GKey, newValue: TView[GKey]) => {
       switch (property) {
@@ -40,29 +37,38 @@ export class View {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`view:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`view:${this.key}:set`, { property, newValue });
       }
     },
   };
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`view:${this.key}:getActions`, async () => {
+    const registeredActions = new Set<PlatformAction>();
+    EventLink.addEventListener(`view:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
+
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
       for (const action of actions) {
         action.register();
-        this.#registered.add(action);
+        registeredActions.add(action);
       }
 
       return actions.map(action => action.serialize());
     });
-    EventLink.setExtensionEvent(`view:${this.key}:getTabs`, async () => {
+
+    const registeredTabs = new Set<PlatformAction>();
+    EventLink.addEventListener(`view:${this.key}:getTabs`, async () => {
       const tabs = await this.internalValue.getTabs?.(this.#context) || [];
+
+      registeredTabs.forEach((item) => item.unregister());
+      registeredTabs.clear();
 
       for (const tab of tabs) {
         tab.register();
-        this.#registered.add(tab);
+        registeredActions.add(tab);
       }
 
       return tabs.map(tab => tab.serialize());
@@ -71,41 +77,32 @@ export class View {
 
     this.internalValue.dataProvider?.register();
 
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
-            await didUnmount();
+    EventLink.addEventListener(`view:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            this.internalValue.dataProvider?.unregister();
+      this.internalValue.dataProvider?.unregister();
 
-            this.#registered.forEach((item) => item.unregister());
-            this.#registered.clear();
-          }
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
-          EventLink.setExtensionEvent(`view:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`view:${this.key}:onDidUnmount`, async () => { });
-    }
+      registeredTabs.forEach((item) => item.unregister());
+      registeredTabs.clear();
+
+      EventLink.removeEventListener(`view:${this.key}:getTabs`);
+      EventLink.removeEventListener(`view:${this.key}:getActions`);
+      EventLink.removeEventListener(`view:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`view:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`view:${this.key}:onDidUnmount`);
-
-    this.internalValue.dataProvider?.unregister();
-
-    this.#registered.forEach((item) => item.unregister());
-    this.#registered.clear();
+    EventLink.removeEventListener(`view:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableView {

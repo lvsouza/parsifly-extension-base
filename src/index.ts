@@ -2,8 +2,6 @@ export * from './lib/shared/components/completion-view-item/TCompletionViewItem'
 export * from './lib/shared/components/completion-view-item/CompletionViewItem';
 export * from './lib/shared/components/diagnostic-view-item/TDiagnosticViewItem';
 export * from './lib/shared/components/diagnostic-view-item/DiagnosticViewItem';
-export * from './lib/shared/components/context-menu-items/TContextMenuItem';
-export * from './lib/shared/components/context-menu-items/ContextMenuItem';
 export * from './lib/shared/components/platform-actions/TPlatformActions';
 export * from './lib/shared/components/platform-actions/PlatformActions';
 export * from './lib/shared/components/status-bar-items/TStatusBarItems';
@@ -30,12 +28,15 @@ export * from './lib/shared/descriptors/ProjectDescriptor';
 export * from './lib/shared/descriptors/FieldsDescriptor';
 
 export * from './lib/types/TFileOrFolder';
-export * from './lib/types/TApplication';
 export * from './lib/types/TOnDidMount';
 export * from './lib/types/TDropEvent';
 export * from './lib/types/TQuickPick';
 export * from './lib/types/TQuery';
 export * from './lib/types/TImage';
 
-export * from './lib/ExtensionBase';
+export * from './lib/context/TExtensionContext'
+export * from './lib/context/ExtensionContext'
+export * from './lib/TDefineExtension'
+export * from './lib/DefineExtension'
+
 export * from './lib/Envs';

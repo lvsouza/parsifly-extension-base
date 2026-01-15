@@ -7,15 +7,15 @@ import { TSerializableFieldViewItem } from '../shared/components/field-view-item
 import { PlatformAction } from '../shared/components/platform-actions/PlatformActions';
 import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarItems';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
-import { TQuery, TQueryResults, TWatchQuery } from './TQuery';
+import { TQuery, TQueryResults, TWatchQuery } from '../types/TQuery';
 import { Editor } from '../shared/components/editors/Editor';
 import { Parser } from '../shared/components/parsers/Parser';
 import { View } from '../shared/components/views/View';
-import { TFileOrFolder } from './TFileOrFolder';
-import { TQuickPick } from './TQuickPick';
+import { TFileOrFolder } from '../types/TFileOrFolder';
+import { TQuickPick } from '../types/TQuickPick';
 
 
-export type TApplication = {
+export type TExtensionContext = {
   quickPick: {
     readonly show: <T = unknown>(props: TQuickPick) => Promise<T>;
   };
@@ -226,4 +226,4 @@ export type TApplication = {
     readonly register: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;
     readonly unregister: <GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) => void;
   };
-}
+};

@@ -1,5 +1,5 @@
 import { TListItemMountContext, TListViewItem, TSerializableListViewItem } from './TListViewItem';
-import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
+import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { TDropEvent } from '../../../types/TDropEvent';
 import { EventLink } from '../../services/EventLink';
@@ -11,8 +11,6 @@ export type TListViewItemConstructor = {
   onDidMount?: TOnDidMount<TListItemMountContext>;
 }
 export class ListViewItem {
-  #registered: Set<ListViewItem | ContextMenuItem> = new Set();
-
   public readonly key: TListViewItemConstructor['key'];
   public readonly onDidMount: TListViewItemConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
@@ -27,13 +25,13 @@ export class ListViewItem {
 
   readonly #context: TListItemMountContext = {
     edit: async (value) => {
-      return await EventLink.callStudioEvent(`listItem:${this.key}:edit`, value);
+      return await EventLink.sendEvent(`listItem:${this.key}:edit`, value);
     },
     select: async (value) => {
-      return await EventLink.callStudioEvent(`listItem:${this.key}:select`, value);
+      return await EventLink.sendEvent(`listItem:${this.key}:select`, value);
     },
     refetchChildren: async () => {
-      return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
+      return await EventLink.sendEvent(`listItem:${this.key}:refetchChildren`);
     },
     set: async <GKey extends keyof TListViewItem>(property: GKey, newValue: TListViewItem[GKey]) => {
       switch (property) {
@@ -47,87 +45,75 @@ export class ListViewItem {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`listItem:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`listItem:${this.key}:set`, { property, newValue });
       }
     },
   };
 
-  #mountId: string | undefined;
-  #onDidUnmount: ((checkMountId: string) => Promise<void>) = async () => { };
 
-  async #onDidMount(mountId: string): Promise<void> {
-    if (this.#mountId) {
-      await this.#onDidUnmount(this.#mountId);
-      this.#mountId = mountId;
-    }
+  async #onDidMount(_mountId: string): Promise<void> {
+    EventLink.addEventListener(`listItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
+    EventLink.addEventListener(`listItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
+    EventLink.addEventListener(`listItem:${this.key}:onDidDrop`, async (event: TDropEvent) => this.internalValue.onDidDrop?.(this.#context, event));
 
-    EventLink.setExtensionEvent(`listItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
-    EventLink.setExtensionEvent(`listItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
-    EventLink.setExtensionEvent(`listItem:${this.key}:onDidDrop`, async (event: TDropEvent) => this.internalValue.onDidDrop?.(this.#context, event));
-    EventLink.setExtensionEvent(`listItem:${this.key}:getItems`, async () => {
+    const registeredChildren = new Set<ListViewItem>();
+    EventLink.addEventListener(`listItem:${this.key}:getItems`, async () => {
       const items = await this.internalValue.getItems?.(this.#context) || [];
+
+      registeredChildren.forEach((item) => item.unregister());
+      registeredChildren.clear();
 
       for (const item of items) {
         item.register();
-        this.#registered.add(item);
+        registeredChildren.add(item);
       }
 
       return items.map(item => item.serialize());
     });
-    EventLink.setExtensionEvent(`listItem:${this.key}:getContextMenuItems`, async () => {
+
+    const registeredContextMenuItems = new Set<PlatformAction>();
+    EventLink.addEventListener(`listItem:${this.key}:getContextMenuItems`, async () => {
       const items = await this.internalValue.getContextMenuItems?.(this.#context) || [];
+
+      registeredContextMenuItems.forEach((item) => item.unregister());
+      registeredContextMenuItems.clear();
 
       items.forEach(item => {
         item.register();
-        this.#registered.add(item);
+        registeredContextMenuItems.add(item);
       });
 
       return items.map(item => item.serialize());
     });
 
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          this.#onDidUnmount = async (checkMountId) => {
-            if (checkMountId !== this.#mountId) return;
-            this.#mountId = undefined;
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-            await didUnmount();
+    EventLink.addEventListener(`listItem:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
-            EventLink.removeExtensionEvent(`listItem:${this.key}:onDidDrop`);
-            EventLink.removeExtensionEvent(`listItem:${this.key}:onItemClick`);
-            EventLink.removeExtensionEvent(`listItem:${this.key}:onDidUnmount`);
-            EventLink.removeExtensionEvent(`listItem:${this.key}:onItemDoubleClick`);
-            EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
-          }
+      registeredChildren.forEach((item) => item.unregister());
+      registeredChildren.clear();
 
-          EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`listItem:${this.key}:onDidUnmount`, async () => { });
-    }
+      registeredContextMenuItems.forEach((item) => item.unregister());
+      registeredContextMenuItems.clear();
+
+      EventLink.removeEventListener(`listItem:${this.key}:getItems`);
+      EventLink.removeEventListener(`listItem:${this.key}:onDidDrop`);
+      EventLink.removeEventListener(`listItem:${this.key}:onItemClick`);
+      EventLink.removeEventListener(`listItem:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`listItem:${this.key}:onItemDoubleClick`);
+      EventLink.removeEventListener(`listItem:${this.key}:getContextMenuItems`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`listItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`listItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`listItem:${this.key}:getItems`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:onDidDrop`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:onItemClick`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:onDidUnmount`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:onItemDoubleClick`);
-    EventLink.removeExtensionEvent(`listItem:${this.key}:getContextMenuItems`);
-
-    this.#registered.forEach((item) => item.unregister());
-    this.#registered.clear();
+    EventLink.removeEventListener(`listItem:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableListViewItem {

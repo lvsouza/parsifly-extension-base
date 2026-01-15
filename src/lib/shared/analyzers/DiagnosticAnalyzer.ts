@@ -1,10 +1,11 @@
 import { DiagnosticViewItem } from '../components/diagnostic-view-item/DiagnosticViewItem';
-import { TApplication } from '../../types/TApplication';
+import { TExtensionContext } from '../../context/TExtensionContext';
 import { EventLink } from '../services/EventLink';
 import { TQuery } from '../../types/TQuery';
 
 
 export type TAnalyzerMode = 'perResource' | 'collection';
+
 export type TAnalyzerResource = Record<string, any>;
 
 export type TExecutionProps<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource> =
@@ -40,13 +41,13 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
     this.execute = props.execute;
   }
 
-  public register(application: TApplication) {
+  public register(extensionContext: TExtensionContext) {
     this.unregister();
 
     const controller = new AbortController();
     this.#registrationController = controller;
 
-    application
+    extensionContext
       .data
       .subscribe<GResource>({
         query: this.query,
@@ -68,7 +69,7 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
               );
             }
 
-            await EventLink.callStudioEvent(`diagnostics:change`, { [this.key]: this.diagnostics() });
+            await EventLink.sendEvent(`diagnostics:change`, { [this.key]: this.diagnostics() });
           } catch (error) {
             console.error(`Error executing analyzer ${this.key}:`, error);
           }

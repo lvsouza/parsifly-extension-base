@@ -14,7 +14,7 @@ export type TView = {
   title: string;
   description?: string;
   dataProvider: TDataProvider;
-  position: 'primary' | 'secondary';
+  position: 'primary' | 'secondary' | 'panel';
   getTabs?: (context: TViewContext) => Promise<PlatformAction[]>;
   getActions?: (context: TViewContext) => Promise<PlatformAction[]>;
 }
@@ -25,6 +25,6 @@ export type TSerializableView = {
   title: string;
   icon: TImage | undefined;
   description: string | undefined;
-  position: 'primary' | 'secondary';
   dataProvider: TSerializableDataProvider;
+  position: 'primary' | 'secondary' | 'panel';
 }

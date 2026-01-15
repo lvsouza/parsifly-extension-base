@@ -1,4 +1,4 @@
-import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
+import { PlatformAction } from '../platform-actions/PlatformActions';
 import { DiagnosticViewItem } from './DiagnosticViewItem';
 import { TImage } from '../../../types/TImage';
 
@@ -33,7 +33,7 @@ export type TDiagnosticViewItem = {
 
   onItemClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;
-  getActions?: (context: TDiagnosticViewItemMountContext) => Promise<ContextMenuItem[]>;
+  getActions?: (context: TDiagnosticViewItemMountContext) => Promise<PlatformAction[]>;
   getRelated?: (context: TDiagnosticViewItemMountContext) => Promise<DiagnosticViewItem[]>;
 };
 

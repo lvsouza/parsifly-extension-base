@@ -1,5 +1,5 @@
 import { TDiagnosticViewItemMountContext, TDiagnosticViewItem, TSerializableDiagnosticViewItem } from './TDiagnosticViewItem';
-import { ContextMenuItem } from '../context-menu-items/ContextMenuItem';
+import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 
@@ -10,8 +10,6 @@ export type TDiagnosticItemConstructor = {
   onDidMount?: TOnDidMount<TDiagnosticViewItemMountContext>;
 }
 export class DiagnosticViewItem {
-  #registered: Set<DiagnosticViewItem | ContextMenuItem> = new Set();
-
   public readonly key: TDiagnosticItemConstructor['key'];
   public readonly onDidMount: TDiagnosticItemConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TDiagnosticItemConstructor['initialValue']>>;
@@ -26,10 +24,10 @@ export class DiagnosticViewItem {
 
   readonly #context: TDiagnosticViewItemMountContext = {
     select: async (value) => {
-      return await EventLink.callStudioEvent(`diagnosticViewItem:${this.key}:select`, value);
+      return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:select`, value);
     },
     refetchChildren: async () => {
-      return await EventLink.callStudioEvent(`diagnosticViewItem:${this.key}:refetchRelated`);
+      return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:refetchRelated`);
     },
     set: async <GKey extends keyof TDiagnosticViewItem>(property: GKey, newValue: TDiagnosticViewItem[GKey]) => {
       switch (property) {
@@ -42,87 +40,70 @@ export class DiagnosticViewItem {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`diagnosticViewItem:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:set`, { property, newValue });
       }
     },
   };
 
-  #mountId: string | undefined;
-  #onDidUnmount: ((checkMountId: string) => Promise<void>) = async () => { };
 
-  async #onDidMount(mountId: string): Promise<void> {
-    if (this.#mountId) {
-      await this.#onDidUnmount(this.#mountId);
-      this.#mountId = mountId;
-    }
+  async #onDidMount(_mountId: string): Promise<void> {
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
 
-    EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
-    EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
-    EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:getRelated`, async () => {
+    const registeredRelatedDiagnosticItems = new Set<DiagnosticViewItem>();
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:getRelated`, async () => {
       const items = await this.internalValue.getRelated?.(this.#context) || [];
+
+      registeredRelatedDiagnosticItems.forEach((item) => item.unregister());
+      registeredRelatedDiagnosticItems.clear();
 
       for (const item of items) {
         item.register();
-        this.#registered.add(item);
+        registeredRelatedDiagnosticItems.add(item);
       }
 
-      return items.map(field => field.serialize());
+      return items.map(item => item.serialize());
     });
-    EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:getActions`, async () => {
+
+    const registeredActions = new Set<PlatformAction>();
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:getActions`, async () => {
       const items = await this.internalValue.getActions?.(this.#context) || [];
 
-      items.forEach(item => {
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
+
+      for (const item of items) {
         item.register();
-        this.#registered.add(item);
-      });
+        registeredActions.add(item);
+      }
 
       return items.map(item => item.serialize());
     });
 
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          this.#onDidUnmount = async (checkMountId) => {
-            if (checkMountId !== this.#mountId) return;
-            this.#mountId = undefined;
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-            await didUnmount();
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            this.#registered.forEach((item) => item.unregister());
-            this.#registered.clear();
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getRelated`);
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getActions`);
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemClick`);
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`);
-            EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
-          }
-
-          EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`, async () => { });
-    }
+      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:getRelated`);
+      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:getActions`);
+      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onItemClick`);
+      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`diagnosticViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getRelated`);
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:getActions`);
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemClick`);
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onDidUnmount`);
-    EventLink.removeExtensionEvent(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
-
-    this.#registered.forEach((item) => item.unregister());
-    this.#registered.clear();
+    EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableDiagnosticViewItem {

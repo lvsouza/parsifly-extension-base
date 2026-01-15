@@ -1,8 +1,4 @@
 
-export type TOnDidUnmountEvent = () => Promise<void>
+export type TOnDidUnmountEvent = () => Promise<void> | void
 
-export type TOnDidMountProps = {
-  onDidUnmount: (didUnmount: TOnDidUnmountEvent) => void;
-};
-
-export type TOnDidMount<GContext extends Record<string, any> = {}> = (props: TOnDidMountProps & GContext) => Promise<void>
+export type TOnDidMount<GContext extends Record<string, any> = {}> = (context: GContext) => Promise<TOnDidUnmountEvent | void> | TOnDidUnmountEvent | void

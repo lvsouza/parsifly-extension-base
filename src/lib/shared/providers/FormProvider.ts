@@ -42,11 +42,11 @@ export class FormProvider {
   }
 
   public register() {
-    EventLink.setExtensionEvent(`dataProvider:${this.key}:getFields`, this.getFields);
+    EventLink.addEventListener(`dataProvider:${this.key}:getFields`, this.getFields);
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`dataProvider:${this.key}:getFields`);
+    EventLink.removeEventListener(`dataProvider:${this.key}:getFields`);
 
     this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();

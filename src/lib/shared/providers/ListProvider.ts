@@ -39,11 +39,11 @@ export class ListProvider {
   }
 
   public register() {
-    EventLink.setExtensionEvent(`dataProvider:${this.key}:getItems`, this.getItems);
+    EventLink.addEventListener(`dataProvider:${this.key}:getItems`, this.getItems);
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`dataProvider:${this.key}:getItems`);
+    EventLink.removeEventListener(`dataProvider:${this.key}:getItems`);
 
     this.#registered.forEach((item) => item.unregister());
     this.#registered.clear();

@@ -26,49 +26,29 @@ export class CompletionViewItem {
       switch (property) {
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`completionViewItem:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`completionViewItem:${this.key}:set`, { property, newValue });
       }
     },
   };
 
-  #mountId: string | undefined;
-  #onDidUnmount: ((checkMountId: string) => Promise<void>) = async () => { };
 
-  async #onDidMount(mountId: string): Promise<void> {
-    if (this.#mountId) {
-      await this.#onDidUnmount(this.#mountId);
-      this.#mountId = mountId;
-    }
+  async #onDidMount(_mountId: string): Promise<void> {
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          this.#onDidUnmount = async (checkMountId) => {
-            if (checkMountId !== this.#mountId) return;
-            this.#mountId = undefined;
+    EventLink.addEventListener(`completionViewItem:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            await didUnmount();
-
-            EventLink.removeExtensionEvent(`completionViewItem:${this.key}:onDidUnmount`);
-          }
-
-          EventLink.setExtensionEvent(`completionViewItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`completionViewItem:${this.key}:onDidUnmount`, async () => { });
-    }
+      EventLink.removeEventListener(`completionViewItem:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`completionViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`completionViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`completionViewItem:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`completionViewItem:${this.key}:onDidUnmount`);
+    EventLink.removeEventListener(`completionViewItem:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableCompletionViewItem {

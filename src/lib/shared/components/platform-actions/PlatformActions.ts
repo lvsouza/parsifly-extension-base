@@ -9,8 +9,6 @@ export type TPlatformActionConstructor = {
   onDidMount?: TOnDidMount<TPlatformActionMountContext>;
 }
 export class PlatformAction {
-  #registered: Set<PlatformAction> = new Set([]);
-
   public readonly key: TPlatformActionConstructor['key'];
   public readonly onDidMount: TPlatformActionConstructor['onDidMount'];
   public readonly internalValue: NonNullable<Partial<TPlatformActionConstructor['initialValue']>>;
@@ -25,7 +23,7 @@ export class PlatformAction {
 
   readonly #context: TPlatformActionMountContext = {
     refetchChildren: async () => {
-      return await EventLink.callStudioEvent(`listItem:${this.key}:refetchChildren`);
+      return await EventLink.sendEvent(`listItem:${this.key}:refetchChildren`);
     },
     set: async <GKey extends keyof TPlatformAction>(property: GKey, newValue: TPlatformAction[GKey]) => {
       switch (property) {
@@ -36,60 +34,51 @@ export class PlatformAction {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`platformAction:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`platformAction:${this.key}:set`, { property, newValue });
       }
     },
   };
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`platformAction:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
-    EventLink.setExtensionEvent(`platformAction:${this.key}:getActions`, async () => {
+    EventLink.addEventListener(`platformAction:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
+
+    const registeredActions = new Set<PlatformAction>();
+    EventLink.addEventListener(`platformAction:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
+
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
       for (const action of actions) {
         action.register();
-        this.#registered.add(action);
+        registeredActions.add(action);
       }
 
       return actions.map(action => action.serialize());
     });
 
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
-            await didUnmount();
+    EventLink.addEventListener(`platformAction:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-            this.#registered.forEach((item) => item.unregister());
-            this.#registered.clear();
+      registeredActions.forEach((item) => item.unregister());
+      registeredActions.clear();
 
-            EventLink.removeExtensionEvent(`platformAction:${this.key}:action`);
-          }
-
-          EventLink.setExtensionEvent(`platformAction:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`platformAction:${this.key}:onDidUnmount`, async () => { });
-    }
+      EventLink.removeEventListener(`platformAction:${this.key}:action`);
+      EventLink.removeEventListener(`platformAction:${this.key}:getActions`);
+      EventLink.removeEventListener(`platformAction:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`platformAction:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`platformAction:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`platformAction:${this.key}:action`);
-    EventLink.removeExtensionEvent(`platformAction:${this.key}:getActions`);
-    EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`platformAction:${this.key}:onDidUnmount`);
-
-    this.#registered.forEach((item) => item.unregister());
-    this.#registered.clear();
+    EventLink.removeEventListener(`platformAction:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializablePlatformAction {

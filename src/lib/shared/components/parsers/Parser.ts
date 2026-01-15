@@ -30,42 +30,32 @@ export class Parser {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`parser:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`parser:${this.key}:set`, { property, newValue });
       }
     },
   };
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`parser:${this.key}:onParse`, async () => await this.internalValue?.onParse?.(this.#context));
+    EventLink.addEventListener(`parser:${this.key}:onParse`, async () => await this.internalValue?.onParse?.(this.#context));
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
-            await didUnmount();
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-            EventLink.removeExtensionEvent(`parser:${this.key}:onParse`);
-          }
+    EventLink.addEventListener(`parser:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
 
-          EventLink.setExtensionEvent(`parser:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`parser:${this.key}:onDidUnmount`, async () => { });
-    }
+      EventLink.removeEventListener(`parser:${this.key}:onParse`);
+      EventLink.removeEventListener(`parser:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`parser:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`parser:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`parser:${this.key}:onParse`)
-    EventLink.removeExtensionEvent(`parser:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`parser:${this.key}:onDidUnmount`);
+    EventLink.removeEventListener(`parser:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableParser {

@@ -25,7 +25,7 @@ export class FieldViewItem {
   readonly #context: TFieldViewItemMountContext = {
     getCompletions: async (query) => (await this.internalValue.getCompletions?.(query, this.#context)) || [],
     reloadValue: async () => {
-      return await EventLink.callStudioEvent(`fieldViewItem:${this.key}:reloadValue`);
+      return await EventLink.sendEvent(`fieldViewItem:${this.key}:reloadValue`);
     },
     set: async <GKey extends keyof TFieldViewItem>(property: GKey, newValue: TFieldViewItem[GKey]) => {
       switch (property) {
@@ -37,65 +37,56 @@ export class FieldViewItem {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`fieldViewItem:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`fieldViewItem:${this.key}:set`, { property, newValue });
       }
     },
   };
 
-  #mountId: string | undefined;
-  #onDidUnmount: ((checkMountId: string) => Promise<void>) = async () => { };
 
-  async #onDidMount(mountId: string): Promise<void> {
-    if (this.#mountId) {
-      await this.#onDidUnmount(this.#mountId);
-      this.#mountId = mountId;
-    }
+  async #onDidMount(_mountId: string): Promise<void> {
+    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldViewItemValue, this.#context));
+    EventLink.addEventListener(`fieldViewItem:${this.key}:getCompletions`, async (query: string) => this.internalValue.getCompletions?.(query, this.#context));
 
+    const registeredCompletions = new Set<CompletionViewItem>();
+    EventLink.addEventListener(`fieldViewItem:${this.key}:getValue`, async () => {
+      return this.internalValue.getValue?.(this.#context).then(value => {
 
-    EventLink.setExtensionEvent(`fieldViewItem:${this.key}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldViewItemValue, this.#context));
-    EventLink.setExtensionEvent(`fieldViewItem:${this.key}:getValue`, async () => {
-      return this.internalValue.getValue?.(this.#context).then(value => value instanceof CompletionViewItem ? value.serialize() : value);
-    });
-    EventLink.setExtensionEvent(`fieldViewItem:${this.key}:getCompletions`, async (query: string) => {
-      return this.internalValue.getCompletions?.(query, this.#context)
-    });
+        registeredCompletions.forEach((item) => item.unregister());
+        registeredCompletions.clear();
 
+        if (value instanceof CompletionViewItem) {
+          value.register();
+          registeredCompletions.add(value);
+          return value.serialize();
+        }
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          this.#onDidUnmount = async (checkMountId) => {
-            if (checkMountId !== this.#mountId) return;
-            this.#mountId = undefined;
-
-            await didUnmount();
-
-            EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:getValue`);
-            EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:onDidChange`);
-            EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:onDidUnmount`);
-            EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:getCompletions`);
-          }
-
-          EventLink.setExtensionEvent(`fieldViewItem:${this.key}:onDidUnmount`, this.#onDidUnmount);
-        },
+        return value;
       });
-    } else {
-      EventLink.setExtensionEvent(`fieldViewItem:${this.key}:onDidUnmount`, async () => { });
-    }
+    });
+
+
+    const onDidUnmount = await this.onDidMount?.(this.#context);
+
+    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
+
+      registeredCompletions.forEach((item) => item.unregister());
+      registeredCompletions.clear();
+
+      EventLink.removeEventListener(`fieldViewItem:${this.key}:getValue`);
+      EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidChange`);
+      EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`fieldViewItem:${this.key}:getCompletions`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`fieldViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:getValue`);
-    EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:onDidChange`);
-    EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:onDidUnmount`);
-    EventLink.removeExtensionEvent(`fieldViewItem:${this.key}:getCompletions`);
+    EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableFieldViewItem {

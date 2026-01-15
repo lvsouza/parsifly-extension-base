@@ -3,7 +3,6 @@ import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 
 
-
 export type TStatusBarItemConstructor = {
   key: string;
   initialValue?: Partial<TStatusBarItem>;
@@ -32,42 +31,33 @@ export class StatusBarItem {
 
         default:
           this.internalValue[property] = newValue;
-          return await EventLink.callStudioEvent(`statusBarItem:${this.key}:set`, { property, newValue });
+          return await EventLink.sendEvent(`statusBarItem:${this.key}:set`, { property, newValue });
       }
     },
   };
 
 
   async #onDidMount(): Promise<void> {
-    EventLink.setExtensionEvent(`statusBarItem:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
+    EventLink.addEventListener(`statusBarItem:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
 
-    if (this.onDidMount) {
-      await this.onDidMount?.({
-        ...this.#context,
-        onDidUnmount: (didUnmount) => {
-          const didUnmountAndRemoveEventListener = async () => {
-            await didUnmount();
 
-            EventLink.removeExtensionEvent(`statusBarItem:${this.key}:action`);
-          }
+    const onDidUnmount = await this.onDidMount?.(this.#context);
 
-          EventLink.setExtensionEvent(`statusBarItem:${this.key}:onDidUnmount`, didUnmountAndRemoveEventListener);
-        },
-      });
-    } else {
-      EventLink.setExtensionEvent(`statusBarItem:${this.key}:onDidUnmount`, async () => { });
-    }
+    EventLink.addEventListener(`statusBarItem:${this.key}:onDidUnmount`, async () => {
+      await onDidUnmount?.();
+
+      EventLink.removeEventListener(`statusBarItem:${this.key}:action`);
+      EventLink.removeEventListener(`statusBarItem:${this.key}:onDidUnmount`);
+    });
   }
 
 
   public register() {
-    EventLink.setExtensionEvent(`statusBarItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`statusBarItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeExtensionEvent(`statusBarItem:${this.key}:action`);
-    EventLink.removeExtensionEvent(`statusBarItem:${this.key}:onDidMount`);
-    EventLink.removeExtensionEvent(`statusBarItem:${this.key}:onDidUnmount`);
+    EventLink.removeEventListener(`statusBarItem:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableStatusBarItem {
