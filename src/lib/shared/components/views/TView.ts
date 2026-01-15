@@ -1,6 +1,6 @@
 import { TDataProvider, TSerializableDataProvider } from '../../providers/TDataProvider';
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TImage } from '../../../types/TImage';
+import { Action } from '../actions/Actions';
 
 
 export type TViewContext = {
@@ -15,8 +15,8 @@ export type TView = {
   description?: string;
   dataProvider: TDataProvider;
   position: 'primary' | 'secondary' | 'panel';
-  getTabs?: (context: TViewContext) => Promise<PlatformAction[]>;
-  getActions?: (context: TViewContext) => Promise<PlatformAction[]>;
+  getTabs?: (context: TViewContext) => Promise<Action[]>;
+  getActions?: (context: TViewContext) => Promise<Action[]>;
 }
 
 export type TSerializableView = {

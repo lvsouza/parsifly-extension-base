@@ -1,7 +1,7 @@
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TDropEvent } from '../../../types/TDropEvent';
 import { TImage } from '../../../types/TImage';
 import { ListViewItem } from './ListViewItem';
+import { Action } from '../actions/Actions';
 
 
 export type TListItemMountContext = {
@@ -21,7 +21,7 @@ export type TListItemBase = {
   disableSelect?: boolean;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
-  getContextMenuItems?: (context: TListItemMountContext) => Promise<PlatformAction[]>;
+  getContextMenuItems?: (context: TListItemMountContext) => Promise<Action[]>;
 }
 
 export type TListItemWithTitle = {

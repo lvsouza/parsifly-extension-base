@@ -2,14 +2,14 @@ export * from './lib/shared/components/completion-view-item/TCompletionViewItem'
 export * from './lib/shared/components/completion-view-item/CompletionViewItem';
 export * from './lib/shared/components/diagnostic-view-item/TDiagnosticViewItem';
 export * from './lib/shared/components/diagnostic-view-item/DiagnosticViewItem';
-export * from './lib/shared/components/platform-actions/TPlatformActions';
-export * from './lib/shared/components/platform-actions/PlatformActions';
 export * from './lib/shared/components/status-bar-items/TStatusBarItems';
 export * from './lib/shared/components/status-bar-items/StatusBarItems';
 export * from './lib/shared/components/field-view-item/TFieldViewItem';
 export * from './lib/shared/components/field-view-item/FieldViewItem';
 export * from './lib/shared/components/list-view-item/TListViewItem';
 export * from './lib/shared/components/list-view-item/ListViewItem';
+export * from './lib/shared/components/actions/TActions';
+export * from './lib/shared/components/actions/Actions';
 export * from './lib/shared/components/editors/TEditor';
 export * from './lib/shared/components/editors/Editor';
 export * from './lib/shared/components/parsers/TParser';

@@ -1,6 +1,6 @@
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { DiagnosticViewItem } from './DiagnosticViewItem';
 import { TImage } from '../../../types/TImage';
+import { Action } from '../actions/Actions';
 
 
 export type TDiagnosticViewItemMountContext = {
@@ -32,8 +32,8 @@ export type TDiagnosticViewItem = {
   disableSelect?: boolean;
 
   onItemClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;
+  getActions?: (context: TDiagnosticViewItemMountContext) => Promise<Action[]>;
   onItemDoubleClick?: (context: TDiagnosticViewItemMountContext) => Promise<void>;
-  getActions?: (context: TDiagnosticViewItemMountContext) => Promise<PlatformAction[]>;
   getRelated?: (context: TDiagnosticViewItemMountContext) => Promise<DiagnosticViewItem[]>;
 };
 

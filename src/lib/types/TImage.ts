@@ -76,10 +76,10 @@ export type TVisualStudioCode = {
    * 
    * @example
    * ```JS
-   * icon: { name: "VscAdd" }
+   * icon: { name: "add" }
    * ```
    * 
-   *  @link Find all icons on https://react-icons.github.io/react-icons/icons/vsc/
+   *  @link Find all icons on https://microsoft.github.io/vscode-codicons/dist/codicon.html
    */
   name: string;
   url?: undefined;

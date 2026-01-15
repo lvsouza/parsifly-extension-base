@@ -1,7 +1,7 @@
 import { TDiagnosticViewItemMountContext, TDiagnosticViewItem, TSerializableDiagnosticViewItem } from './TDiagnosticViewItem';
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
+import { Action } from '../actions/Actions';
 
 
 export type TDiagnosticItemConstructor = {
@@ -65,7 +65,7 @@ export class DiagnosticViewItem {
       return items.map(item => item.serialize());
     });
 
-    const registeredActions = new Set<PlatformAction>();
+    const registeredActions = new Set<Action>();
     EventLink.addEventListener(`diagnosticViewItem:${this.key}:getActions`, async () => {
       const items = await this.internalValue.getActions?.(this.#context) || [];
 

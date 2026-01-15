@@ -1,8 +1,8 @@
 import { TListItemMountContext, TListViewItem, TSerializableListViewItem } from './TListViewItem';
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { TDropEvent } from '../../../types/TDropEvent';
 import { EventLink } from '../../services/EventLink';
+import { Action } from '../actions/Actions';
 
 
 export type TListViewItemConstructor = {
@@ -71,7 +71,7 @@ export class ListViewItem {
       return items.map(item => item.serialize());
     });
 
-    const registeredContextMenuItems = new Set<PlatformAction>();
+    const registeredContextMenuItems = new Set<Action>();
     EventLink.addEventListener(`listItem:${this.key}:getContextMenuItems`, async () => {
       const items = await this.internalValue.getContextMenuItems?.(this.#context) || [];
 

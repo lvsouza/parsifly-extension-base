@@ -1,7 +1,7 @@
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TSerializableView, TView, TViewContext } from './TView';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
+import { Action } from '../actions/Actions';
 
 
 export type TViewConstructor = {
@@ -44,7 +44,7 @@ export class View {
 
 
   async #onDidMount(): Promise<void> {
-    const registeredActions = new Set<PlatformAction>();
+    const registeredActions = new Set<Action>();
     EventLink.addEventListener(`view:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
 
@@ -59,7 +59,7 @@ export class View {
       return actions.map(action => action.serialize());
     });
 
-    const registeredTabs = new Set<PlatformAction>();
+    const registeredTabs = new Set<Action>();
     EventLink.addEventListener(`view:${this.key}:getTabs`, async () => {
       const tabs = await this.internalValue.getTabs?.(this.#context) || [];
 

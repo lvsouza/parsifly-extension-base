@@ -1,5 +1,5 @@
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TImage } from '../../../types/TImage';
+import { Action } from '../actions/Actions';
 
 
 export type TEditorContext = {
@@ -15,7 +15,7 @@ export type TEditor = {
   position: 'center';
   selector: string[];
   description?: string;
-  getActions?: (context: TEditorContext) => Promise<PlatformAction[]>;
+  getActions?: (context: TEditorContext) => Promise<Action[]>;
   onDidMessage: (context: TEditorContext, ...values: unknown[]) => Promise<unknown>;
   entryPoint: {
     basePath: string;

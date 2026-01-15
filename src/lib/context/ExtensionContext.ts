@@ -4,10 +4,10 @@ import { TSerializableDiagnosticViewItem } from '../shared/components/diagnostic
 import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from '../shared/analyzers/DiagnosticAnalyzer';
 import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/descriptors/ProjectDescriptor';
 import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
-import { PlatformAction } from '../shared/components/platform-actions/PlatformActions';
 import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarItems';
 import { createDeterministicKey } from '../shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
+import { Action } from '../shared/components/actions/Actions';
 import { Editor } from '../shared/components/editors/Editor';
 import { Parser } from '../shared/components/parsers/Parser';
 import { EventLink } from '../shared/services/EventLink';
@@ -19,7 +19,7 @@ import { DatabaseError } from '../types/TQuery';
 
 
 export const defineExtensionContext = (): TExtensionContext => {
-  const platformActions: Set<PlatformAction> = new Set([]);
+  const platformActions: Set<Action> = new Set([]);
   const statusBarItems: Set<StatusBarItem> = new Set([]);
   const parsers: Set<Parser> = new Set([]);
   const editors: Set<Editor> = new Set([]);
@@ -120,12 +120,12 @@ export const defineExtensionContext = (): TExtensionContext => {
       reload: async () => {
         return await EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformAction => platformAction.serialize()));
       },
-      register: (platformAction: PlatformAction) => {
+      register: (platformAction: Action) => {
         platformAction.register();
         platformActions.add(platformAction);
         EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformActions => platformActions.serialize()));
       },
-      unregister: (platformAction: PlatformAction) => {
+      unregister: (platformAction: Action) => {
         platformAction.unregister();
         platformActions.delete(platformAction);
         EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformAction => platformAction.serialize()));

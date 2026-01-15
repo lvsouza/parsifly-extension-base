@@ -1,7 +1,7 @@
 import { TEditor, TEditorContext, TSerializableEditor } from './TEditor';
-import { PlatformAction } from '../platform-actions/PlatformActions';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
+import { Action } from '../actions/Actions';
 
 
 export type TEditorConstructor = {
@@ -51,7 +51,7 @@ export class Editor {
       return await this.internalValue?.onDidMessage?.(this.#context, ...values);
     });
 
-    const registeredActions = new Set<PlatformAction>();
+    const registeredActions = new Set<Action>();
     EventLink.addEventListener(`editor:${this.key}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(this.#context) || [];
 
