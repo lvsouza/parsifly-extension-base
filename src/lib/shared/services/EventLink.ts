@@ -34,10 +34,10 @@ export class EventLink {
   }
 
 
-  public static sendEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
+  public static async sendEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
     if (!this.#STUDIO) throw new Error("EventLink not initiate. Call initialize before.");
 
-    return this.#STUDIO.callEvent(key, ...params);
+    return await this.#STUDIO.callEvent<GParams, GReturn>(key, ...params);
   }
 
 

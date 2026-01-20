@@ -21,31 +21,35 @@ export class Action {
   }
 
 
-  readonly #context: TActionMountContext = {
-    refetchChildren: async () => {
-      return await EventLink.sendEvent(`action:${this.key}:refetchChildren`);
-    },
-    set: async <GKey extends keyof TAction>(property: GKey, newValue: TAction[GKey]) => {
-      switch (property) {
-        case 'action':
-        case 'getActions':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TActionMountContext {
+    return {
+      refetchChildren: async () => {
+        return await EventLink.sendEvent(`action:${mountId}:refetchChildren`);
+      },
+      set: async <GKey extends keyof TAction>(property: GKey, newValue: TAction[GKey]) => {
+        switch (property) {
+          case 'action':
+          case 'getActions':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`action:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`action:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(): Promise<void> {
-    EventLink.addEventListener(`action:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
+    EventLink.addEventListener(`action:${mountId}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(context) : {});
 
     const registeredActions = new Set<Action>();
-    EventLink.addEventListener(`action:${this.key}:getActions`, async () => {
-      const actions = await this.internalValue.getActions?.(this.#context) || [];
+    EventLink.addEventListener(`action:${mountId}:getActions`, async () => {
+      const actions = await this.internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -58,17 +62,17 @@ export class Action {
       return actions.map(action => action.serialize());
     });
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`action:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`action:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
 
-      EventLink.removeEventListener(`action:${this.key}:action`);
-      EventLink.removeEventListener(`action:${this.key}:getActions`);
-      EventLink.removeEventListener(`action:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`action:${mountId}:action`);
+      EventLink.removeEventListener(`action:${mountId}:getActions`);
+      EventLink.removeEventListener(`action:${mountId}:onDidUnmount`);
     });
   }
 

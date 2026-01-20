@@ -35,12 +35,12 @@ export type TExtensionContext = {
      * Registers a new action to the platform.
      * * @param platformAction The action definition to register.
      */
-    readonly register: (platformAction: Action) => void;
+    readonly register: (platformAction: Action) => Promise<void>;
     /**
      * Unregisters an existing action from the platform.
      * * @param platformAction The action definition to unregister.
      */
-    readonly unregister: (platformAction: Action) => void;
+    readonly unregister: (platformAction: Action) => Promise<void>;
   };
 
   statusBarItems: {
@@ -52,12 +52,12 @@ export type TExtensionContext = {
      * Registers a new item to the status bar.
      * * @param statusBarItem The status bar item to register.
      */
-    readonly register: (statusBarItem: StatusBarItem) => void;
+    readonly register: (statusBarItem: StatusBarItem) => Promise<void>;
     /**
      * Unregisters an existing item from the status bar.
      * * @param statusBarItem The status bar item to unregister.
      */
-    readonly unregister: (statusBarItem: StatusBarItem) => void;
+    readonly unregister: (statusBarItem: StatusBarItem) => Promise<void>;
   };
 
   parsers: {
@@ -69,12 +69,12 @@ export type TExtensionContext = {
      * Registers a new parser.
      * * @param parser The parser instance to register.
      */
-    readonly register: (parser: Parser) => void;
+    readonly register: (parser: Parser) => Promise<void>;
     /**
      * Unregisters an existing parser.
      * * @param parser The parser instance to unregister.
      */
-    readonly unregister: (parser: Parser) => void;
+    readonly unregister: (parser: Parser) => Promise<void>;
   };
 
   views: {
@@ -86,12 +86,12 @@ export type TExtensionContext = {
      * Registers a new view to the platform.
      * * @param view The view definition to register.
      */
-    readonly register: (view: View) => void;
+    readonly register: (view: View) => Promise<void>;
     /**
      * Unregisters an existing view from the platform.
      * * @param view The view definition to unregister.
      */
-    readonly unregister: (view: View) => void;
+    readonly unregister: (view: View) => Promise<void>;
     /**
      * Activates and displays a specific view in the primary side bar.
      * * @param key The unique key identifying the view to show.
@@ -230,12 +230,12 @@ export type TExtensionContext = {
      * Registers a new editor type to the platform.
      * * @param editor The editor definition to register.
      */
-    readonly register: (editor: Editor) => void;
+    readonly register: (editor: Editor) => Promise<void>;
     /**
      * Unregisters an existing editor type.
      * * @param editor The editor definition to unregister.
      */
-    readonly unregister: (editor: Editor) => void;
+    readonly unregister: (editor: Editor) => Promise<void>;
   };
 
   download: {

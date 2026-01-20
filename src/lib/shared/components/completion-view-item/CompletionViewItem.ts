@@ -21,24 +21,28 @@ export class CompletionViewItem {
   }
 
 
-  readonly #context: TCompletionViewItemMountContext = {
-    set: async <GKey extends keyof TCompletionViewItem>(property: GKey, newValue: TCompletionViewItem[GKey]) => {
-      switch (property) {
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`completionViewItem:${this.key}:set`, { property, newValue });
-      }
-    },
+  #createContext(mountId: string): TCompletionViewItemMountContext {
+    return {
+      set: async <GKey extends keyof TCompletionViewItem>(property: GKey, newValue: TCompletionViewItem[GKey]) => {
+        switch (property) {
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`completionViewItem:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(_mountId: string): Promise<void> {
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`completionViewItem:${this.key}:onDidUnmount`, async () => {
+    const onDidUnmount = await this.onDidMount?.(context);
+
+    EventLink.addEventListener(`completionViewItem:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
-      EventLink.removeEventListener(`completionViewItem:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`completionViewItem:${mountId}:onDidUnmount`);
     });
   }
 

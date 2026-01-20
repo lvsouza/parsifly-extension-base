@@ -22,32 +22,36 @@ export class StatusBarItem {
   }
 
 
-  readonly #context: TStatusBarItemMountContext = {
-    set: async <GKey extends keyof TStatusBarItem>(property: GKey, newValue: TStatusBarItem[GKey]) => {
-      switch (property) {
-        case 'action':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TStatusBarItemMountContext {
+    return {
+      set: async <GKey extends keyof TStatusBarItem>(property: GKey, newValue: TStatusBarItem[GKey]) => {
+        switch (property) {
+          case 'action':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`statusBarItem:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`statusBarItem:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(): Promise<void> {
-    EventLink.addEventListener(`statusBarItem:${this.key}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(this.#context) : {});
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
+    EventLink.addEventListener(`statusBarItem:${mountId}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(context) : {});
 
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`statusBarItem:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`statusBarItem:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
-      EventLink.removeEventListener(`statusBarItem:${this.key}:action`);
-      EventLink.removeEventListener(`statusBarItem:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`statusBarItem:${mountId}:action`);
+      EventLink.removeEventListener(`statusBarItem:${mountId}:onDidUnmount`);
     });
   }
 

@@ -21,31 +21,35 @@ export class Parser {
   }
 
 
-  readonly #context: TParserMountContext = {
-    set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
-      switch (property) {
-        case 'onParse':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TParserMountContext {
+    return {
+      set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
+        switch (property) {
+          case 'onParse':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`parser:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`parser:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(): Promise<void> {
-    EventLink.addEventListener(`parser:${this.key}:onParse`, async () => await this.internalValue?.onParse?.(this.#context));
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    EventLink.addEventListener(`parser:${mountId}:onParse`, async () => await this.internalValue?.onParse?.(context));
 
-    EventLink.addEventListener(`parser:${this.key}:onDidUnmount`, async () => {
+    const onDidUnmount = await this.onDidMount?.(context);
+
+    EventLink.addEventListener(`parser:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
-      EventLink.removeEventListener(`parser:${this.key}:onParse`);
-      EventLink.removeEventListener(`parser:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`parser:${mountId}:onParse`);
+      EventLink.removeEventListener(`parser:${mountId}:onDidUnmount`);
     });
   }
 

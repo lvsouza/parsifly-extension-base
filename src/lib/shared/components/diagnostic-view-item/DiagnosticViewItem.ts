@@ -22,37 +22,41 @@ export class DiagnosticViewItem {
   }
 
 
-  readonly #context: TDiagnosticViewItemMountContext = {
-    select: async (value) => {
-      return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:select`, value);
-    },
-    refetchChildren: async () => {
-      return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:refetchRelated`);
-    },
-    set: async <GKey extends keyof TDiagnosticViewItem>(property: GKey, newValue: TDiagnosticViewItem[GKey]) => {
-      switch (property) {
-        case 'getRelated':
-        case 'getActions':
-        case 'onItemClick':
-        case 'onItemDoubleClick':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TDiagnosticViewItemMountContext {
+    return {
+      select: async (value) => {
+        return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:select`, value);
+      },
+      refetchChildren: async () => {
+        return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:refetchRelated`);
+      },
+      set: async <GKey extends keyof TDiagnosticViewItem>(property: GKey, newValue: TDiagnosticViewItem[GKey]) => {
+        switch (property) {
+          case 'getRelated':
+          case 'getActions':
+          case 'onItemClick':
+          case 'onItemDoubleClick':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`diagnosticViewItem:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(_mountId: string): Promise<void> {
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onItemClick`, async () => this.internalValue.onItemClick?.(this.#context));
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(this.#context));
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemClick`, async () => this.internalValue.onItemClick?.(context));
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(context));
 
     const registeredRelatedDiagnosticItems = new Set<DiagnosticViewItem>();
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:getRelated`, async () => {
-      const items = await this.internalValue.getRelated?.(this.#context) || [];
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:getRelated`, async () => {
+      const items = await this.internalValue.getRelated?.(context) || [];
 
       registeredRelatedDiagnosticItems.forEach((item) => item.unregister());
       registeredRelatedDiagnosticItems.clear();
@@ -66,8 +70,8 @@ export class DiagnosticViewItem {
     });
 
     const registeredActions = new Set<Action>();
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:getActions`, async () => {
-      const items = await this.internalValue.getActions?.(this.#context) || [];
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:getActions`, async () => {
+      const items = await this.internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -81,19 +85,19 @@ export class DiagnosticViewItem {
     });
 
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
 
-      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:getRelated`);
-      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:getActions`);
-      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onItemClick`);
-      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onDidUnmount`);
-      EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onItemDoubleClick`);
+      EventLink.removeEventListener(`diagnosticViewItem:${mountId}:getRelated`);
+      EventLink.removeEventListener(`diagnosticViewItem:${mountId}:getActions`);
+      EventLink.removeEventListener(`diagnosticViewItem:${mountId}:onItemClick`);
+      EventLink.removeEventListener(`diagnosticViewItem:${mountId}:onDidUnmount`);
+      EventLink.removeEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`);
     });
   }
 

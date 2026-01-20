@@ -120,60 +120,60 @@ export const defineExtensionContext = (): TExtensionContext => {
       reload: async () => {
         return await EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformAction => platformAction.serialize()));
       },
-      register: (platformAction: Action) => {
+      register: async (platformAction: Action) => {
         platformAction.register();
         platformActions.add(platformAction);
-        EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformActions => platformActions.serialize()));
+        await EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformActions => platformActions.serialize()));
       },
-      unregister: (platformAction: Action) => {
+      unregister: async (platformAction: Action) => {
         platformAction.unregister();
         platformActions.delete(platformAction);
-        EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformAction => platformAction.serialize()));
+        await EventLink.sendEvent(`platformActions:change`, Array.from(platformActions).map(platformAction => platformAction.serialize()));
       },
     },
     statusBarItems: {
       reload: async () => {
         return await EventLink.sendEvent(`statusBarItems:change`, Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
       },
-      register: (statusBarItem: StatusBarItem) => {
+      register: async (statusBarItem: StatusBarItem) => {
         statusBarItem.register();
         statusBarItems.add(statusBarItem);
-        EventLink.sendEvent(`statusBarItems:change`, Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
+        await EventLink.sendEvent(`statusBarItems:change`, Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
       },
-      unregister: (statusBarItem: StatusBarItem) => {
+      unregister: async (statusBarItem: StatusBarItem) => {
         statusBarItem.unregister();
         statusBarItems.delete(statusBarItem);
-        EventLink.sendEvent(`statusBarItems:change`, Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
+        await EventLink.sendEvent(`statusBarItems:change`, Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
       },
     },
     parsers: {
       reload: async () => {
         return await EventLink.sendEvent(`parsers:change`, Array.from(parsers).map(parser => parser.serialize()));
       },
-      register: (parser: Parser) => {
+      register: async (parser: Parser) => {
         parser.register();
         parsers.add(parser);
-        EventLink.sendEvent(`parsers:change`, Array.from(parsers).map(parser => parser.serialize()));
+        await EventLink.sendEvent(`parsers:change`, Array.from(parsers).map(parser => parser.serialize()));
       },
-      unregister: (parser: Parser) => {
+      unregister: async (parser: Parser) => {
         parser.unregister();
         parsers.delete(parser);
-        EventLink.sendEvent(`parsers:change`, Array.from(parsers).map(parser => parser.serialize()));
+        await EventLink.sendEvent(`parsers:change`, Array.from(parsers).map(parser => parser.serialize()));
       },
     },
     views: {
       reload: async () => {
         return await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
       },
-      register: (view: View) => {
+      register: async (view: View) => {
         view.register();
         views.add(view);
-        EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
+        await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
       },
-      unregister: (view: View) => {
+      unregister: async (view: View) => {
         view.unregister();
         views.delete(view);
-        EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
+        await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
       },
       showPrimarySideBarByKey: async (key: string): Promise<void> => {
         return await EventLink.sendEvent<string, void>('views:primarySideBar:showByKey', key);
@@ -266,15 +266,15 @@ export const defineExtensionContext = (): TExtensionContext => {
       reload: async () => {
         return await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
       },
-      register: (editor: Editor) => {
+      register: async (editor: Editor) => {
         editor.register();
         editors.add(editor);
-        EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
+        await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
       },
-      unregister: (editor: Editor) => {
+      unregister: async (editor: Editor) => {
         editor.unregister();
         editors.delete(editor);
-        EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
+        await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
       },
     },
     download: {

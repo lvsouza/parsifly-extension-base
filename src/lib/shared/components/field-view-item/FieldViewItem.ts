@@ -22,34 +22,38 @@ export class FieldViewItem {
   }
 
 
-  readonly #context: TFieldViewItemMountContext = {
-    getCompletions: async (query) => (await this.internalValue.getCompletions?.(query, this.#context)) || [],
-    reloadValue: async () => {
-      return await EventLink.sendEvent(`fieldViewItem:${this.key}:reloadValue`);
-    },
-    set: async <GKey extends keyof TFieldViewItem>(property: GKey, newValue: TFieldViewItem[GKey]) => {
-      switch (property) {
-        case 'getValue':
-        case 'onDidChange':
-        case 'getCompletions':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TFieldViewItemMountContext {
+    return {
+      getCompletions: async (query) => (await this.internalValue.getCompletions?.(query, this.#createContext(mountId))) || [],
+      reloadValue: async () => {
+        return await EventLink.sendEvent(`fieldViewItem:${mountId}:reloadValue`);
+      },
+      set: async <GKey extends keyof TFieldViewItem>(property: GKey, newValue: TFieldViewItem[GKey]) => {
+        switch (property) {
+          case 'getValue':
+          case 'onDidChange':
+          case 'getCompletions':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`fieldViewItem:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`fieldViewItem:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(_mountId: string): Promise<void> {
-    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldViewItemValue, this.#context));
-    EventLink.addEventListener(`fieldViewItem:${this.key}:getCompletions`, async (query: string) => this.internalValue.getCompletions?.(query, this.#context));
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
+    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldViewItemValue, context));
+    EventLink.addEventListener(`fieldViewItem:${mountId}:getCompletions`, async (query: string) => this.internalValue.getCompletions?.(query, context));
 
     const registeredCompletions = new Set<CompletionViewItem>();
-    EventLink.addEventListener(`fieldViewItem:${this.key}:getValue`, async () => {
-      return this.internalValue.getValue?.(this.#context).then(value => {
+    EventLink.addEventListener(`fieldViewItem:${mountId}:getValue`, async () => {
+      return this.internalValue.getValue?.(context).then(value => {
 
         registeredCompletions.forEach((item) => item.unregister());
         registeredCompletions.clear();
@@ -65,18 +69,18 @@ export class FieldViewItem {
     });
 
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
       registeredCompletions.forEach((item) => item.unregister());
       registeredCompletions.clear();
 
-      EventLink.removeEventListener(`fieldViewItem:${this.key}:getValue`);
-      EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidChange`);
-      EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidUnmount`);
-      EventLink.removeEventListener(`fieldViewItem:${this.key}:getCompletions`);
+      EventLink.removeEventListener(`fieldViewItem:${mountId}:getValue`);
+      EventLink.removeEventListener(`fieldViewItem:${mountId}:onDidChange`);
+      EventLink.removeEventListener(`fieldViewItem:${mountId}:onDidUnmount`);
+      EventLink.removeEventListener(`fieldViewItem:${mountId}:getCompletions`);
     });
   }
 

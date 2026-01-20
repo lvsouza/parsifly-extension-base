@@ -6,8 +6,6 @@ import { Action } from '../actions/Actions';
 
 export type TListItemMountContext = {
   refetchChildren(): Promise<void>;
-  edit(value: boolean): Promise<void>;
-  select(value: boolean): Promise<void>;
   set<GKey extends keyof TListViewItem>(property: GKey, value: TListViewItem[GKey]): Promise<void>;
 }
 
@@ -16,8 +14,11 @@ export type TListItemBase = {
   icon?: TImage;
   /** Show additional information in bold */
   extra?: string;
+  editing?: boolean;
+  selected?: boolean;
   /** Details of the record */
   description?: string;
+  disableEdit?: boolean;
   disableSelect?: boolean;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
@@ -75,9 +76,12 @@ export type TSerializableListViewItem = {
   label: string | undefined;
   title: string | undefined;
   opened: boolean | undefined;
+  editing: boolean | undefined;
+  selected: boolean | undefined;
   children: boolean | undefined;
   description: string | undefined;
   dragProvides: string | undefined;
+  disableEdit: boolean | undefined;
   dropAccepts: string[] | undefined;
   disableSelect: boolean | undefined;
 }

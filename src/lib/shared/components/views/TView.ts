@@ -12,6 +12,7 @@ export type TView = {
   type: 'view';
   icon?: TImage;
   title: string;
+  order?: number;
   description?: string;
   dataProvider: TDataProvider;
   position: 'primary' | 'secondary' | 'panel';
@@ -24,6 +25,7 @@ export type TSerializableView = {
   type: 'view';
   title: string;
   icon: TImage | undefined;
+  order: number | undefined;
   description: string | undefined;
   dataProvider: TSerializableDataProvider;
   position: 'primary' | 'secondary' | 'panel';

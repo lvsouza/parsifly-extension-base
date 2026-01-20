@@ -24,29 +24,33 @@ export class View {
   }
 
 
-  readonly #context: TViewContext = {
-    refetchData: async () => {
-      return await EventLink.sendEvent(`view:${this.key}:refetchData`);
-    },
-    set: async <GKey extends keyof TView>(property: GKey, newValue: TView[GKey]) => {
-      switch (property) {
-        case 'getTabs':
-        case 'getActions':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TViewContext {
+    return {
+      refetchData: async () => {
+        return await EventLink.sendEvent(`view:${mountId}:refetchData`);
+      },
+      set: async <GKey extends keyof TView>(property: GKey, newValue: TView[GKey]) => {
+        switch (property) {
+          case 'getTabs':
+          case 'getActions':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`view:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`view:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(): Promise<void> {
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
     const registeredActions = new Set<Action>();
-    EventLink.addEventListener(`view:${this.key}:getActions`, async () => {
-      const actions = await this.internalValue.getActions?.(this.#context) || [];
+    EventLink.addEventListener(`view:${mountId}:getActions`, async () => {
+      const actions = await this.internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -60,8 +64,8 @@ export class View {
     });
 
     const registeredTabs = new Set<Action>();
-    EventLink.addEventListener(`view:${this.key}:getTabs`, async () => {
-      const tabs = await this.internalValue.getTabs?.(this.#context) || [];
+    EventLink.addEventListener(`view:${mountId}:getTabs`, async () => {
+      const tabs = await this.internalValue.getTabs?.(context) || [];
 
       registeredTabs.forEach((item) => item.unregister());
       registeredTabs.clear();
@@ -77,9 +81,9 @@ export class View {
 
     this.internalValue.dataProvider?.register();
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`view:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`view:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
       this.internalValue.dataProvider?.unregister();
@@ -90,9 +94,9 @@ export class View {
       registeredTabs.forEach((item) => item.unregister());
       registeredTabs.clear();
 
-      EventLink.removeEventListener(`view:${this.key}:getTabs`);
-      EventLink.removeEventListener(`view:${this.key}:getActions`);
-      EventLink.removeEventListener(`view:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`view:${mountId}:getTabs`);
+      EventLink.removeEventListener(`view:${mountId}:getActions`);
+      EventLink.removeEventListener(`view:${mountId}:onDidUnmount`);
     });
   }
 
@@ -114,6 +118,7 @@ export class View {
       type: 'view',
       key: this.key,
       icon: this.internalValue.icon,
+      order: this.internalValue.order,
       title: this.internalValue.title,
       position: this.internalValue.position,
       description: this.internalValue.description,

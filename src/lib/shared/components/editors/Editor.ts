@@ -24,36 +24,40 @@ export class Editor {
   }
 
 
-  readonly #context: TEditorContext = {
-    sendMessage: async (...values) => {
-      return await EventLink.sendEvent(`editor:${this.key}:sendMessage`, ...values);
-    },
-    reload: async () => {
-      return await EventLink.sendEvent(`editor:${this.key}:reload`);
-    },
-    set: async <GKey extends keyof TEditor>(property: GKey, newValue: TEditor[GKey]) => {
-      switch (property) {
-        case 'getActions':
-        case 'onDidMessage':
-          this.internalValue[property] = newValue;
-          return;
+  #createContext(mountId: string): TEditorContext {
+    return {
+      sendMessage: async (...values) => {
+        return await EventLink.sendEvent(`editor:${mountId}:sendMessage`, ...values);
+      },
+      reload: async () => {
+        return await EventLink.sendEvent(`editor:${mountId}:reload`);
+      },
+      set: async <GKey extends keyof TEditor>(property: GKey, newValue: TEditor[GKey]) => {
+        switch (property) {
+          case 'getActions':
+          case 'onDidMessage':
+            this.internalValue[property] = newValue;
+            return;
 
-        default:
-          this.internalValue[property] = newValue;
-          return await EventLink.sendEvent(`editor:${this.key}:set`, { property, newValue });
-      }
-    },
+          default:
+            this.internalValue[property] = newValue;
+            return await EventLink.sendEvent(`editor:${mountId}:set`, { property, newValue });
+        }
+      },
+    };
   };
 
 
-  async #onDidMount(): Promise<void> {
-    EventLink.addEventListener(`editor:${this.key}:onDidMessage`, async (...values) => {
-      return await this.internalValue?.onDidMessage?.(this.#context, ...values);
+  async #onDidMount(mountId: string): Promise<void> {
+    const context = this.#createContext(mountId);
+
+    EventLink.addEventListener(`editor:${mountId}:onDidMessage`, async (...values) => {
+      return await this.internalValue?.onDidMessage?.(context, ...values);
     });
 
     const registeredActions = new Set<Action>();
-    EventLink.addEventListener(`editor:${this.key}:getActions`, async () => {
-      const actions = await this.internalValue.getActions?.(this.#context) || [];
+    EventLink.addEventListener(`editor:${mountId}:getActions`, async () => {
+      const actions = await this.internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -67,17 +71,17 @@ export class Editor {
     });
 
 
-    const onDidUnmount = await this.onDidMount?.(this.#context);
+    const onDidUnmount = await this.onDidMount?.(context);
 
-    EventLink.addEventListener(`editor:${this.key}:onDidUnmount`, async () => {
+    EventLink.addEventListener(`editor:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
 
-      EventLink.removeEventListener(`editor:${this.key}:getActions`);
-      EventLink.removeEventListener(`editor:${this.key}:onDidMessage`);
-      EventLink.removeEventListener(`editor:${this.key}:onDidUnmount`);
+      EventLink.removeEventListener(`editor:${mountId}:getActions`);
+      EventLink.removeEventListener(`editor:${mountId}:onDidMessage`);
+      EventLink.removeEventListener(`editor:${mountId}:onDidUnmount`);
     });
   }
 
