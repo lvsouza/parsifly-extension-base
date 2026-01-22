@@ -14,25 +14,31 @@ export type TViewMountContext = {
   set<GKey extends keyof TView>(property: GKey, value: TView[GKey]): Promise<void>;
 }
 
-export type TView = {
-  type: 'view';
-  icon?: TImage;
-  title: string;
-  order?: number;
-  description?: string;
-  position: 'primary' | 'secondary' | 'panel';
-  viewContent: ViewContentList | ViewContentForm | ViewContentWebView;
-  getTabs?: (context: TViewMountContext) => Promise<Action[]>;
-  getActions?: (context: TViewMountContext) => Promise<Action[]>;
-}
+export type TView =
+  & {
+    type: 'view';
+    icon?: TImage;
+    title: string;
+    order?: number;
+    description?: string;
+    position: 'primary' | 'secondary' | 'panel' | 'editor';
+    viewContent: ViewContentList | ViewContentForm | ViewContentWebView;
+    getTabs?: (context: TViewMountContext) => Promise<Action[]>;
+    getActions?: (context: TViewMountContext) => Promise<Action[]>;
+  }
+  & ({ selector?: undefined } | {
+    position: 'editor';
+    selector: string[];
+  })
 
 export type TSerializableView = {
   key: string;
   type: 'view';
   title: string;
+  selector: string[];
   icon: TImage | undefined;
   order: number | undefined;
   description: string | undefined;
-  position: 'primary' | 'secondary' | 'panel';
+  position: 'primary' | 'secondary' | 'panel' | 'editor';
   viewContent: TSerializableViewContentList | TSerializableViewContentForm | TSerializableViewContentWebView;
 }

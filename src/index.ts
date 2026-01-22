@@ -16,8 +16,6 @@ export * from './lib/shared/components/views/TViewContentForm';
 export * from './lib/shared/components/views/ViewContentForm';
 export * from './lib/shared/components/actions/TActions';
 export * from './lib/shared/components/actions/Actions';
-export * from './lib/shared/components/editors/TEditor';
-export * from './lib/shared/components/editors/Editor';
 export * from './lib/shared/components/parsers/TParser';
 export * from './lib/shared/components/parsers/Parser';
 export * from './lib/shared/components/views/TView';

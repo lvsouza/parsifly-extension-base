@@ -8,7 +8,6 @@ import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarIt
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { TQuery, TQueryResults, TWatchQuery } from '../types/TQuery';
 import { Action } from '../shared/components/actions/Actions';
-import { Editor } from '../shared/components/editors/Editor';
 import { Parser } from '../shared/components/parsers/Parser';
 import { View } from '../shared/components/views/View';
 import { TFileOrFolder } from '../types/TFileOrFolder';
@@ -224,23 +223,6 @@ export type TExtensionContext = {
      * * @param projectDescriptor The project configuration to remove.
      */
     readonly unregister: (projectDescriptor: ProjectDescriptor) => void;
-  };
-
-  editors: {
-    /**
-     * Reloads the editor configuration/registry.
-     */
-    readonly reload: () => Promise<unknown>;
-    /**
-     * Registers a new editor type to the platform.
-     * * @param editor The editor definition to register.
-     */
-    readonly register: (editor: Editor) => Promise<void>;
-    /**
-     * Unregisters an existing editor type.
-     * * @param editor The editor definition to unregister.
-     */
-    readonly unregister: (editor: Editor) => Promise<void>;
   };
 
   download: {

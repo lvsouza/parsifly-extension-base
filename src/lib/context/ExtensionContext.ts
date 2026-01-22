@@ -8,7 +8,6 @@ import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarIt
 import { createDeterministicKey } from '../shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
 import { Action } from '../shared/components/actions/Actions';
-import { Editor } from '../shared/components/editors/Editor';
 import { Parser } from '../shared/components/parsers/Parser';
 import { EventLink } from '../shared/services/EventLink';
 import { TExtensionContext } from './TExtensionContext';
@@ -22,7 +21,6 @@ export const defineExtensionContext = (): TExtensionContext => {
   const platformActions: Set<Action> = new Set([]);
   const statusBarItems: Set<StatusBarItem> = new Set([]);
   const parsers: Set<Parser> = new Set([]);
-  const editors: Set<Editor> = new Set([]);
   const views: Set<View> = new Set([]);
   const selection: Set<((key: string[]) => void)> = new Set([]);
   const edition: Set<((key: string | undefined) => void)> = new Set([]);
@@ -44,7 +42,6 @@ export const defineExtensionContext = (): TExtensionContext => {
   EventLink.addEventListener('platformActions:load', async () => Array.from(platformActions).map(platformAction => platformAction.serialize()));
   EventLink.addEventListener('statusBarItems:load', async () => Array.from(statusBarItems).map(statusBarItem => statusBarItem.serialize()));
   EventLink.addEventListener('views:load', async () => Array.from(views).map(view => view.serialize()));
-  EventLink.addEventListener('editors:load', async () => Array.from(editors).map(editor => editor.serialize()));
   EventLink.addEventListener('fields:get', async (key: string) => {
     return await Promise
       .all(
@@ -263,21 +260,6 @@ export const defineExtensionContext = (): TExtensionContext => {
       unregister: (projectsDescriptor) => {
         projectsDescriptor.unregister();
         projectsDescriptors.delete(projectsDescriptor);
-      },
-    },
-    editors: {
-      reload: async () => {
-        return await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
-      },
-      register: async (editor: Editor) => {
-        editor.register();
-        editors.add(editor);
-        await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
-      },
-      unregister: async (editor: Editor) => {
-        editor.unregister();
-        editors.delete(editor);
-        await EventLink.sendEvent(`editors:change`, Array.from(editors).map(editor => editor.serialize()));
       },
     },
     download: {

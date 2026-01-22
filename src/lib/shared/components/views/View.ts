@@ -114,7 +114,8 @@ export class View {
   public serialize(): TSerializableView {
     if (!this.internalValue.title) throw new Error(`Title not defined for "${this.key}" view`);
     if (!this.internalValue.position) throw new Error(`Position not defined for "${this.key}" view`);
-    if (!this.internalValue.viewContent) throw new Error(`Data provider not defined for "${this.key}" view`);
+    if (!this.internalValue.viewContent) throw new Error(`View content not defined for "${this.key}" view`);
+    if (!this.internalValue.selector && this.internalValue.position === 'editor') throw new Error(`Selector not defined for "${this.key}" view`);
 
     return {
       type: 'view',
@@ -123,6 +124,7 @@ export class View {
       order: this.internalValue.order,
       title: this.internalValue.title,
       position: this.internalValue.position,
+      selector: this.internalValue.selector || [],
       description: this.internalValue.description,
       viewContent: this.internalValue.viewContent.serialize(),
     };
