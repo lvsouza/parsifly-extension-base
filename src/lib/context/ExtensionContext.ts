@@ -181,6 +181,9 @@ export const defineExtensionContext = (): TExtensionContext => {
       showSecondarySideBarByKey: async (key: string): Promise<void> => {
         return await EventLink.sendEvent<string, void>('views:secondarySideBar:showByKey', key);
       },
+      showPanelByKey: async (key: string): Promise<void> => {
+        return await EventLink.sendEvent<string, void>('views:panel:showByKey', key);
+      },
     },
     selection: {
       select: async (key: string) => {

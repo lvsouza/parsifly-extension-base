@@ -102,6 +102,11 @@ export type TExtensionContext = {
      * * @param key The unique key identifying the view to show.
      */
     readonly showSecondarySideBarByKey: (key: string) => Promise<void>;
+    /**
+     * Activates and displays a specific view in the panel.
+     * * @param key The unique key identifying the view to show.
+     */
+    readonly showPanelByKey: (key: string) => Promise<void>;
   }
 
   selection: {
