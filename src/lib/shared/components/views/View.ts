@@ -49,10 +49,6 @@ export class View {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-
-    this.internalValue.viewContent?.register();
-
-
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`view:${mountId}:getActions`, async () => {
       const actions = await this.internalValue.getActions?.(context) || [];
@@ -88,8 +84,6 @@ export class View {
     EventLink.addEventListener(`view:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
-      this.internalValue.viewContent?.unregister();
-
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
 
@@ -105,10 +99,12 @@ export class View {
 
   public register() {
     EventLink.addEventListener(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    this.internalValue.viewContent?.register();
   }
 
   public unregister() {
     EventLink.removeEventListener(`view:${this.key}:onDidMount`);
+    this.internalValue.viewContent?.unregister();
   }
 
   public serialize(): TSerializableView {
