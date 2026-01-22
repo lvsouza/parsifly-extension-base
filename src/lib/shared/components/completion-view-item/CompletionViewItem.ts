@@ -23,6 +23,7 @@ export class CompletionViewItem {
 
   #createContext(mountId: string): TCompletionViewItemMountContext {
     return {
+      currentValue: this.internalValue as TCompletionViewItem,
       set: async <GKey extends keyof TCompletionViewItem>(property: GKey, newValue: TCompletionViewItem[GKey]) => {
         switch (property) {
           default:

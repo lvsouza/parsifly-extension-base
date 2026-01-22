@@ -2,6 +2,7 @@ import { TImage } from '../../../types/TImage';
 
 
 export type TStatusBarItemMountContext = {
+  readonly currentValue: TStatusBarItem;
   set<GKey extends keyof TStatusBarItem>(property: GKey, value: TStatusBarItem[GKey]): Promise<void>;
 }
 

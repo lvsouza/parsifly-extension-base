@@ -23,6 +23,7 @@ export class Action {
 
   #createContext(mountId: string): TActionMountContext {
     return {
+      currentValue: this.internalValue as TAction,
       refetchChildren: async () => {
         return await EventLink.sendEvent(`action:${mountId}:refetchChildren`);
       },

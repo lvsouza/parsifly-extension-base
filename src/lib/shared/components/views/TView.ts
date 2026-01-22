@@ -1,10 +1,14 @@
-import { TDataProvider, TSerializableDataProvider } from '../../providers/TDataProvider';
+import { TSerializableViewContentList } from './TViewContentList';
+import { TSerializableViewContentForm } from './TViewContentForm';
+import { ViewContentList } from './ViewContentList';
+import { ViewContentForm } from './ViewContentForm';
 import { TImage } from '../../../types/TImage';
 import { Action } from '../actions/Actions';
 
 
-export type TViewContext = {
-  refetchData(): Promise<void>;
+export type TViewMountContext = {
+  refetch(): Promise<void>;
+  readonly currentValue: TView;
   set<GKey extends keyof TView>(property: GKey, value: TView[GKey]): Promise<void>;
 }
 
@@ -14,10 +18,10 @@ export type TView = {
   title: string;
   order?: number;
   description?: string;
-  dataProvider: TDataProvider;
   position: 'primary' | 'secondary' | 'panel';
-  getTabs?: (context: TViewContext) => Promise<Action[]>;
-  getActions?: (context: TViewContext) => Promise<Action[]>;
+  viewContent: ViewContentList | ViewContentForm;
+  getTabs?: (context: TViewMountContext) => Promise<Action[]>;
+  getActions?: (context: TViewMountContext) => Promise<Action[]>;
 }
 
 export type TSerializableView = {
@@ -27,6 +31,6 @@ export type TSerializableView = {
   icon: TImage | undefined;
   order: number | undefined;
   description: string | undefined;
-  dataProvider: TSerializableDataProvider;
   position: 'primary' | 'secondary' | 'panel';
+  viewContent: TSerializableViewContentList | TSerializableViewContentForm;
 }

@@ -4,7 +4,7 @@ import { TImage } from '../../../types/TImage';
 
 export type TFieldViewItemMountContext = {
   reloadValue(): Promise<void>;
-  getCompletions(query?: string): Promise<TSerializableCompletionViewItem[]>;
+  readonly currentValue: TFieldViewItem;
   set<GKey extends keyof TFieldViewItem>(property: GKey, value: TFieldViewItem[GKey]): Promise<void>;
 }
 

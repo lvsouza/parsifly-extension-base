@@ -1,4 +1,4 @@
-import { TSerializableView, TView, TViewContext } from './TView';
+import { TSerializableView, TView, TViewMountContext } from './TView';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { Action } from '../actions/Actions';
@@ -7,7 +7,7 @@ import { Action } from '../actions/Actions';
 export type TViewConstructor = {
   key: string;
   initialValue?: Partial<TView>,
-  onDidMount?: TOnDidMount<TViewContext>;
+  onDidMount?: TOnDidMount<TViewMountContext>;
 }
 
 export class View {
@@ -24,10 +24,11 @@ export class View {
   }
 
 
-  #createContext(mountId: string): TViewContext {
+  #createContext(mountId: string): TViewMountContext {
     return {
-      refetchData: async () => {
-        return await EventLink.sendEvent(`view:${mountId}:refetchData`);
+      currentValue: this.internalValue as TView,
+      refetch: async () => {
+        return await EventLink.sendEvent(`view:${mountId}:refetch`);
       },
       set: async <GKey extends keyof TView>(property: GKey, newValue: TView[GKey]) => {
         switch (property) {
@@ -47,6 +48,10 @@ export class View {
 
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
+
+
+    this.internalValue.viewContent?.register();
+
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`view:${mountId}:getActions`, async () => {
@@ -72,21 +77,18 @@ export class View {
 
       for (const tab of tabs) {
         tab.register();
-        registeredActions.add(tab);
+        registeredTabs.add(tab);
       }
 
       return tabs.map(tab => tab.serialize());
     });
-
-
-    this.internalValue.dataProvider?.register();
 
     const onDidUnmount = await this.onDidMount?.(context);
 
     EventLink.addEventListener(`view:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
 
-      this.internalValue.dataProvider?.unregister();
+      this.internalValue.viewContent?.unregister();
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -112,7 +114,7 @@ export class View {
   public serialize(): TSerializableView {
     if (!this.internalValue.title) throw new Error(`Title not defined for "${this.key}" view`);
     if (!this.internalValue.position) throw new Error(`Position not defined for "${this.key}" view`);
-    if (!this.internalValue.dataProvider) throw new Error(`Data provider not defined for "${this.key}" view`);
+    if (!this.internalValue.viewContent) throw new Error(`Data provider not defined for "${this.key}" view`);
 
     return {
       type: 'view',
@@ -122,7 +124,7 @@ export class View {
       title: this.internalValue.title,
       position: this.internalValue.position,
       description: this.internalValue.description,
-      dataProvider: this.internalValue.dataProvider.serialize(),
+      viewContent: this.internalValue.viewContent.serialize(),
     };
   }
 }

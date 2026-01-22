@@ -6,6 +6,7 @@ import { Action } from '../actions/Actions';
 
 export type TListItemMountContext = {
   refetchChildren(): Promise<void>;
+  readonly currentValue: TListViewItem;
   set<GKey extends keyof TListViewItem>(property: GKey, value: TListViewItem[GKey]): Promise<void>;
 }
 
@@ -21,6 +22,7 @@ export type TListItemBase = {
   disableEdit?: boolean;
   disableSelect?: boolean;
   onItemClick?: (context: TListItemMountContext) => Promise<void>;
+  onItemToggle?: (context: TListItemMountContext) => Promise<void>;
   onItemDoubleClick?: (context: TListItemMountContext) => Promise<void>;
   getContextMenuItems?: (context: TListItemMountContext) => Promise<Action[]>;
 }

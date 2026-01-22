@@ -8,6 +8,7 @@ export type TParserResult = {
 }
 
 export type TParserMountContext = {
+  readonly currentValue: TParser;
   set<GKey extends keyof TParser>(property: GKey, value: TParser[GKey]): Promise<void>;
 }
 

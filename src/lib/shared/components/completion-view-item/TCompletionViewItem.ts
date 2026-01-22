@@ -2,6 +2,7 @@ import { TImage } from '../../../types/TImage';
 
 
 export type TCompletionViewItemMountContext = {
+  readonly currentValue: TCompletionViewItem;
   set<GKey extends keyof TCompletionViewItem>(property: GKey, value: TCompletionViewItem[GKey]): Promise<void>;
 }
 

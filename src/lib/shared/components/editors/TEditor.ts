@@ -2,8 +2,9 @@ import { TImage } from '../../../types/TImage';
 import { Action } from '../actions/Actions';
 
 
-export type TEditorContext = {
+export type TEditorMountContext = {
   reload(): Promise<void>;
+  readonly currentValue: TEditor;
   sendMessage(...values: unknown[]): Promise<unknown>;
   set<GKey extends keyof TEditor>(property: GKey, value: TEditor[GKey]): Promise<void>;
 }
@@ -15,8 +16,8 @@ export type TEditor = {
   position: 'center';
   selector: string[];
   description?: string;
-  getActions?: (context: TEditorContext) => Promise<Action[]>;
-  onDidMessage: (context: TEditorContext, ...values: unknown[]) => Promise<unknown>;
+  getActions?: (context: TEditorMountContext) => Promise<Action[]>;
+  onDidMessage: (context: TEditorMountContext, ...values: unknown[]) => Promise<unknown>;
   entryPoint: {
     basePath: string;
     file: string;

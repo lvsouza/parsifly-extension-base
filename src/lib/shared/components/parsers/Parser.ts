@@ -23,6 +23,7 @@ export class Parser {
 
   #createContext(mountId: string): TParserMountContext {
     return {
+      currentValue: this.internalValue as TParser,
       set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
         switch (property) {
           case 'onParse':

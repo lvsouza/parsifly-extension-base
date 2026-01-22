@@ -1,4 +1,4 @@
-import { TEditor, TEditorContext, TSerializableEditor } from './TEditor';
+import { TEditor, TEditorMountContext, TSerializableEditor } from './TEditor';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { Action } from '../actions/Actions';
@@ -7,7 +7,7 @@ import { Action } from '../actions/Actions';
 export type TEditorConstructor = {
   key: string;
   initialValue?: Partial<TEditor>,
-  onDidMount?: TOnDidMount<TEditorContext>;
+  onDidMount?: TOnDidMount<TEditorMountContext>;
 }
 
 export class Editor {
@@ -24,8 +24,9 @@ export class Editor {
   }
 
 
-  #createContext(mountId: string): TEditorContext {
+  #createContext(mountId: string): TEditorMountContext {
     return {
+      currentValue: this.internalValue as TEditor,
       sendMessage: async (...values) => {
         return await EventLink.sendEvent(`editor:${mountId}:sendMessage`, ...values);
       },

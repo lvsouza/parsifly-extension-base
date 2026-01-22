@@ -23,11 +23,10 @@ export class ListViewItem {
   }
 
 
-  #createContext(mountId: string, abortController: AbortController): TListItemMountContext {
+  #createContext(mountId: string): TListItemMountContext {
     return {
+      currentValue: this.internalValue as TListViewItem,
       refetchChildren: async () => {
-        if (abortController.signal.aborted) return;
-        if (!this.internalValue.children) return;
         try {
           return await EventLink.sendEvent(`listItem:${mountId}:refetchChildren`);
         } catch (error) {
@@ -36,12 +35,11 @@ export class ListViewItem {
         }
       },
       set: async <GKey extends keyof TListViewItem>(property: GKey, newValue: TListViewItem[GKey]) => {
-        if (abortController.signal.aborted) return;
-
         switch (property) {
           case 'getItems':
           case 'onDidDrop':
           case 'onItemClick':
+          case 'onItemToggle':
           case 'onItemDoubleClick':
           case 'getContextMenuItems':
             this.internalValue[property] = newValue;
@@ -55,12 +53,7 @@ export class ListViewItem {
 
           default:
             this.internalValue[property] = newValue;
-            try {
-              return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue });
-            } catch (error) {
-              console.log(abortController.signal.aborted, this, error);
-              return
-            }
+            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue });
         }
       },
     };
@@ -68,13 +61,12 @@ export class ListViewItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const abortController = new AbortController();
+    const context = this.#createContext(mountId);
 
-    const context = this.#createContext(mountId, abortController);
-
-    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => this.internalValue.onItemClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => this.internalValue.onDidDrop?.(context, event));
+    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => await this.internalValue.onItemClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemToggle`, async () => await this.internalValue.onItemToggle?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => await this.internalValue.onItemDoubleClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => await this.internalValue.onDidDrop?.(context, event));
 
     const registeredChildren = new Set<ListViewItem>();
     EventLink.addEventListener(`listItem:${mountId}:getItems`, async () => {
@@ -110,9 +102,6 @@ export class ListViewItem {
     const onDidUnmount = await this.onDidMount?.(context);
 
     EventLink.addEventListener(`listItem:${mountId}:onDidUnmount`, async () => {
-      abortController.abort();
-
-      await onDidUnmount?.();
 
       registeredChildren.forEach((item) => item.unregister());
       registeredChildren.clear();
@@ -123,9 +112,12 @@ export class ListViewItem {
       EventLink.removeEventListener(`listItem:${mountId}:getItems`);
       EventLink.removeEventListener(`listItem:${mountId}:onDidDrop`);
       EventLink.removeEventListener(`listItem:${mountId}:onItemClick`);
+      EventLink.removeEventListener(`listItem:${mountId}:onItemToggle`);
       EventLink.removeEventListener(`listItem:${mountId}:onDidUnmount`);
       EventLink.removeEventListener(`listItem:${mountId}:onItemDoubleClick`);
       EventLink.removeEventListener(`listItem:${mountId}:getContextMenuItems`);
+
+      await onDidUnmount?.();
     });
   }
 

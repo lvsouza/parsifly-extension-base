@@ -24,6 +24,7 @@ export class DiagnosticViewItem {
 
   #createContext(mountId: string): TDiagnosticViewItemMountContext {
     return {
+      currentValue: this.internalValue as TDiagnosticViewItem,
       select: async (value) => {
         return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:select`, value);
       },

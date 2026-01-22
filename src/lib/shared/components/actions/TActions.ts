@@ -3,6 +3,7 @@ import { Action } from './Actions';
 
 
 export type TActionMountContext = {
+  readonly currentValue: TAction;
   refetchChildren(): Promise<void>;
   set<GKey extends keyof TAction>(property: GKey, value: TAction[GKey]): Promise<void>;
 }

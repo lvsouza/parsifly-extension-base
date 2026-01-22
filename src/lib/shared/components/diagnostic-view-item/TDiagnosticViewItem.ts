@@ -6,6 +6,7 @@ import { Action } from '../actions/Actions';
 export type TDiagnosticViewItemMountContext = {
   refetchChildren(): Promise<void>;
   select(value: boolean): Promise<void>;
+  readonly currentValue: TDiagnosticViewItem;
   set<GKey extends keyof TDiagnosticViewItem>(property: GKey, value: TDiagnosticViewItem[GKey]): Promise<void>;
 }
 

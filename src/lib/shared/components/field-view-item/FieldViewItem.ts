@@ -24,7 +24,7 @@ export class FieldViewItem {
 
   #createContext(mountId: string): TFieldViewItemMountContext {
     return {
-      getCompletions: async (query) => (await this.internalValue.getCompletions?.(query, this.#createContext(mountId))) || [],
+      currentValue: this.internalValue as TFieldViewItem,
       reloadValue: async () => {
         return await EventLink.sendEvent(`fieldViewItem:${mountId}:reloadValue`);
       },
@@ -72,7 +72,6 @@ export class FieldViewItem {
     const onDidUnmount = await this.onDidMount?.(context);
 
     EventLink.addEventListener(`fieldViewItem:${mountId}:onDidUnmount`, async () => {
-      await onDidUnmount?.();
 
       registeredCompletions.forEach((item) => item.unregister());
       registeredCompletions.clear();
@@ -81,6 +80,8 @@ export class FieldViewItem {
       EventLink.removeEventListener(`fieldViewItem:${mountId}:onDidChange`);
       EventLink.removeEventListener(`fieldViewItem:${mountId}:onDidUnmount`);
       EventLink.removeEventListener(`fieldViewItem:${mountId}:getCompletions`);
+
+      await onDidUnmount?.();
     });
   }
 

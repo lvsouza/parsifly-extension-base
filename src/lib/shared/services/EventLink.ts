@@ -18,7 +18,7 @@ export class EventLink {
   }
 
 
-  static #receiveEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
+  static #receiveEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn | Error> {
     const event = this.#LISTENERS.get(key);
 
     if (Envs.DEBUG) {
@@ -27,7 +27,7 @@ export class EventLink {
 
     if (!event) {
       if (Envs.DEBUG) console.warn(`[EXTENSION] Event with key "${key}" was not found.`);
-      return Promise.resolve(undefined as GReturn);
+      return Promise.resolve(new Error('KEY_NOT_FOUND'));
     }
 
     return event(...params);
@@ -37,7 +37,13 @@ export class EventLink {
   public static async sendEvent<GParams = unknown, GReturn = unknown>(key: string, ...params: GParams[]): Promise<GReturn> {
     if (!this.#STUDIO) throw new Error("EventLink not initiate. Call initialize before.");
 
-    return await this.#STUDIO.callEvent<GParams, GReturn>(key, ...params);
+    const result = await this.#STUDIO.callEvent<GParams, GReturn>(key, ...params);
+
+    if (result instanceof Error) {
+      return undefined as GReturn;
+    }
+
+    return result;
   }
 
 

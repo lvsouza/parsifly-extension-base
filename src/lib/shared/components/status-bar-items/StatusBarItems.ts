@@ -24,6 +24,7 @@ export class StatusBarItem {
 
   #createContext(mountId: string): TStatusBarItemMountContext {
     return {
+      currentValue: this.internalValue as TStatusBarItem,
       set: async <GKey extends keyof TStatusBarItem>(property: GKey, newValue: TStatusBarItem[GKey]) => {
         switch (property) {
           case 'action':

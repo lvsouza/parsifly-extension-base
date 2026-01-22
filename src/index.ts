@@ -8,6 +8,10 @@ export * from './lib/shared/components/field-view-item/TFieldViewItem';
 export * from './lib/shared/components/field-view-item/FieldViewItem';
 export * from './lib/shared/components/list-view-item/TListViewItem';
 export * from './lib/shared/components/list-view-item/ListViewItem';
+export * from './lib/shared/components/views/TViewContentList';
+export * from './lib/shared/components/views/ViewContentList';
+export * from './lib/shared/components/views/TViewContentForm';
+export * from './lib/shared/components/views/ViewContentForm';
 export * from './lib/shared/components/actions/TActions';
 export * from './lib/shared/components/actions/Actions';
 export * from './lib/shared/components/editors/TEditor';
@@ -16,10 +20,6 @@ export * from './lib/shared/components/parsers/TParser';
 export * from './lib/shared/components/parsers/Parser';
 export * from './lib/shared/components/views/TView';
 export * from './lib/shared/components/views/View';
-
-export * from './lib/shared/providers/TDataProvider';
-export * from './lib/shared/providers/ListProvider';
-export * from './lib/shared/providers/FormProvider';
 
 export * from './lib/shared/analyzers/DiagnosticAnalyzer';
 
