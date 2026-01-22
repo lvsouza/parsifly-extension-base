@@ -8,6 +8,8 @@ export * from './lib/shared/components/field-view-item/TFieldViewItem';
 export * from './lib/shared/components/field-view-item/FieldViewItem';
 export * from './lib/shared/components/list-view-item/TListViewItem';
 export * from './lib/shared/components/list-view-item/ListViewItem';
+export * from './lib/shared/components/views/TViewContentWebView';
+export * from './lib/shared/components/views/ViewContentWebView';
 export * from './lib/shared/components/views/TViewContentList';
 export * from './lib/shared/components/views/ViewContentList';
 export * from './lib/shared/components/views/TViewContentForm';

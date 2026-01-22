@@ -1,5 +1,7 @@
+import { TSerializableViewContentWebView } from './TViewContentWebView';
 import { TSerializableViewContentList } from './TViewContentList';
 import { TSerializableViewContentForm } from './TViewContentForm';
+import { ViewContentWebView } from './ViewContentWebView';
 import { ViewContentList } from './ViewContentList';
 import { ViewContentForm } from './ViewContentForm';
 import { TImage } from '../../../types/TImage';
@@ -19,7 +21,7 @@ export type TView = {
   order?: number;
   description?: string;
   position: 'primary' | 'secondary' | 'panel';
-  viewContent: ViewContentList | ViewContentForm;
+  viewContent: ViewContentList | ViewContentForm | ViewContentWebView;
   getTabs?: (context: TViewMountContext) => Promise<Action[]>;
   getActions?: (context: TViewMountContext) => Promise<Action[]>;
 }
@@ -32,5 +34,5 @@ export type TSerializableView = {
   order: number | undefined;
   description: string | undefined;
   position: 'primary' | 'secondary' | 'panel';
-  viewContent: TSerializableViewContentList | TSerializableViewContentForm;
+  viewContent: TSerializableViewContentList | TSerializableViewContentForm | TSerializableViewContentWebView;
 }
