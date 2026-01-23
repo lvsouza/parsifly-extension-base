@@ -7,6 +7,7 @@ import { TSerializableFieldViewItem } from '../shared/components/field-view-item
 import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarItems';
 import { createDeterministicKey } from '../shared/services/CreateDeterministicKey';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
+import { TViewContentDefault } from '../shared/components/views/TView';
 import { Action } from '../shared/components/actions/Actions';
 import { Parser } from '../shared/components/parsers/Parser';
 import { EventLink } from '../shared/services/EventLink';
@@ -21,7 +22,7 @@ export const defineExtensionContext = (): TExtensionContext => {
   const platformActions: Set<Action> = new Set([]);
   const statusBarItems: Set<StatusBarItem> = new Set([]);
   const parsers: Set<Parser> = new Set([]);
-  const views: Set<View> = new Set([]);
+  const views: Set<View<TViewContentDefault>> = new Set([]);
   const selection: Set<((key: string[]) => void)> = new Set([]);
   const edition: Set<((key: string | undefined) => void)> = new Set([]);
   const data: Map<string, Set<((data: any) => Promise<void>)>> = new Map();
@@ -162,12 +163,12 @@ export const defineExtensionContext = (): TExtensionContext => {
       reload: async () => {
         return await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
       },
-      register: async (view: View) => {
+      register: async (view: View<TViewContentDefault>) => {
         view.register();
         views.add(view);
         await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
       },
-      unregister: async (view: View) => {
+      unregister: async (view: View<TViewContentDefault>) => {
         view.unregister();
         views.delete(view);
         await EventLink.sendEvent(`views:change`, Array.from(views).map(view => view.serialize()));
@@ -198,11 +199,11 @@ export const defineExtensionContext = (): TExtensionContext => {
       },
     },
     edition: {
-      open: async (type: string, key: string) => {
-        await EventLink.sendEvent(`edition:open`, type, key);
+      open: async (type: string, customData: any) => {
+        await EventLink.sendEvent(`edition:open`, type, customData);
       },
-      close: async (key: string) => {
-        await EventLink.sendEvent(`edition:close`, key);
+      close: async () => {
+        await EventLink.sendEvent(`edition:close`);
       },
       get: async (): Promise<string> => {
         return await EventLink.sendEvent(`edition:get`);

@@ -12,7 +12,7 @@ export type TFieldViewItemConstructor = {
 export class FieldViewItem {
   public readonly key: TFieldViewItemConstructor['key'];
   public readonly onDidMount: TFieldViewItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TFieldViewItemConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TFieldViewItemConstructor['initialValue']>;
 
 
   constructor(props: TFieldViewItemConstructor) {

@@ -11,7 +11,7 @@ export type TCompletionViewItemConstructor = {
 export class CompletionViewItem {
   public readonly key: TCompletionViewItemConstructor['key'];
   public readonly onDidMount: TCompletionViewItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TCompletionViewItemConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TCompletionViewItemConstructor['initialValue']>;
 
 
   constructor(props: TCompletionViewItemConstructor) {

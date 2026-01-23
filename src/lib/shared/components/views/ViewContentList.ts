@@ -13,7 +13,7 @@ export type TViewContentListConstructor = {
 export class ViewContentList {
   public readonly key: TViewContentListConstructor['key'];
   public readonly onDidMount: TViewContentListConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TViewContentListConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TViewContentListConstructor['initialValue']>;
 
 
   constructor(props: TViewContentListConstructor) {

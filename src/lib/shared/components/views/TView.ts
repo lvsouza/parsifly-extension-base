@@ -8,23 +8,29 @@ import { TImage } from '../../../types/TImage';
 import { Action } from '../actions/Actions';
 
 
-export type TViewMountContext = {
-  refetch(): Promise<void>;
-  readonly currentValue: TView;
-  set<GKey extends keyof TView>(property: GKey, value: TView[GKey]): Promise<void>;
-}
+export type TViewContentDefault = ViewContentList | ViewContentForm | ViewContentWebView;
 
-export type TView =
+export type TViewPositionDefault = 'primary' | 'secondary' | 'panel' | 'editor';
+
+export type TViewMountContext<GViewContent extends TViewContentDefault> =
+  & {
+    refetch(): Promise<void>;
+    readonly customData: unknown;
+    readonly currentValue: TView<GViewContent>;
+    set<GKey extends keyof TView<GViewContent>>(property: GKey, value: TView<GViewContent>[GKey]): Promise<void>;
+  }
+
+export type TView<GViewContent extends TViewContentDefault> =
   & {
     type: 'view';
     icon?: TImage;
     title: string;
     order?: number;
     description?: string;
-    position: 'primary' | 'secondary' | 'panel' | 'editor';
-    viewContent: ViewContentList | ViewContentForm | ViewContentWebView;
-    getTabs?: (context: TViewMountContext) => Promise<Action[]>;
-    getActions?: (context: TViewMountContext) => Promise<Action[]>;
+    viewContent: GViewContent;
+    position: TViewPositionDefault;
+    getTabs?: (context: TViewMountContext<GViewContent>) => Promise<Action[]>;
+    getActions?: (context: TViewMountContext<GViewContent>) => Promise<Action[]>;
   }
   & ({ selector?: undefined } | {
     position: 'editor';
@@ -38,7 +44,7 @@ export type TSerializableView = {
   selector: string[];
   icon: TImage | undefined;
   order: number | undefined;
+  position: TViewPositionDefault;
   description: string | undefined;
-  position: 'primary' | 'secondary' | 'panel' | 'editor';
   viewContent: TSerializableViewContentList | TSerializableViewContentForm | TSerializableViewContentWebView;
 }

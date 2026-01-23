@@ -13,7 +13,7 @@ export type TViewContentFormConstructor = {
 export class ViewContentForm {
   public readonly key: TViewContentFormConstructor['key'];
   public readonly onDidMount: TViewContentFormConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TViewContentFormConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TViewContentFormConstructor['initialValue']>;
 
 
   constructor(props: TViewContentFormConstructor) {

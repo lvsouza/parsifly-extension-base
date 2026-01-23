@@ -12,7 +12,7 @@ export type TViewContentWebViewConstructor = {
 export class ViewContentWebView {
   public readonly key: TViewContentWebViewConstructor['key'];
   public readonly onDidMount: TViewContentWebViewConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TViewContentWebViewConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TViewContentWebViewConstructor['initialValue']>;
 
 
   constructor(props: TViewContentWebViewConstructor) {

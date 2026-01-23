@@ -6,6 +6,7 @@ import { ProjectDescriptor, TSerializableProjectDescriptor } from '../shared/des
 import { TSerializableFieldViewItem } from '../shared/components/field-view-item/TFieldViewItem';
 import { StatusBarItem } from '../shared/components/status-bar-items/StatusBarItems';
 import { FieldsDescriptor } from '../shared/descriptors/FieldsDescriptor';
+import { TViewContentDefault } from '../shared/components/views/TView';
 import { TQuery, TQueryResults, TWatchQuery } from '../types/TQuery';
 import { Action } from '../shared/components/actions/Actions';
 import { Parser } from '../shared/components/parsers/Parser';
@@ -85,12 +86,12 @@ export type TExtensionContext = {
      * Registers a new view to the platform.
      * * @param view The view definition to register.
      */
-    readonly register: (view: View) => Promise<void>;
+    readonly register: (view: View<TViewContentDefault>) => Promise<void>;
     /**
      * Unregisters an existing view from the platform.
      * * @param view The view definition to unregister.
      */
-    readonly unregister: (view: View) => Promise<void>;
+    readonly unregister: (view: View<TViewContentDefault>) => Promise<void>;
     /**
      * Activates and displays a specific view in the primary side bar.
      * * @param key The unique key identifying the view to show.

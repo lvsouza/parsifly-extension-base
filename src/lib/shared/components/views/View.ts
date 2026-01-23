@@ -1,22 +1,22 @@
-import { TSerializableView, TView, TViewMountContext } from './TView';
+import { TSerializableView, TView, TViewContentDefault, TViewMountContext } from './TView';
 import { TOnDidMount } from '../../../types/TOnDidMount';
 import { EventLink } from '../../services/EventLink';
 import { Action } from '../actions/Actions';
 
 
-export type TViewConstructor = {
+export type TViewConstructor<GViewContent extends TViewContentDefault> = {
   key: string;
-  initialValue?: Partial<TView>,
-  onDidMount?: TOnDidMount<TViewMountContext>;
+  initialValue?: Partial<TView<GViewContent>>,
+  onDidMount?: TOnDidMount<TViewMountContext<GViewContent>>;
 }
 
-export class View {
-  public readonly key: TViewConstructor['key'];
-  public readonly onDidMount: TViewConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TViewConstructor['initialValue']>>;
+export class View<GViewContent extends TViewContentDefault> {
+  public readonly key: TViewConstructor<GViewContent>['key'];
+  public readonly onDidMount: TViewConstructor<GViewContent>['onDidMount'];
+  public readonly internalValue: NonNullable<TViewConstructor<GViewContent>['initialValue']>;
 
 
-  constructor(props: TViewConstructor) {
+  constructor(props: TViewConstructor<GViewContent>) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
     this.internalValue = props.initialValue || {};
@@ -24,13 +24,14 @@ export class View {
   }
 
 
-  #createContext(mountId: string): TViewMountContext {
+  #createContext(mountId: string, customData: unknown): TViewMountContext<GViewContent> {
     return {
-      currentValue: this.internalValue as TView,
+      customData: customData,
+      currentValue: this.internalValue as TView<GViewContent>,
       refetch: async () => {
         return await EventLink.sendEvent(`view:${mountId}:refetch`);
       },
-      set: async <GKey extends keyof TView>(property: GKey, newValue: TView[GKey]) => {
+      set: async <GKey extends keyof TView<GViewContent>>(property: GKey, newValue: TView<GViewContent>[GKey]) => {
         switch (property) {
           case 'getTabs':
           case 'getActions':
@@ -42,12 +43,12 @@ export class View {
             return await EventLink.sendEvent(`view:${mountId}:set`, { property, newValue });
         }
       },
-    };
+    } satisfies TViewMountContext<GViewContent>;
   };
 
 
-  async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+  async #onDidMount(mountId: string, customData: unknown): Promise<void> {
+    const context = this.#createContext(mountId, customData);
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`view:${mountId}:getActions`, async () => {
@@ -98,7 +99,7 @@ export class View {
 
 
   public register() {
-    EventLink.addEventListener(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener<any>(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
     this.internalValue.viewContent?.register();
   }
 

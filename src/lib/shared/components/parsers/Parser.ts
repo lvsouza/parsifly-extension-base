@@ -11,7 +11,7 @@ export type TParserConstructor = {
 export class Parser {
   public readonly key: TParserConstructor['key'];
   public readonly onDidMount: TParserConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TParserConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TParserConstructor['initialValue']>;
 
 
   constructor(props: TParserConstructor) {

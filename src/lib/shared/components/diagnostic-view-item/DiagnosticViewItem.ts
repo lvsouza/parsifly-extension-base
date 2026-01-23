@@ -12,7 +12,7 @@ export type TDiagnosticItemConstructor = {
 export class DiagnosticViewItem {
   public readonly key: TDiagnosticItemConstructor['key'];
   public readonly onDidMount: TDiagnosticItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TDiagnosticItemConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TDiagnosticItemConstructor['initialValue']>;
 
 
   constructor(props: TDiagnosticItemConstructor) {

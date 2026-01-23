@@ -12,7 +12,7 @@ export type TStatusBarItemConstructor = {
 export class StatusBarItem {
   public readonly key: TStatusBarItemConstructor['key'];
   public readonly onDidMount: TStatusBarItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TStatusBarItemConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TStatusBarItemConstructor['initialValue']>;
 
 
   constructor(props: TStatusBarItemConstructor) {

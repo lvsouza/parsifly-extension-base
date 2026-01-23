@@ -11,7 +11,7 @@ export type TActionConstructor = {
 export class Action {
   public readonly key: TActionConstructor['key'];
   public readonly onDidMount: TActionConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TActionConstructor['initialValue']>>;
+  public readonly internalValue: NonNullable<TActionConstructor['initialValue']>;
 
 
   constructor(props: TActionConstructor) {
