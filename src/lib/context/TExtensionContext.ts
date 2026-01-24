@@ -33,12 +33,12 @@ export type TExtensionContext = {
     readonly reload: () => Promise<void>;
     /**
      * Registers a new action to the platform.
-     * * @param platformAction The action definition to register.
+     * @param platformAction The action definition to register.
      */
     readonly register: (platformAction: Action) => Promise<void>;
     /**
      * Unregisters an existing action from the platform.
-     * * @param platformAction The action definition to unregister.
+     * @param platformAction The action definition to unregister.
      */
     readonly unregister: (platformAction: Action) => Promise<void>;
   };
@@ -50,12 +50,12 @@ export type TExtensionContext = {
     readonly reload: () => Promise<void>;
     /**
      * Registers a new item to the status bar.
-     * * @param statusBarItem The status bar item to register.
+     * @param statusBarItem The status bar item to register.
      */
     readonly register: (statusBarItem: StatusBarItem) => Promise<void>;
     /**
      * Unregisters an existing item from the status bar.
-     * * @param statusBarItem The status bar item to unregister.
+     * @param statusBarItem The status bar item to unregister.
      */
     readonly unregister: (statusBarItem: StatusBarItem) => Promise<void>;
   };
@@ -67,12 +67,12 @@ export type TExtensionContext = {
     readonly reload: () => Promise<void>;
     /**
      * Registers a new parser.
-     * * @param parser The parser instance to register.
+     * @param parser The parser instance to register.
      */
     readonly register: (parser: Parser) => Promise<void>;
     /**
      * Unregisters an existing parser.
-     * * @param parser The parser instance to unregister.
+     * @param parser The parser instance to unregister.
      */
     readonly unregister: (parser: Parser) => Promise<void>;
   };
@@ -84,12 +84,12 @@ export type TExtensionContext = {
     readonly reload: () => Promise<void>;
     /**
      * Registers a new view to the platform.
-     * * @param view The view definition to register.
+     * @param view The view definition to register.
      */
     readonly register: (view: View<TViewContentDefault>) => Promise<void>;
     /**
      * Unregisters an existing view from the platform.
-     * * @param view The view definition to unregister.
+     * @param view The view definition to unregister.
      */
     readonly unregister: (view: View<TViewContentDefault>) => Promise<void>;
     /**
@@ -112,12 +112,12 @@ export type TExtensionContext = {
   selection: {
     /**
      * Selects an item in the platform using its identifier.
-     * * @param key The identifier of the item to be selected.
+     * @param key The identifier of the item to be selected.
      */
     readonly select: (key: string) => Promise<void>;
     /**
      * Deselects an item in the platform using its identifier.
-     * * @param key The identifier of the item to be unselected.
+     * @param key The identifier of the item to be unselected.
      */
     readonly unselect: (key: string) => Promise<void>;
     /**
@@ -127,7 +127,7 @@ export type TExtensionContext = {
     readonly get: () => Promise<string[]>;
     /**
      * Subscribes to changes in the selection state.
-     * * @param listener A function to be called when the selection changes, receiving the new list of keys.
+     * @param listener A function to be called when the selection changes, receiving the new list of keys.
      * @returns {() => void} A function to unsubscribe the listener.
      */
     readonly subscribe: (listener: (key: string[]) => Promise<void>) => () => void;
@@ -136,23 +136,23 @@ export type TExtensionContext = {
   edition: {
     /**
      * Opens an item in an editor appropriate for its type.
-     * * @param type The type of editor to use (e.g., 'text', 'graph').
+     * @param type The type of editor to use (e.g., 'text', 'graph').
      * @param key The unique identifier of the content/item to open.
      */
     readonly open: (type: string, key: string) => Promise<void>;
     /**
      * Closes an item if it is currently open in an editor.
-     * * @param key The unique identifier of the item to close.
+     * @param key The unique identifier of the item to close.
      */
     readonly close: (key: string) => Promise<void>;
     /**
      * Retrieves the identifier of the item currently active/being edited.
-     * * @returns {Promise<string>} A promise resolving to the active item's ID.
+     * @returns {Promise<string>} A promise resolving to the active item's ID.
      */
     readonly get: () => Promise<string>;
     /**
      * Subscribes to changes in the active edition item.
-     * * @param listener A function called when the active item changes. Receives the key or undefined if nothing is open.
+     * @param listener A function called when the active item changes. Receives the key or undefined if nothing is open.
      * @returns {() => void} A function to unsubscribe the listener.
      */
     readonly subscribe: (listener: (key: string | undefined) => Promise<void>) => () => void;
@@ -161,30 +161,30 @@ export type TExtensionContext = {
   fields: {
     /**
      * Retrieves a list of fields for a specific resource.
-     * * @param key The resource key used to fetch the fields.
+     * @param key The resource key used to fetch the fields.
      * @returns {Promise<TSerializableFieldViewItem[]>} A promise resolving to the list of serializable fields.
      */
     readonly get: (key: string) => Promise<TSerializableFieldViewItem[]>;
     /**
      * Requests the platform to refresh all fields associated with the resource.
-     * * @param key The resource key to be refreshed.
+     * @param key The resource key to be refreshed.
      */
     readonly refresh: (key: string) => Promise<void>;
     /**
      * Subscribes to updates on form fields for a specific resource.
-     * * @param key The resource key to watch.
+     * @param key The resource key to watch.
      * @param listener Callback function triggered when fields are updated.
      * @returns {() => void} A function to unsubscribe the listener.
      */
     readonly subscribe: (key: string, listener: ((fields: TSerializableFieldViewItem[]) => Promise<void>)) => (() => void);
     /**
      * Registers a fields descriptor to the platform.
-     * * @param fieldsDescriptor The descriptor object containing field definitions.
+     * @param fieldsDescriptor The descriptor object containing field definitions.
      */
     readonly register: (fieldsDescriptor: FieldsDescriptor) => void;
     /**
      * Unregisters a fields descriptor from the platform.
-     * * @param fieldsDescriptor The descriptor object to unregister.
+     * @param fieldsDescriptor The descriptor object to unregister.
      */
     readonly unregister: (fieldsDescriptor: FieldsDescriptor) => void;
   };
@@ -192,18 +192,18 @@ export type TExtensionContext = {
   completions: {
     /**
      * Retrieves a list of code completion suggestions based on user intent.
-     * * @param intent Contextual information about what needs completion (cursor position, file type, etc.).
+     * @param intent Contextual information about what needs completion (cursor position, file type, etc.).
      * @returns {Promise<TSerializableCompletionViewItem[]>} A promise resolving to the list of completion items.
      */
     readonly get: (intent: ICompletionsDescriptorIntent) => Promise<TSerializableCompletionViewItem[]>;
     /**
      * Registers a completions descriptor to the platform provider.
-     * * @param completionsDescriptor The descriptor defining how completions are generated.
+     * @param completionsDescriptor The descriptor defining how completions are generated.
      */
     readonly register: (completionsDescriptor: CompletionsDescriptor) => void;
     /**
      * Unregisters a completions descriptor.
-     * * @param completionsDescriptor The descriptor to remove.
+     * @param completionsDescriptor The descriptor to remove.
      */
     readonly unregister: (completionsDescriptor: CompletionsDescriptor) => void;
   };
@@ -216,12 +216,12 @@ export type TExtensionContext = {
     readonly get: () => Promise<TSerializableProjectDescriptor[]>;
     /**
      * Registers a project descriptor to the platform.
-     * * @param projectDescriptor The project configuration to register.
+     * @param projectDescriptor The project configuration to register.
      */
     readonly register: (projectDescriptor: ProjectDescriptor) => void;
     /**
      * Unregisters a project descriptor.
-     * * @param projectDescriptor The project configuration to remove.
+     * @param projectDescriptor The project configuration to remove.
      */
     readonly unregister: (projectDescriptor: ProjectDescriptor) => void;
   };
@@ -229,14 +229,14 @@ export type TExtensionContext = {
   download: {
     /**
      * Triggers the download of a single file with specific content.
-     * * @param fileName The name of the file to be generated.
+     * @param fileName The name of the file to be generated.
      * @param fileType The extension/type of the file.
      * @param fileContent The string content to be written to the file.
      */
     readonly downloadFile: (fileName: string, fileType: string, fileContent: string) => Promise<void>;
     /**
      * Triggers the download of multiple files and folders compressed into a ZIP archive.
-     * * @param downloadName The name of the resulting ZIP file.
+     * @param downloadName The name of the resulting ZIP file.
      * @param files An array of file or folder objects to be included in the download.
      */
     readonly downloadFiles: (downloadName: string, files: TFileOrFolder[]) => Promise<void>;
@@ -268,7 +268,7 @@ export type TExtensionContext = {
   data: {
     /**
      * Executes a query against the platform's data layer.
-     * * @param query The query object to be executed.
+     * @param query The query object to be executed.
      * @returns {Promise<TQueryResults>} A promise resolving to the query results.
      */
     execute(query: TQuery): Promise<TQueryResults>;
@@ -289,7 +289,7 @@ export type TExtensionContext = {
     readonly get: () => Promise<Record<string, TSerializableDiagnosticViewItem[]>>;
     /**
      * Subscribes to diagnostic updates.
-     * * @param listener Function called when diagnostics change.
+     * @param listener Function called when diagnostics change.
      * @returns {() => void} A function to unsubscribe the listener.
      */
     readonly subscribe: (listener: (diagnostic: Record<string, TSerializableDiagnosticViewItem[]>) => Promise<void>) => (() => void);
