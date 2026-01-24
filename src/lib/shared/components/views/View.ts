@@ -31,6 +31,9 @@ export class View<GViewContent extends TViewContentDefault> {
       refetch: async () => {
         return await EventLink.sendEvent(`view:${mountId}:refetch`);
       },
+      close: async () => {
+        return await EventLink.sendEvent(`views:close`, mountId);
+      },
       set: async <GKey extends keyof TView<GViewContent>>(property: GKey, newValue: TView<GViewContent>[GKey]) => {
         switch (property) {
           case 'getTabs':

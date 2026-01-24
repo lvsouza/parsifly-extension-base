@@ -3,12 +3,39 @@ import { EventLink } from '../../shared/services/EventLink';
 import { View } from '../../shared/components/views/View';
 
 
+
+export class OpenedViewManager {
+  constructor(
+    public mountId: string
+  ) { }
+
+  public async close(): Promise<void> {
+    return await EventLink.sendEvent(`views:close`, this.mountId);
+  }
+}
+
+type TViewOpenProps<T = unknown> = {
+  key: string;
+  customData?: T;
+  windowMode?: boolean;
+}
+
 export class ViewManager {
   #views: Set<View<TViewContentDefault>> = new Set([]);
 
 
   constructor() {
     EventLink.addEventListener('views:load', async () => Array.from(this.#views).map(view => view.serialize()));
+  }
+
+
+  public async open(props: TViewOpenProps): Promise<OpenedViewManager> {
+    const mountId = await EventLink.sendEvent<unknown, string>(`views:open`, props);
+    return new OpenedViewManager(mountId);
+  }
+
+  public async close(mountId: string) {
+    return await EventLink.sendEvent(`views:close`, mountId);
   }
 
 
@@ -41,7 +68,7 @@ export class ViewManager {
 
   /**
    * Activates and displays a specific view in the primary side bar.
-   * * @param key The unique key identifying the view to show.
+   * @param key The unique key identifying the view to show.
    */
   public async showPrimarySideBarByKey(key: string): Promise<void> {
     return await EventLink.sendEvent<string, void>('views:primarySideBar:showByKey', key);

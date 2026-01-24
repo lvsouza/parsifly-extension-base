@@ -13,6 +13,7 @@ export type TViewContentDefault = ViewContentList | ViewContentForm | ViewConten
 export type TViewPosition = 'primary' | 'secondary' | 'panel' | 'editor';
 
 export type TViewMountContext<GViewContent extends TViewContentDefault> = {
+  close(): Promise<void>;
   refetch(): Promise<void>;
   readonly customData: unknown;
   readonly currentValue: TView<GViewContent>;
