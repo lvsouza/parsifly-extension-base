@@ -9,6 +9,7 @@ export type TViewContentWebViewContext = {
 
 export type TViewContentWebView = {
   type: 'viewContentWebView';
+  backgroundTransparent?: boolean;
   onDidMessage: (context: TViewContentWebViewContext, ...values: unknown[]) => Promise<unknown>;
   entryPoint: {
     basePath: string;
@@ -19,6 +20,7 @@ export type TViewContentWebView = {
 export type TSerializableViewContentWebView = {
   key: string;
   type: 'viewContentWebView';
+  backgroundTransparent: boolean | undefined;
   entryPoint: {
     basePath: string;
     file: string;

@@ -82,6 +82,7 @@ export class ViewContentWebView {
       key: this.key,
       type: 'viewContentWebView',
       entryPoint: this.internalValue.entryPoint,
+      backgroundTransparent: this.internalValue.backgroundTransparent,
     };
   }
 }
