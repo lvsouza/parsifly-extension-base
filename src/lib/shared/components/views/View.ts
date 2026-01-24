@@ -121,9 +121,18 @@ export class View<GViewContent extends TViewContentDefault> {
       order: this.internalValue.order,
       title: this.internalValue.title,
       position: this.internalValue.position,
+      allowWindow: this.internalValue.allowWindow,
       selector: this.internalValue.selector || [],
       description: this.internalValue.description,
       viewContent: this.internalValue.viewContent.serialize(),
+      allowedPositions: this.internalValue.allowedPositions as [],
+      window: {
+        width: this.internalValue.window?.width,
+        height: this.internalValue.window?.height,
+        anchor: this.internalValue.window?.anchor,
+        draggable: this.internalValue.window?.draggable,
+        resizable: this.internalValue.window?.resizable,
+      },
     };
   }
 }
