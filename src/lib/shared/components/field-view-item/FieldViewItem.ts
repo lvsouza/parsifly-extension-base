@@ -22,9 +22,9 @@ export class FieldViewItem {
   }
 
 
-  #createContext(mountId: string): TFieldViewItemMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TFieldViewItemMountContext {
     return {
-      currentValue: this.defaultValue as TFieldViewItem,
+      currentValue: internalValue as TFieldViewItem,
       reloadValue: async () => {
         return await EventLink.sendEvent(`fieldViewItem:${mountId}:reloadValue`);
       },
@@ -33,11 +33,11 @@ export class FieldViewItem {
           case 'getValue':
           case 'onDidChange':
           case 'getCompletions':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`fieldViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -46,14 +46,16 @@ export class FieldViewItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidChange`, async (value) => this.defaultValue.onDidChange?.(value as TFieldViewItemValue, context));
-    EventLink.addEventListener(`fieldViewItem:${mountId}:getCompletions`, async (query: string) => this.defaultValue.getCompletions?.(query, context));
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidChange`, async (value) => internalValue.onDidChange?.(value as TFieldViewItemValue, context));
+    EventLink.addEventListener(`fieldViewItem:${mountId}:getCompletions`, async (query: string) => internalValue.getCompletions?.(query, context));
 
     const registeredCompletions = new Set<CompletionViewItem>();
     EventLink.addEventListener(`fieldViewItem:${mountId}:getValue`, async () => {
-      return this.defaultValue.getValue?.(context).then(value => {
+      return internalValue.getValue?.(context).then(value => {
 
         registeredCompletions.forEach((item) => item.unregister());
         registeredCompletions.clear();

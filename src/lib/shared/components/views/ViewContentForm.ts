@@ -24,20 +24,20 @@ export class ViewContentForm {
   }
 
 
-  #createContext(mountId: string): TViewContentFormContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TViewContentFormContext {
     return {
-      currentValue: this.defaultValue as TViewContentForm,
+      currentValue: internalValue as TViewContentForm,
       refetch: async () => {
         return await EventLink.sendEvent(`viewContentForm:${mountId}:refetch`);
       },
       set: async <GKey extends keyof TViewContentForm>(property: GKey, newValue: TViewContentForm[GKey]) => {
         switch (property) {
           case 'getFields':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentForm:${mountId}:set`, { property, newValue });
         }
       },
@@ -46,11 +46,13 @@ export class ViewContentForm {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
+
+    const context = this.#createContext(internalValue, mountId);
 
     const registeredFields = new Set<FieldViewItem>();
     EventLink.addEventListener(`viewContentForm:${mountId}:getFields`, async () => {
-      const fields = await this.defaultValue.getFields?.(context) || [];
+      const fields = await internalValue.getFields?.(context) || [];
 
       registeredFields.forEach((item) => item.unregister());
       registeredFields.clear();

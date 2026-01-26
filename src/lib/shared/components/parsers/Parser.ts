@@ -21,17 +21,17 @@ export class Parser {
   }
 
 
-  #createContext(mountId: string): TParserMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TParserMountContext {
     return {
-      currentValue: this.defaultValue as TParser,
+      currentValue: internalValue as TParser,
       set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
         switch (property) {
           case 'onParse':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`parser:${mountId}:set`, { property, newValue });
         }
       },
@@ -40,9 +40,11 @@ export class Parser {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`parser:${mountId}:onParse`, async () => await this.defaultValue?.onParse?.(context));
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`parser:${mountId}:onParse`, async () => await internalValue?.onParse?.(context));
 
     const onDidUnmount = await this.onDidMount?.(context);
 

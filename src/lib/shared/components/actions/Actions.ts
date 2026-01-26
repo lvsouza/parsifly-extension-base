@@ -21,9 +21,9 @@ export class Action {
   }
 
 
-  #createContext(mountId: string): TActionMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TActionMountContext {
     return {
-      currentValue: this.defaultValue as TAction,
+      currentValue: internalValue as TAction,
       refetchChildren: async () => {
         return await EventLink.sendEvent(`action:${mountId}:refetchChildren`);
       },
@@ -31,11 +31,11 @@ export class Action {
         switch (property) {
           case 'action':
           case 'getActions':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`action:${mountId}:set`, { property, newValue });
         }
       },
@@ -44,13 +44,15 @@ export class Action {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`action:${mountId}:action`, async () => 'action' in this.defaultValue ? this.defaultValue.action?.(context) : {});
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`action:${mountId}:action`, async () => 'action' in internalValue ? internalValue.action?.(context) : {});
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`action:${mountId}:getActions`, async () => {
-      const actions = await this.defaultValue.getActions?.(context) || [];
+      const actions = await internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();

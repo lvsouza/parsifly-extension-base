@@ -21,13 +21,13 @@ export class CompletionViewItem {
   }
 
 
-  #createContext(mountId: string): TCompletionViewItemMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TCompletionViewItemMountContext {
     return {
-      currentValue: this.defaultValue as TCompletionViewItem,
+      currentValue: internalValue as TCompletionViewItem,
       set: async <GKey extends keyof TCompletionViewItem>(property: GKey, newValue: TCompletionViewItem[GKey]) => {
         switch (property) {
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`completionViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -36,7 +36,9 @@ export class CompletionViewItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
+
+    const context = this.#createContext(internalValue, mountId);
 
     const onDidUnmount = await this.onDidMount?.(context);
 

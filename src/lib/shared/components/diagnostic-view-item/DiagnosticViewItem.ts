@@ -22,9 +22,9 @@ export class DiagnosticViewItem {
   }
 
 
-  #createContext(mountId: string): TDiagnosticViewItemMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TDiagnosticViewItemMountContext {
     return {
-      currentValue: this.defaultValue as TDiagnosticViewItem,
+      currentValue: internalValue as TDiagnosticViewItem,
       select: async (value) => {
         return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:select`, value);
       },
@@ -37,11 +37,11 @@ export class DiagnosticViewItem {
           case 'getActions':
           case 'onItemClick':
           case 'onItemDoubleClick':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -50,14 +50,16 @@ export class DiagnosticViewItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemClick`, async () => this.defaultValue.onItemClick?.(context));
-    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`, async () => this.defaultValue.onItemDoubleClick?.(context));
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemClick`, async () => internalValue.onItemClick?.(context));
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`, async () => internalValue.onItemDoubleClick?.(context));
 
     const registeredRelatedDiagnosticItems = new Set<DiagnosticViewItem>();
     EventLink.addEventListener(`diagnosticViewItem:${mountId}:getRelated`, async () => {
-      const items = await this.defaultValue.getRelated?.(context) || [];
+      const items = await internalValue.getRelated?.(context) || [];
 
       registeredRelatedDiagnosticItems.forEach((item) => item.unregister());
       registeredRelatedDiagnosticItems.clear();
@@ -72,7 +74,7 @@ export class DiagnosticViewItem {
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`diagnosticViewItem:${mountId}:getActions`, async () => {
-      const items = await this.defaultValue.getActions?.(context) || [];
+      const items = await internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();

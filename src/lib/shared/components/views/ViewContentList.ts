@@ -24,20 +24,20 @@ export class ViewContentList {
   }
 
 
-  #createContext(mountId: string): TViewContentListContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TViewContentListContext {
     return {
-      currentValue: this.defaultValue as TViewContentList,
+      currentValue: internalValue as TViewContentList,
       refetch: async () => {
         return await EventLink.sendEvent(`viewContentList:${mountId}:refetch`);
       },
       set: async <GKey extends keyof TViewContentList>(property: GKey, newValue: TViewContentList[GKey]) => {
         switch (property) {
           case 'getItems':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentList:${mountId}:set`, { property, newValue });
         }
       },
@@ -46,11 +46,13 @@ export class ViewContentList {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
+
+    const context = this.#createContext(internalValue, mountId);
 
     const registeredItems = new Set<ListViewItem>();
     EventLink.addEventListener(`viewContentList:${mountId}:getItems`, async () => {
-      const items = await this.defaultValue.getItems?.(context) || [];
+      const items = await internalValue.getItems?.(context) || [];
 
       registeredItems.forEach((item) => item.unregister());
       registeredItems.clear();

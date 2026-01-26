@@ -23,9 +23,9 @@ export class ListViewItem {
   }
 
 
-  #createContext(mountId: string): TListItemMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TListItemMountContext {
     return {
-      currentValue: this.defaultValue as TListViewItem,
+      currentValue: internalValue as TListViewItem,
       refetchChildren: async () => {
         try {
           return await EventLink.sendEvent(`listItem:${mountId}:refetchChildren`);
@@ -42,17 +42,17 @@ export class ListViewItem {
           case 'onItemToggle':
           case 'onItemDoubleClick':
           case 'getContextMenuItems':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
           case 'editing':
-            this.defaultValue.editing = this.defaultValue.disableEdit ? false : newValue as TListViewItem['editing'];
-            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.defaultValue.editing });
+            internalValue.editing = internalValue.disableEdit ? false : newValue as TListViewItem['editing'];
+            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: internalValue.editing });
           case 'selected':
-            this.defaultValue.selected = this.defaultValue.disableSelect ? false : newValue as TListViewItem['selected'];
-            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.defaultValue.selected });
+            internalValue.selected = internalValue.disableSelect ? false : newValue as TListViewItem['selected'];
+            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: internalValue.selected });
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -61,16 +61,18 @@ export class ListViewItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => await this.defaultValue.onItemClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onItemToggle`, async () => await this.defaultValue.onItemToggle?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => await this.defaultValue.onItemDoubleClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => await this.defaultValue.onDidDrop?.(context, event));
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => await internalValue.onItemClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemToggle`, async () => await internalValue.onItemToggle?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => await internalValue.onItemDoubleClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => await internalValue.onDidDrop?.(context, event));
 
     const registeredChildren = new Set<ListViewItem>();
     EventLink.addEventListener(`listItem:${mountId}:getItems`, async () => {
-      const items = await this.defaultValue.getItems?.(context) || [];
+      const items = await internalValue.getItems?.(context) || [];
 
       registeredChildren.forEach((item) => item.unregister());
       registeredChildren.clear();
@@ -85,7 +87,7 @@ export class ListViewItem {
 
     const registeredContextMenuItems = new Set<Action>();
     EventLink.addEventListener(`listItem:${mountId}:getContextMenuItems`, async () => {
-      const items = await this.defaultValue.getContextMenuItems?.(context) || [];
+      const items = await internalValue.getContextMenuItems?.(context) || [];
 
       registeredContextMenuItems.forEach((item) => item.unregister());
       registeredContextMenuItems.clear();

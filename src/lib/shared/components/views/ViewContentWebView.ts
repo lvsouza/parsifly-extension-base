@@ -23,9 +23,9 @@ export class ViewContentWebView {
   }
 
 
-  #createContext(mountId: string): TViewContentWebViewContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TViewContentWebViewContext {
     return {
-      currentValue: this.defaultValue as TViewContentWebView,
+      currentValue: internalValue as TViewContentWebView,
       sendMessage: async (...values) => {
         return await EventLink.sendEvent(`viewContentWebView:${mountId}:sendMessage`, ...values);
       },
@@ -35,11 +35,11 @@ export class ViewContentWebView {
       set: async <GKey extends keyof TViewContentWebView>(property: GKey, newValue: TViewContentWebView[GKey]) => {
         switch (property) {
           case 'onDidMessage':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentWebView:${mountId}:set`, { property, newValue });
         }
       },
@@ -48,11 +48,13 @@ export class ViewContentWebView {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
+
+    const context = this.#createContext(internalValue, mountId);
 
 
     EventLink.addEventListener(`viewContentWebView:${mountId}:onDidMessage`, async (...values) => {
-      return await this.defaultValue?.onDidMessage?.(context, ...values);
+      return await internalValue?.onDidMessage?.(context, ...values);
     });
 
 

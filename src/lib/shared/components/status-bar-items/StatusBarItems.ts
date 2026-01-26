@@ -22,17 +22,17 @@ export class StatusBarItem {
   }
 
 
-  #createContext(mountId: string): TStatusBarItemMountContext {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string): TStatusBarItemMountContext {
     return {
-      currentValue: this.defaultValue as TStatusBarItem,
+      currentValue: internalValue as TStatusBarItem,
       set: async <GKey extends keyof TStatusBarItem>(property: GKey, newValue: TStatusBarItem[GKey]) => {
         switch (property) {
           case 'action':
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.defaultValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`statusBarItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -41,9 +41,11 @@ export class StatusBarItem {
 
 
   async #onDidMount(mountId: string): Promise<void> {
-    const context = this.#createContext(mountId);
+    const internalValue = this.defaultValue;
 
-    EventLink.addEventListener(`statusBarItem:${mountId}:action`, async () => 'action' in this.defaultValue ? this.defaultValue.action?.(context) : {});
+    const context = this.#createContext(internalValue, mountId);
+
+    EventLink.addEventListener(`statusBarItem:${mountId}:action`, async () => 'action' in internalValue ? internalValue.action?.(context) : {});
 
 
     const onDidUnmount = await this.onDidMount?.(context);
