@@ -6,6 +6,7 @@ import { Action } from '../actions/Actions';
 
 export type TViewConstructor<GViewContent extends TViewContentDefault> = {
   key: string;
+  onRequestOpen?: () => Promise<void>;
   initialValue?: Partial<TView<GViewContent>>,
   onDidMount?: TOnDidMount<TViewMountContext<GViewContent>>;
 }
@@ -13,12 +14,14 @@ export type TViewConstructor<GViewContent extends TViewContentDefault> = {
 export class View<GViewContent extends TViewContentDefault> {
   public readonly key: TViewConstructor<GViewContent>['key'];
   public readonly onDidMount: TViewConstructor<GViewContent>['onDidMount'];
+  public readonly onRequestOpen: TViewConstructor<GViewContent>['onRequestOpen'];
   public readonly internalValue: NonNullable<TViewConstructor<GViewContent>['initialValue']>;
 
 
   constructor(props: TViewConstructor<GViewContent>) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.onRequestOpen = props.onRequestOpen;
     this.internalValue = props.initialValue || {};
     this.internalValue.type = 'view';
   }
@@ -100,15 +103,20 @@ export class View<GViewContent extends TViewContentDefault> {
     });
   }
 
+  async #onRequestOpen() {
+    await this.onRequestOpen?.();
+  }
 
   public register() {
     EventLink.addEventListener<any>(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener<any>(`view:${this.key}:onRequestOpen`, this.#onRequestOpen.bind(this));
     this.internalValue.viewContent?.register();
   }
 
   public unregister() {
-    EventLink.removeEventListener(`view:${this.key}:onDidMount`);
     this.internalValue.viewContent?.unregister();
+    EventLink.removeEventListener(`view:${this.key}:onRequestOpen`);
+    EventLink.removeEventListener(`view:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableView {
