@@ -6,7 +6,6 @@ import { QuickPickManager } from './managers/QuickPickManager';
 import { SelectionManager } from './managers/SelectionManager';
 import { DownloadManager } from './managers/DownloadManager';
 import { FeedbackManager } from './managers/FeedbackManager';
-import { EditionManager } from './managers/EditionManager';
 import { ProjectManager } from './managers/ProjectManager';
 import { ParserManager } from './managers/ParserManager';
 import { TExtensionContext } from './TExtensionContext';
@@ -23,7 +22,6 @@ export const defineExtensionContext = (): TExtensionContext => {
     views: new ViewManager(),
     fields: new FieldManager(),
     parsers: new ParserManager(),
-    edition: new EditionManager(),
     projects: new ProjectManager(),
     download: new DownloadManager(),
     feedback: new FeedbackManager(),

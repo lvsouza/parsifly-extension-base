@@ -7,7 +7,6 @@ import { SelectionManager } from './managers/SelectionManager';
 import { DownloadManager } from './managers/DownloadManager';
 import { FeedbackManager } from './managers/FeedbackManager';
 import { ProjectManager } from './managers/ProjectManager';
-import { EditionManager } from './managers/EditionManager';
 import { ParserManager } from './managers/ParserManager';
 import { FieldManager } from './managers/FieldManager';
 import { DataManager } from './managers/DataManager';
@@ -19,7 +18,6 @@ export type TExtensionContext = {
   views: ViewManager;
   fields: FieldManager;
   parsers: ParserManager;
-  edition: EditionManager;
   projects: ProjectManager;
   download: DownloadManager;
   feedback: FeedbackManager;
