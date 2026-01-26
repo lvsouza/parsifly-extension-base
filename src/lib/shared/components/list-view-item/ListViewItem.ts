@@ -13,19 +13,19 @@ export type TListViewItemConstructor = {
 export class ListViewItem {
   public readonly key: TListViewItemConstructor['key'];
   public readonly onDidMount: TListViewItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
+  public readonly defaultValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
 
 
   constructor(props: TListViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TListItemMountContext {
     return {
-      currentValue: this.internalValue as TListViewItem,
+      currentValue: this.defaultValue as TListViewItem,
       refetchChildren: async () => {
         try {
           return await EventLink.sendEvent(`listItem:${mountId}:refetchChildren`);
@@ -42,17 +42,17 @@ export class ListViewItem {
           case 'onItemToggle':
           case 'onItemDoubleClick':
           case 'getContextMenuItems':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
           case 'editing':
-            this.internalValue.editing = this.internalValue.disableEdit ? false : newValue as TListViewItem['editing'];
-            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.internalValue.editing });
+            this.defaultValue.editing = this.defaultValue.disableEdit ? false : newValue as TListViewItem['editing'];
+            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.defaultValue.editing });
           case 'selected':
-            this.internalValue.selected = this.internalValue.disableSelect ? false : newValue as TListViewItem['selected'];
-            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.internalValue.selected });
+            this.defaultValue.selected = this.defaultValue.disableSelect ? false : newValue as TListViewItem['selected'];
+            return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue: this.defaultValue.selected });
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`listItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -63,14 +63,14 @@ export class ListViewItem {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => await this.internalValue.onItemClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onItemToggle`, async () => await this.internalValue.onItemToggle?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => await this.internalValue.onItemDoubleClick?.(context));
-    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => await this.internalValue.onDidDrop?.(context, event));
+    EventLink.addEventListener(`listItem:${mountId}:onItemClick`, async () => await this.defaultValue.onItemClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemToggle`, async () => await this.defaultValue.onItemToggle?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onItemDoubleClick`, async () => await this.defaultValue.onItemDoubleClick?.(context));
+    EventLink.addEventListener(`listItem:${mountId}:onDidDrop`, async (event: TDropEvent) => await this.defaultValue.onDidDrop?.(context, event));
 
     const registeredChildren = new Set<ListViewItem>();
     EventLink.addEventListener(`listItem:${mountId}:getItems`, async () => {
-      const items = await this.internalValue.getItems?.(context) || [];
+      const items = await this.defaultValue.getItems?.(context) || [];
 
       registeredChildren.forEach((item) => item.unregister());
       registeredChildren.clear();
@@ -85,7 +85,7 @@ export class ListViewItem {
 
     const registeredContextMenuItems = new Set<Action>();
     EventLink.addEventListener(`listItem:${mountId}:getContextMenuItems`, async () => {
-      const items = await this.internalValue.getContextMenuItems?.(context) || [];
+      const items = await this.defaultValue.getContextMenuItems?.(context) || [];
 
       registeredContextMenuItems.forEach((item) => item.unregister());
       registeredContextMenuItems.clear();
@@ -133,19 +133,19 @@ export class ListViewItem {
   public serialize(): TSerializableListViewItem {
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      label: this.internalValue.label,
-      extra: this.internalValue.extra,
-      title: this.internalValue.title,
-      opened: this.internalValue.opened,
-      editing: this.internalValue.editing,
-      selected: this.internalValue.selected,
-      children: this.internalValue.children,
-      dropAccepts: this.internalValue.dropAccepts,
-      description: this.internalValue.description,
-      disableEdit: this.internalValue.disableEdit,
-      dragProvides: this.internalValue.dragProvides,
-      disableSelect: this.internalValue.disableSelect,
+      icon: this.defaultValue.icon,
+      label: this.defaultValue.label,
+      extra: this.defaultValue.extra,
+      title: this.defaultValue.title,
+      opened: this.defaultValue.opened,
+      editing: this.defaultValue.editing,
+      selected: this.defaultValue.selected,
+      children: this.defaultValue.children,
+      dropAccepts: this.defaultValue.dropAccepts,
+      description: this.defaultValue.description,
+      disableEdit: this.defaultValue.disableEdit,
+      dragProvides: this.defaultValue.dragProvides,
+      disableSelect: this.defaultValue.disableSelect,
     };
   }
 }

@@ -13,31 +13,31 @@ export type TViewContentFormConstructor = {
 export class ViewContentForm {
   public readonly key: TViewContentFormConstructor['key'];
   public readonly onDidMount: TViewContentFormConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TViewContentFormConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TViewContentFormConstructor['initialValue']>;
 
 
   constructor(props: TViewContentFormConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
-    this.internalValue.type = 'viewContentForm';
+    this.defaultValue = props.initialValue || {};
+    this.defaultValue.type = 'viewContentForm';
   }
 
 
   #createContext(mountId: string): TViewContentFormContext {
     return {
-      currentValue: this.internalValue as TViewContentForm,
+      currentValue: this.defaultValue as TViewContentForm,
       refetch: async () => {
         return await EventLink.sendEvent(`viewContentForm:${mountId}:refetch`);
       },
       set: async <GKey extends keyof TViewContentForm>(property: GKey, newValue: TViewContentForm[GKey]) => {
         switch (property) {
           case 'getFields':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentForm:${mountId}:set`, { property, newValue });
         }
       },
@@ -50,7 +50,7 @@ export class ViewContentForm {
 
     const registeredFields = new Set<FieldViewItem>();
     EventLink.addEventListener(`viewContentForm:${mountId}:getFields`, async () => {
-      const fields = await this.internalValue.getFields?.(context) || [];
+      const fields = await this.defaultValue.getFields?.(context) || [];
 
       registeredFields.forEach((item) => item.unregister());
       registeredFields.clear();
@@ -88,7 +88,7 @@ export class ViewContentForm {
   }
 
   public serialize(): TSerializableViewContentForm {
-    if (!this.internalValue.getFields) throw new Error(`Get fields not defined for "${this.key}" view content form`);
+    if (!this.defaultValue.getFields) throw new Error(`Get fields not defined for "${this.key}" view content form`);
 
     return {
       key: this.key,

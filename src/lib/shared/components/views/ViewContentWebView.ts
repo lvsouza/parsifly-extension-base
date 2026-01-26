@@ -12,20 +12,20 @@ export type TViewContentWebViewConstructor = {
 export class ViewContentWebView {
   public readonly key: TViewContentWebViewConstructor['key'];
   public readonly onDidMount: TViewContentWebViewConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TViewContentWebViewConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TViewContentWebViewConstructor['initialValue']>;
 
 
   constructor(props: TViewContentWebViewConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
-    this.internalValue.type = 'viewContentWebView';
+    this.defaultValue = props.initialValue || {};
+    this.defaultValue.type = 'viewContentWebView';
   }
 
 
   #createContext(mountId: string): TViewContentWebViewContext {
     return {
-      currentValue: this.internalValue as TViewContentWebView,
+      currentValue: this.defaultValue as TViewContentWebView,
       sendMessage: async (...values) => {
         return await EventLink.sendEvent(`viewContentWebView:${mountId}:sendMessage`, ...values);
       },
@@ -35,11 +35,11 @@ export class ViewContentWebView {
       set: async <GKey extends keyof TViewContentWebView>(property: GKey, newValue: TViewContentWebView[GKey]) => {
         switch (property) {
           case 'onDidMessage':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentWebView:${mountId}:set`, { property, newValue });
         }
       },
@@ -52,7 +52,7 @@ export class ViewContentWebView {
 
 
     EventLink.addEventListener(`viewContentWebView:${mountId}:onDidMessage`, async (...values) => {
-      return await this.internalValue?.onDidMessage?.(context, ...values);
+      return await this.defaultValue?.onDidMessage?.(context, ...values);
     });
 
 
@@ -76,13 +76,13 @@ export class ViewContentWebView {
   }
 
   public serialize(): TSerializableViewContentWebView {
-    if (!this.internalValue.entryPoint) throw new Error(`Entry point not defined for "${this.key}" view content web view`);
+    if (!this.defaultValue.entryPoint) throw new Error(`Entry point not defined for "${this.key}" view content web view`);
 
     return {
       key: this.key,
       type: 'viewContentWebView',
-      entryPoint: this.internalValue.entryPoint,
-      backgroundTransparent: this.internalValue.backgroundTransparent,
+      entryPoint: this.defaultValue.entryPoint,
+      backgroundTransparent: this.defaultValue.backgroundTransparent,
     };
   }
 }

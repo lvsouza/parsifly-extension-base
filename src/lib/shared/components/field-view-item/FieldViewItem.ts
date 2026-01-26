@@ -12,19 +12,19 @@ export type TFieldViewItemConstructor = {
 export class FieldViewItem {
   public readonly key: TFieldViewItemConstructor['key'];
   public readonly onDidMount: TFieldViewItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TFieldViewItemConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TFieldViewItemConstructor['initialValue']>;
 
 
   constructor(props: TFieldViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TFieldViewItemMountContext {
     return {
-      currentValue: this.internalValue as TFieldViewItem,
+      currentValue: this.defaultValue as TFieldViewItem,
       reloadValue: async () => {
         return await EventLink.sendEvent(`fieldViewItem:${mountId}:reloadValue`);
       },
@@ -33,11 +33,11 @@ export class FieldViewItem {
           case 'getValue':
           case 'onDidChange':
           case 'getCompletions':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`fieldViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -48,12 +48,12 @@ export class FieldViewItem {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidChange`, async (value) => this.internalValue.onDidChange?.(value as TFieldViewItemValue, context));
-    EventLink.addEventListener(`fieldViewItem:${mountId}:getCompletions`, async (query: string) => this.internalValue.getCompletions?.(query, context));
+    EventLink.addEventListener(`fieldViewItem:${mountId}:onDidChange`, async (value) => this.defaultValue.onDidChange?.(value as TFieldViewItemValue, context));
+    EventLink.addEventListener(`fieldViewItem:${mountId}:getCompletions`, async (query: string) => this.defaultValue.getCompletions?.(query, context));
 
     const registeredCompletions = new Set<CompletionViewItem>();
     EventLink.addEventListener(`fieldViewItem:${mountId}:getValue`, async () => {
-      return this.internalValue.getValue?.(context).then(value => {
+      return this.defaultValue.getValue?.(context).then(value => {
 
         registeredCompletions.forEach((item) => item.unregister());
         registeredCompletions.clear();
@@ -97,16 +97,16 @@ export class FieldViewItem {
   public serialize(): TSerializableFieldViewItem {
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      info: this.internalValue.info,
-      error: this.internalValue.error,
-      warning: this.internalValue.warning,
-      name: this.internalValue.name || '',
-      label: this.internalValue.label || '',
-      disabled: this.internalValue.disabled,
-      type: this.internalValue.type || 'view',
-      description: this.internalValue.description,
-      defaultValue: this.internalValue.defaultValue,
+      icon: this.defaultValue.icon,
+      info: this.defaultValue.info,
+      error: this.defaultValue.error,
+      warning: this.defaultValue.warning,
+      name: this.defaultValue.name || '',
+      label: this.defaultValue.label || '',
+      disabled: this.defaultValue.disabled,
+      type: this.defaultValue.type || 'view',
+      description: this.defaultValue.description,
+      defaultValue: this.defaultValue.defaultValue,
     };
   }
 }

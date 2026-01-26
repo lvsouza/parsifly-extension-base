@@ -11,27 +11,27 @@ export type TParserConstructor = {
 export class Parser {
   public readonly key: TParserConstructor['key'];
   public readonly onDidMount: TParserConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TParserConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TParserConstructor['initialValue']>;
 
 
   constructor(props: TParserConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TParserMountContext {
     return {
-      currentValue: this.internalValue as TParser,
+      currentValue: this.defaultValue as TParser,
       set: async <GKey extends keyof TParser>(property: GKey, newValue: TParser[GKey]) => {
         switch (property) {
           case 'onParse':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`parser:${mountId}:set`, { property, newValue });
         }
       },
@@ -42,7 +42,7 @@ export class Parser {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`parser:${mountId}:onParse`, async () => await this.internalValue?.onParse?.(context));
+    EventLink.addEventListener(`parser:${mountId}:onParse`, async () => await this.defaultValue?.onParse?.(context));
 
     const onDidUnmount = await this.onDidMount?.(context);
 
@@ -64,13 +64,13 @@ export class Parser {
   }
 
   public serialize(): TSerializableParser {
-    if (!this.internalValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
+    if (!this.defaultValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
 
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      label: this.internalValue.label,
-      description: this.internalValue.description,
+      icon: this.defaultValue.icon,
+      label: this.defaultValue.label,
+      description: this.defaultValue.description,
     };
   }
 }

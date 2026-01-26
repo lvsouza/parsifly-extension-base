@@ -15,22 +15,22 @@ export class View<GViewContent extends TViewContentDefault> {
   public readonly key: TViewConstructor<GViewContent>['key'];
   public readonly onDidMount: TViewConstructor<GViewContent>['onDidMount'];
   public readonly onRequestOpen: TViewConstructor<GViewContent>['onRequestOpen'];
-  public readonly internalValue: NonNullable<TViewConstructor<GViewContent>['initialValue']>;
+  public readonly defaultValue: NonNullable<TViewConstructor<GViewContent>['initialValue']>;
 
 
   constructor(props: TViewConstructor<GViewContent>) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
     this.onRequestOpen = props.onRequestOpen;
-    this.internalValue = props.initialValue || {};
-    this.internalValue.type = 'view';
+    this.defaultValue = props.initialValue || {};
+    this.defaultValue.type = 'view';
   }
 
 
-  #createContext(mountId: string, customData: unknown): TViewMountContext<GViewContent> {
+  #createContext(internalValue: typeof this.defaultValue, mountId: string, customData: unknown): TViewMountContext<GViewContent> {
     return {
       customData: customData,
-      currentValue: this.internalValue as TView<GViewContent>,
+      currentValue: internalValue as TView<GViewContent>,
       refetch: async () => {
         return await EventLink.sendEvent(`view:${mountId}:refetch`);
       },
@@ -41,11 +41,11 @@ export class View<GViewContent extends TViewContentDefault> {
         switch (property) {
           case 'getTabs':
           case 'getActions':
-            this.internalValue[property] = newValue;
+            internalValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            internalValue[property] = newValue;
             return await EventLink.sendEvent(`view:${mountId}:set`, { property, newValue });
         }
       },
@@ -54,11 +54,13 @@ export class View<GViewContent extends TViewContentDefault> {
 
 
   async #onDidMount(mountId: string, customData: unknown): Promise<void> {
-    const context = this.#createContext(mountId, customData);
+    const internalValue = this.defaultValue;
+
+    const context = this.#createContext(internalValue, mountId, customData);
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`view:${mountId}:getActions`, async () => {
-      const actions = await this.internalValue.getActions?.(context) || [];
+      const actions = await internalValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -73,7 +75,7 @@ export class View<GViewContent extends TViewContentDefault> {
 
     const registeredTabs = new Set<Action>();
     EventLink.addEventListener(`view:${mountId}:getTabs`, async () => {
-      const tabs = await this.internalValue.getTabs?.(context) || [];
+      const tabs = await internalValue.getTabs?.(context) || [];
 
       registeredTabs.forEach((item) => item.unregister());
       registeredTabs.clear();
@@ -110,39 +112,39 @@ export class View<GViewContent extends TViewContentDefault> {
   public register() {
     EventLink.addEventListener<any>(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
     EventLink.addEventListener<any>(`view:${this.key}:onRequestOpen`, this.#onRequestOpen.bind(this));
-    this.internalValue.viewContent?.register();
+    this.defaultValue.viewContent?.register();
   }
 
   public unregister() {
-    this.internalValue.viewContent?.unregister();
+    this.defaultValue.viewContent?.unregister();
     EventLink.removeEventListener(`view:${this.key}:onRequestOpen`);
     EventLink.removeEventListener(`view:${this.key}:onDidMount`);
   }
 
   public serialize(): TSerializableView {
-    if (!this.internalValue.title) throw new Error(`Title not defined for "${this.key}" view`);
-    if (!this.internalValue.position) throw new Error(`Position not defined for "${this.key}" view`);
-    if (!this.internalValue.viewContent) throw new Error(`View content not defined for "${this.key}" view`);
-    if (!this.internalValue.selector && this.internalValue.position === 'editor') throw new Error(`Selector not defined for "${this.key}" view`);
+    if (!this.defaultValue.title) throw new Error(`Title not defined for "${this.key}" view`);
+    if (!this.defaultValue.position) throw new Error(`Position not defined for "${this.key}" view`);
+    if (!this.defaultValue.viewContent) throw new Error(`View content not defined for "${this.key}" view`);
+    if (!this.defaultValue.selector && this.defaultValue.position === 'editor') throw new Error(`Selector not defined for "${this.key}" view`);
 
     return {
       type: 'view',
       key: this.key,
-      icon: this.internalValue.icon,
-      order: this.internalValue.order,
-      title: this.internalValue.title,
-      position: this.internalValue.position,
-      allowWindow: this.internalValue.allowWindow,
-      selector: this.internalValue.selector || [],
-      description: this.internalValue.description,
-      viewContent: this.internalValue.viewContent.serialize(),
-      allowedPositions: this.internalValue.allowedPositions as [],
+      icon: this.defaultValue.icon,
+      order: this.defaultValue.order,
+      title: this.defaultValue.title,
+      position: this.defaultValue.position,
+      allowWindow: this.defaultValue.allowWindow,
+      selector: this.defaultValue.selector || [],
+      description: this.defaultValue.description,
+      viewContent: this.defaultValue.viewContent.serialize(),
+      allowedPositions: this.defaultValue.allowedPositions as [],
       window: {
-        width: this.internalValue.window?.width,
-        height: this.internalValue.window?.height,
-        anchor: this.internalValue.window?.anchor,
-        draggable: this.internalValue.window?.draggable,
-        resizable: this.internalValue.window?.resizable,
+        width: this.defaultValue.window?.width,
+        height: this.defaultValue.window?.height,
+        anchor: this.defaultValue.window?.anchor,
+        draggable: this.defaultValue.window?.draggable,
+        resizable: this.defaultValue.window?.resizable,
       },
     };
   }

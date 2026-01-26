@@ -13,31 +13,31 @@ export type TViewContentListConstructor = {
 export class ViewContentList {
   public readonly key: TViewContentListConstructor['key'];
   public readonly onDidMount: TViewContentListConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TViewContentListConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TViewContentListConstructor['initialValue']>;
 
 
   constructor(props: TViewContentListConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
-    this.internalValue.type = 'viewContentList';
+    this.defaultValue = props.initialValue || {};
+    this.defaultValue.type = 'viewContentList';
   }
 
 
   #createContext(mountId: string): TViewContentListContext {
     return {
-      currentValue: this.internalValue as TViewContentList,
+      currentValue: this.defaultValue as TViewContentList,
       refetch: async () => {
         return await EventLink.sendEvent(`viewContentList:${mountId}:refetch`);
       },
       set: async <GKey extends keyof TViewContentList>(property: GKey, newValue: TViewContentList[GKey]) => {
         switch (property) {
           case 'getItems':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`viewContentList:${mountId}:set`, { property, newValue });
         }
       },
@@ -50,7 +50,7 @@ export class ViewContentList {
 
     const registeredItems = new Set<ListViewItem>();
     EventLink.addEventListener(`viewContentList:${mountId}:getItems`, async () => {
-      const items = await this.internalValue.getItems?.(context) || [];
+      const items = await this.defaultValue.getItems?.(context) || [];
 
       registeredItems.forEach((item) => item.unregister());
       registeredItems.clear();
@@ -86,7 +86,7 @@ export class ViewContentList {
   }
 
   public serialize(): TSerializableViewContentList {
-    if (!this.internalValue.getItems) throw new Error(`Get items not defined for "${this.key}" view content list`);
+    if (!this.defaultValue.getItems) throw new Error(`Get items not defined for "${this.key}" view content list`);
 
     return {
       key: this.key,

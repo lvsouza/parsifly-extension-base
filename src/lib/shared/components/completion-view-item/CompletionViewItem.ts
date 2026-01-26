@@ -11,23 +11,23 @@ export type TCompletionViewItemConstructor = {
 export class CompletionViewItem {
   public readonly key: TCompletionViewItemConstructor['key'];
   public readonly onDidMount: TCompletionViewItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TCompletionViewItemConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TCompletionViewItemConstructor['initialValue']>;
 
 
   constructor(props: TCompletionViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TCompletionViewItemMountContext {
     return {
-      currentValue: this.internalValue as TCompletionViewItem,
+      currentValue: this.defaultValue as TCompletionViewItem,
       set: async <GKey extends keyof TCompletionViewItem>(property: GKey, newValue: TCompletionViewItem[GKey]) => {
         switch (property) {
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`completionViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -59,11 +59,11 @@ export class CompletionViewItem {
   public serialize(): TSerializableCompletionViewItem {
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      value: this.internalValue.value,
-      label: this.internalValue.label || '',
-      disabled: this.internalValue.disabled,
-      description: this.internalValue.description,
+      icon: this.defaultValue.icon,
+      value: this.defaultValue.value,
+      label: this.defaultValue.label || '',
+      disabled: this.defaultValue.disabled,
+      description: this.defaultValue.description,
     };
   }
 }

@@ -12,19 +12,19 @@ export type TDiagnosticItemConstructor = {
 export class DiagnosticViewItem {
   public readonly key: TDiagnosticItemConstructor['key'];
   public readonly onDidMount: TDiagnosticItemConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TDiagnosticItemConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TDiagnosticItemConstructor['initialValue']>;
 
 
   constructor(props: TDiagnosticItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TDiagnosticViewItemMountContext {
     return {
-      currentValue: this.internalValue as TDiagnosticViewItem,
+      currentValue: this.defaultValue as TDiagnosticViewItem,
       select: async (value) => {
         return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:select`, value);
       },
@@ -37,11 +37,11 @@ export class DiagnosticViewItem {
           case 'getActions':
           case 'onItemClick':
           case 'onItemDoubleClick':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`diagnosticViewItem:${mountId}:set`, { property, newValue });
         }
       },
@@ -52,12 +52,12 @@ export class DiagnosticViewItem {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemClick`, async () => this.internalValue.onItemClick?.(context));
-    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`, async () => this.internalValue.onItemDoubleClick?.(context));
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemClick`, async () => this.defaultValue.onItemClick?.(context));
+    EventLink.addEventListener(`diagnosticViewItem:${mountId}:onItemDoubleClick`, async () => this.defaultValue.onItemDoubleClick?.(context));
 
     const registeredRelatedDiagnosticItems = new Set<DiagnosticViewItem>();
     EventLink.addEventListener(`diagnosticViewItem:${mountId}:getRelated`, async () => {
-      const items = await this.internalValue.getRelated?.(context) || [];
+      const items = await this.defaultValue.getRelated?.(context) || [];
 
       registeredRelatedDiagnosticItems.forEach((item) => item.unregister());
       registeredRelatedDiagnosticItems.clear();
@@ -72,7 +72,7 @@ export class DiagnosticViewItem {
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`diagnosticViewItem:${mountId}:getActions`, async () => {
-      const items = await this.internalValue.getActions?.(context) || [];
+      const items = await this.defaultValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -112,30 +112,30 @@ export class DiagnosticViewItem {
   }
 
   public serialize(): TSerializableDiagnosticViewItem {
-    if (!this.internalValue.message) throw new Error(`Message not defined for "${this.key}" diagnostic`)
-    if (!this.internalValue.ruleId) throw new Error(`Rule not defined for "${this.key}" diagnostic`)
-    if (!this.internalValue.target) throw new Error(`Target not defined for "${this.key}" diagnostic`)
-    if (!this.internalValue.severity) throw new Error(`Severity not defined for "${this.key}" diagnostic`)
+    if (!this.defaultValue.message) throw new Error(`Message not defined for "${this.key}" diagnostic`)
+    if (!this.defaultValue.ruleId) throw new Error(`Rule not defined for "${this.key}" diagnostic`)
+    if (!this.defaultValue.target) throw new Error(`Target not defined for "${this.key}" diagnostic`)
+    if (!this.defaultValue.severity) throw new Error(`Severity not defined for "${this.key}" diagnostic`)
 
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      code: this.internalValue.code,
-      opened: this.internalValue.opened,
-      ruleId: this.internalValue.ruleId,
-      message: this.internalValue.message,
-      children: this.internalValue.children,
-      category: this.internalValue.category,
-      severity: this.internalValue.severity,
-      disableSelect: this.internalValue.disableSelect,
-      documentation: !this.internalValue.documentation ? undefined : {
-        summary: this.internalValue.documentation.summary,
-        url: this.internalValue.documentation.url,
+      icon: this.defaultValue.icon,
+      code: this.defaultValue.code,
+      opened: this.defaultValue.opened,
+      ruleId: this.defaultValue.ruleId,
+      message: this.defaultValue.message,
+      children: this.defaultValue.children,
+      category: this.defaultValue.category,
+      severity: this.defaultValue.severity,
+      disableSelect: this.defaultValue.disableSelect,
+      documentation: !this.defaultValue.documentation ? undefined : {
+        summary: this.defaultValue.documentation.summary,
+        url: this.defaultValue.documentation.url,
       },
       target: {
-        resourceType: this.internalValue.target.resourceType,
-        resourceId: this.internalValue.target.resourceId,
-        property: this.internalValue.target.property,
+        resourceType: this.defaultValue.target.resourceType,
+        resourceId: this.defaultValue.target.resourceId,
+        property: this.defaultValue.target.property,
       },
     };
   }

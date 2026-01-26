@@ -11,19 +11,19 @@ export type TActionConstructor = {
 export class Action {
   public readonly key: TActionConstructor['key'];
   public readonly onDidMount: TActionConstructor['onDidMount'];
-  public readonly internalValue: NonNullable<TActionConstructor['initialValue']>;
+  public readonly defaultValue: NonNullable<TActionConstructor['initialValue']>;
 
 
   constructor(props: TActionConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
-    this.internalValue = props.initialValue || {};
+    this.defaultValue = props.initialValue || {};
   }
 
 
   #createContext(mountId: string): TActionMountContext {
     return {
-      currentValue: this.internalValue as TAction,
+      currentValue: this.defaultValue as TAction,
       refetchChildren: async () => {
         return await EventLink.sendEvent(`action:${mountId}:refetchChildren`);
       },
@@ -31,11 +31,11 @@ export class Action {
         switch (property) {
           case 'action':
           case 'getActions':
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return;
 
           default:
-            this.internalValue[property] = newValue;
+            this.defaultValue[property] = newValue;
             return await EventLink.sendEvent(`action:${mountId}:set`, { property, newValue });
         }
       },
@@ -46,11 +46,11 @@ export class Action {
   async #onDidMount(mountId: string): Promise<void> {
     const context = this.#createContext(mountId);
 
-    EventLink.addEventListener(`action:${mountId}:action`, async () => 'action' in this.internalValue ? this.internalValue.action?.(context) : {});
+    EventLink.addEventListener(`action:${mountId}:action`, async () => 'action' in this.defaultValue ? this.defaultValue.action?.(context) : {});
 
     const registeredActions = new Set<Action>();
     EventLink.addEventListener(`action:${mountId}:getActions`, async () => {
-      const actions = await this.internalValue.getActions?.(context) || [];
+      const actions = await this.defaultValue.getActions?.(context) || [];
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -87,14 +87,14 @@ export class Action {
   }
 
   public serialize(): TSerializableAction {
-    if (!this.internalValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
+    if (!this.defaultValue.label) throw new Error(`Label not defined for "${this.key}" parser`);
 
     return {
       key: this.key,
-      icon: this.internalValue.icon,
-      label: this.internalValue.label,
-      children: this.internalValue.children,
-      description: this.internalValue.description,
+      icon: this.defaultValue.icon,
+      label: this.defaultValue.label,
+      children: this.defaultValue.children,
+      description: this.defaultValue.description,
     };
   }
 }
