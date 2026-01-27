@@ -36,8 +36,8 @@ type TViewWindowOptions =
   | {
     allowWindow: true;
     window?: {
-      width?: boolean;
-      height?: boolean;
+      width?: number;
+      height?: number;
       resizable?: boolean;
       draggable?: boolean;
       anchor?: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center-center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
@@ -73,8 +73,8 @@ export type TSerializableView = {
   allowedPositions: TViewPosition[] | undefined;
   viewContent: TSerializableViewContentList | TSerializableViewContentForm | TSerializableViewContentWebView;
   window: undefined | {
-    width: boolean | undefined;
-    height: boolean | undefined;
+    width: number | undefined;
+    height: number | undefined;
     resizable: boolean | undefined;
     draggable: boolean | undefined;
     anchor: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center-center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | undefined;
