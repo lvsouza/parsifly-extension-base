@@ -15,5 +15,6 @@ export type TViewContentForm = {
 
 export type TSerializableViewContentForm = {
   key: string;
+  registerId: string;
   type: 'viewContentForm';
 }

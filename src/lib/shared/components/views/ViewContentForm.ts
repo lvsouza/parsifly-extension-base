@@ -11,6 +11,7 @@ export type TViewContentFormConstructor = {
 }
 
 export class ViewContentForm {
+  public readonly registerId: string;
   public readonly key: TViewContentFormConstructor['key'];
   public readonly onDidMount: TViewContentFormConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TViewContentFormConstructor['initialValue']>;
@@ -19,6 +20,7 @@ export class ViewContentForm {
   constructor(props: TViewContentFormConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
     this.defaultValue.type = 'viewContentForm';
   }
@@ -82,11 +84,11 @@ export class ViewContentForm {
 
 
   public register() {
-    EventLink.addEventListener(`viewContentForm:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`viewContentForm:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`viewContentForm:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`viewContentForm:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableViewContentForm {
@@ -95,6 +97,7 @@ export class ViewContentForm {
     return {
       key: this.key,
       type: 'viewContentForm',
+      registerId: this.registerId,
     };
   }
 }

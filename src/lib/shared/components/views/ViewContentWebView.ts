@@ -10,6 +10,7 @@ export type TViewContentWebViewConstructor = {
 }
 
 export class ViewContentWebView {
+  public readonly registerId: string;
   public readonly key: TViewContentWebViewConstructor['key'];
   public readonly onDidMount: TViewContentWebViewConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TViewContentWebViewConstructor['initialValue']>;
@@ -18,6 +19,7 @@ export class ViewContentWebView {
   constructor(props: TViewContentWebViewConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
     this.defaultValue.type = 'viewContentWebView';
   }
@@ -70,11 +72,11 @@ export class ViewContentWebView {
 
 
   public register() {
-    EventLink.addEventListener(`viewContentWebView:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`viewContentWebView:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`viewContentWebView:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`viewContentWebView:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableViewContentWebView {
@@ -83,6 +85,7 @@ export class ViewContentWebView {
     return {
       key: this.key,
       type: 'viewContentWebView',
+      registerId: this.registerId,
       entryPoint: this.defaultValue.entryPoint,
       backgroundTransparent: this.defaultValue.backgroundTransparent,
     };

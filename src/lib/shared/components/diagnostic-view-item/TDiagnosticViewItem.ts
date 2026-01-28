@@ -40,6 +40,7 @@ export type TDiagnosticViewItem = {
 
 export type TSerializableDiagnosticViewItem = {
   key: string;
+  registerId: string;
 
   ruleId: string;
   message: string;

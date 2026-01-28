@@ -19,6 +19,7 @@ export type TViewContentWebView = {
 
 export type TSerializableViewContentWebView = {
   key: string;
+  registerId: string;
   type: 'viewContentWebView';
   backgroundTransparent: boolean | undefined;
   entryPoint: {

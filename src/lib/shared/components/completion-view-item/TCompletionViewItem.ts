@@ -18,6 +18,7 @@ export type TSerializableCompletionViewItem = {
   key: string;
   label: string;
   value: unknown;
+  registerId: string;
   icon: TImage | undefined;
   disabled: boolean | undefined;
   description: string | undefined;

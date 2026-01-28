@@ -10,6 +10,7 @@ export type TFieldViewItemConstructor = {
   onDidMount?: TOnDidMount<TFieldViewItemMountContext>;
 }
 export class FieldViewItem {
+  public readonly registerId: string;
   public readonly key: TFieldViewItemConstructor['key'];
   public readonly onDidMount: TFieldViewItemConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TFieldViewItemConstructor['initialValue']>;
@@ -18,6 +19,7 @@ export class FieldViewItem {
   constructor(props: TFieldViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -89,16 +91,17 @@ export class FieldViewItem {
 
 
   public register() {
-    EventLink.addEventListener(`fieldViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`fieldViewItem:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`fieldViewItem:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`fieldViewItem:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableFieldViewItem {
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       info: this.defaultValue.info,
       error: this.defaultValue.error,

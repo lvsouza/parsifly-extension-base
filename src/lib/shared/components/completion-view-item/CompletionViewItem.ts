@@ -9,6 +9,7 @@ export type TCompletionViewItemConstructor = {
   onDidMount?: TOnDidMount<TCompletionViewItemMountContext>;
 }
 export class CompletionViewItem {
+  public readonly registerId: string;
   public readonly key: TCompletionViewItemConstructor['key'];
   public readonly onDidMount: TCompletionViewItemConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TCompletionViewItemConstructor['initialValue']>;
@@ -17,6 +18,7 @@ export class CompletionViewItem {
   constructor(props: TCompletionViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -51,16 +53,17 @@ export class CompletionViewItem {
 
 
   public register() {
-    EventLink.addEventListener(`completionViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`completionViewItem:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`completionViewItem:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`completionViewItem:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableCompletionViewItem {
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       value: this.defaultValue.value,
       label: this.defaultValue.label || '',

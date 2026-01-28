@@ -31,6 +31,7 @@ export type TAction =
 export type TSerializableAction = {
   key: string;
   label: string;
+  registerId: string;
   icon: TImage | undefined;
   children: boolean | undefined;
   description: string | undefined;

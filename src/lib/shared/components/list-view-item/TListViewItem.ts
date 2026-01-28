@@ -73,6 +73,7 @@ export type TListViewItem =
 
 export type TSerializableListViewItem = {
   key: string;
+  registerId: string;
   icon: TImage | undefined;
   extra: string | undefined;
   label: string | undefined;

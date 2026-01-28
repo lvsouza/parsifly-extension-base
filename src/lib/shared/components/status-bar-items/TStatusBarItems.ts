@@ -17,6 +17,7 @@ export type TStatusBarItem = {
 export type TSerializableStatusBarItem = {
   key: string;
   label: string;
+  registerId: string;
   side: 'right' | 'left';
   icon: TImage | undefined;
   description: string | undefined;

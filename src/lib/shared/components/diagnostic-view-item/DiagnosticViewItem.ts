@@ -10,6 +10,7 @@ export type TDiagnosticItemConstructor = {
   onDidMount?: TOnDidMount<TDiagnosticViewItemMountContext>;
 }
 export class DiagnosticViewItem {
+  public readonly registerId: string;
   public readonly key: TDiagnosticItemConstructor['key'];
   public readonly onDidMount: TDiagnosticItemConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TDiagnosticItemConstructor['initialValue']>;
@@ -18,6 +19,7 @@ export class DiagnosticViewItem {
   constructor(props: TDiagnosticItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -106,11 +108,11 @@ export class DiagnosticViewItem {
 
 
   public register() {
-    EventLink.addEventListener(`diagnosticViewItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`diagnosticViewItem:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`diagnosticViewItem:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`diagnosticViewItem:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableDiagnosticViewItem {
@@ -121,6 +123,7 @@ export class DiagnosticViewItem {
 
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       code: this.defaultValue.code,
       opened: this.defaultValue.opened,

@@ -10,6 +10,7 @@ export type TStatusBarItemConstructor = {
 }
 
 export class StatusBarItem {
+  public readonly registerId: string;
   public readonly key: TStatusBarItemConstructor['key'];
   public readonly onDidMount: TStatusBarItemConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TStatusBarItemConstructor['initialValue']>;
@@ -18,6 +19,7 @@ export class StatusBarItem {
   constructor(props: TStatusBarItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -60,11 +62,11 @@ export class StatusBarItem {
 
 
   public register() {
-    EventLink.addEventListener(`statusBarItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`statusBarItem:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`statusBarItem:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`statusBarItem:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableStatusBarItem {
@@ -73,6 +75,7 @@ export class StatusBarItem {
 
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       side: this.defaultValue.side,
       label: this.defaultValue.label,

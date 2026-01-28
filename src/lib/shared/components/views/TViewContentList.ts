@@ -14,5 +14,6 @@ export type TViewContentList = {
 
 export type TSerializableViewContentList = {
   key: string;
+  registerId: string;
   type: 'viewContentList';
 }

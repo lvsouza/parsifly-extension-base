@@ -9,6 +9,7 @@ export type TParserConstructor = {
   onDidMount?: TOnDidMount<TParserMountContext>;
 }
 export class Parser {
+  public readonly registerId: string;
   public readonly key: TParserConstructor['key'];
   public readonly onDidMount: TParserConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TParserConstructor['initialValue']>;
@@ -17,6 +18,7 @@ export class Parser {
   constructor(props: TParserConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -58,11 +60,11 @@ export class Parser {
 
 
   public register() {
-    EventLink.addEventListener(`parser:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`parser:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`parser:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`parser:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableParser {
@@ -70,6 +72,7 @@ export class Parser {
 
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       label: this.defaultValue.label,
       description: this.defaultValue.description,

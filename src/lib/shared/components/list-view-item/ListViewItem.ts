@@ -11,6 +11,7 @@ export type TListViewItemConstructor = {
   onDidMount?: TOnDidMount<TListItemMountContext>;
 }
 export class ListViewItem {
+  public readonly registerId: string;
   public readonly key: TListViewItemConstructor['key'];
   public readonly onDidMount: TListViewItemConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<Partial<TListViewItemConstructor['initialValue']>>;
@@ -19,6 +20,7 @@ export class ListViewItem {
   constructor(props: TListViewItemConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -27,12 +29,7 @@ export class ListViewItem {
     return {
       currentValue: internalValue as TListViewItem,
       refetchChildren: async () => {
-        try {
-          return await EventLink.sendEvent(`listItem:${mountId}:refetchChildren`);
-        } catch (error) {
-          console.log(this, error);
-          return
-        }
+        return await EventLink.sendEvent(`listItem:${mountId}:refetchChildren`);
       },
       set: async <GKey extends keyof TListViewItem>(property: GKey, newValue: TListViewItem[GKey]) => {
         switch (property) {
@@ -125,16 +122,17 @@ export class ListViewItem {
 
 
   public register() {
-    EventLink.addEventListener(`listItem:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`listItem:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`listItem:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`listItem:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableListViewItem {
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       label: this.defaultValue.label,
       extra: this.defaultValue.extra,

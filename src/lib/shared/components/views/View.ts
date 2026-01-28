@@ -12,6 +12,7 @@ export type TViewConstructor<GViewContent extends TViewContentDefault> = {
 }
 
 export class View<GViewContent extends TViewContentDefault> {
+  public readonly registerId: string;
   public readonly key: TViewConstructor<GViewContent>['key'];
   public readonly onDidMount: TViewConstructor<GViewContent>['onDidMount'];
   public readonly onRequestOpen: TViewConstructor<GViewContent>['onRequestOpen'];
@@ -21,6 +22,7 @@ export class View<GViewContent extends TViewContentDefault> {
   constructor(props: TViewConstructor<GViewContent>) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.onRequestOpen = props.onRequestOpen;
     this.defaultValue = props.initialValue || {};
     this.defaultValue.type = 'view';
@@ -88,10 +90,25 @@ export class View<GViewContent extends TViewContentDefault> {
       return tabs.map(tab => tab.serialize());
     });
 
+    let registeredViewContent: GViewContent | undefined;
+    EventLink.addEventListener(`view:${mountId}:getViewContent`, async () => {
+      registeredViewContent?.unregister();
+
+      const viewContent = await internalValue.getViewContent?.(context);
+      if (!viewContent) throw new Error(`View content not found for "${this.key}" view`);
+
+      viewContent.register();
+      registeredViewContent = viewContent;
+
+      return viewContent.serialize();
+    });
+
     const onDidUnmount = await this.onDidMount?.(context);
 
     EventLink.addEventListener(`view:${mountId}:onDidUnmount`, async () => {
       await onDidUnmount?.();
+
+      registeredViewContent?.unregister();
 
       registeredActions.forEach((item) => item.unregister());
       registeredActions.clear();
@@ -102,6 +119,7 @@ export class View<GViewContent extends TViewContentDefault> {
       EventLink.removeEventListener(`view:${mountId}:getTabs`);
       EventLink.removeEventListener(`view:${mountId}:getActions`);
       EventLink.removeEventListener(`view:${mountId}:onDidUnmount`);
+      EventLink.removeEventListener(`view:${mountId}:getViewContent`);
     });
   }
 
@@ -110,26 +128,25 @@ export class View<GViewContent extends TViewContentDefault> {
   }
 
   public register() {
-    EventLink.addEventListener<any>(`view:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener<any>(`view:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
     EventLink.addEventListener<any>(`view:${this.key}:onRequestOpen`, this.#onRequestOpen.bind(this));
-    this.defaultValue.viewContent?.register();
   }
 
   public unregister() {
-    this.defaultValue.viewContent?.unregister();
     EventLink.removeEventListener(`view:${this.key}:onRequestOpen`);
-    EventLink.removeEventListener(`view:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`view:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableView {
     if (!this.defaultValue.title) throw new Error(`Title not defined for "${this.key}" view`);
     if (!this.defaultValue.position) throw new Error(`Position not defined for "${this.key}" view`);
-    if (!this.defaultValue.viewContent) throw new Error(`View content not defined for "${this.key}" view`);
+    if (!this.defaultValue.getViewContent) throw new Error(`Get view content not defined for "${this.key}" view`);
     if (!this.defaultValue.selector && this.defaultValue.position === 'editor') throw new Error(`Selector not defined for "${this.key}" view`);
 
     return {
       type: 'view',
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       order: this.defaultValue.order,
       title: this.defaultValue.title,
@@ -137,7 +154,6 @@ export class View<GViewContent extends TViewContentDefault> {
       allowWindow: this.defaultValue.allowWindow,
       selector: this.defaultValue.selector || [],
       description: this.defaultValue.description,
-      viewContent: this.defaultValue.viewContent.serialize(),
       allowedPositions: this.defaultValue.allowedPositions as [],
       window: {
         width: this.defaultValue.window?.width,

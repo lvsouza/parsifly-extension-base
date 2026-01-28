@@ -43,6 +43,7 @@ export type TSerializableFieldViewItem<TValue extends TFieldViewItemValue = TFie
   key: string;
   name: string;
   label: string;
+  registerId: string;
   icon: TImage | undefined;
   type: TFieldViewItemType;
   info: string | undefined;

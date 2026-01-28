@@ -22,6 +22,7 @@ export type TParser = {
 export type TSerializableParser = {
   key: string;
   label: string;
+  registerId: string;
   icon: TImage | undefined;
   description: string | undefined;
 }

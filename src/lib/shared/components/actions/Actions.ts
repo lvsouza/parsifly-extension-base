@@ -9,6 +9,7 @@ export type TActionConstructor = {
   onDidMount?: TOnDidMount<TActionMountContext>;
 }
 export class Action {
+  public readonly registerId: string;
   public readonly key: TActionConstructor['key'];
   public readonly onDidMount: TActionConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TActionConstructor['initialValue']>;
@@ -17,6 +18,7 @@ export class Action {
   constructor(props: TActionConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
   }
 
@@ -81,11 +83,11 @@ export class Action {
 
 
   public register() {
-    EventLink.addEventListener(`action:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`action:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`action:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`action:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableAction {
@@ -93,6 +95,7 @@ export class Action {
 
     return {
       key: this.key,
+      registerId: this.registerId,
       icon: this.defaultValue.icon,
       label: this.defaultValue.label,
       children: this.defaultValue.children,

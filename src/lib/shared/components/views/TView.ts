@@ -1,6 +1,3 @@
-import { TSerializableViewContentWebView } from './TViewContentWebView';
-import { TSerializableViewContentList } from './TViewContentList';
-import { TSerializableViewContentForm } from './TViewContentForm';
 import { ViewContentWebView } from './ViewContentWebView';
 import { ViewContentList } from './ViewContentList';
 import { ViewContentForm } from './ViewContentForm';
@@ -26,9 +23,9 @@ type TViewBase<GViewContent extends TViewContentDefault> = {
   title: string;
   order?: number;
   description?: string;
-  viewContent: GViewContent;
   getTabs?: (context: TViewMountContext<GViewContent>) => Promise<Action[]>;
   getActions?: (context: TViewMountContext<GViewContent>) => Promise<Action[]>;
+  getViewContent: (context: TViewMountContext<GViewContent>) => Promise<GViewContent>;
 };
 
 type TViewWindowOptions =
@@ -64,6 +61,7 @@ export type TSerializableView = {
   key: string;
   type: 'view';
   title: string;
+  registerId: string;
   position: TViewPosition;
   icon: TImage | undefined;
   order: number | undefined;
@@ -71,7 +69,6 @@ export type TSerializableView = {
   description: string | undefined;
   allowWindow: boolean | undefined;
   allowedPositions: TViewPosition[] | undefined;
-  viewContent: TSerializableViewContentList | TSerializableViewContentForm | TSerializableViewContentWebView;
   window: undefined | {
     width: number | undefined;
     height: number | undefined;

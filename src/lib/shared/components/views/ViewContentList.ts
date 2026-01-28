@@ -11,6 +11,7 @@ export type TViewContentListConstructor = {
 }
 
 export class ViewContentList {
+  public readonly registerId: string;
   public readonly key: TViewContentListConstructor['key'];
   public readonly onDidMount: TViewContentListConstructor['onDidMount'];
   public readonly defaultValue: NonNullable<TViewContentListConstructor['initialValue']>;
@@ -19,6 +20,7 @@ export class ViewContentList {
   constructor(props: TViewContentListConstructor) {
     this.key = props.key;
     this.onDidMount = props.onDidMount;
+    this.registerId = crypto.randomUUID();
     this.defaultValue = props.initialValue || {};
     this.defaultValue.type = 'viewContentList';
   }
@@ -80,11 +82,11 @@ export class ViewContentList {
 
 
   public register() {
-    EventLink.addEventListener(`viewContentList:${this.key}:onDidMount`, this.#onDidMount.bind(this));
+    EventLink.addEventListener(`viewContentList:${this.registerId}:onDidMount`, this.#onDidMount.bind(this));
   }
 
   public unregister() {
-    EventLink.removeEventListener(`viewContentList:${this.key}:onDidMount`);
+    EventLink.removeEventListener(`viewContentList:${this.registerId}:onDidMount`);
   }
 
   public serialize(): TSerializableViewContentList {
@@ -93,6 +95,7 @@ export class ViewContentList {
     return {
       key: this.key,
       type: 'viewContentList',
+      registerId: this.registerId,
     };
   }
 }
