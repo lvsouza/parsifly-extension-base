@@ -12,18 +12,15 @@ export const defineExtension = (definition: TExtensionDefinition) => {
   EventLink.initialize();
 
 
-  const extensionContext = defineExtensionContext();
-
-
   EventLink.addEventListener('activate', async () => {
+    const extensionContext = defineExtensionContext();
+
     const deactivate = await definedExtension.onDidActivate(extensionContext);
 
-    if (deactivate) {
-      EventLink.addEventListener('deactivate', async () => {
-        await deactivate();
+    EventLink.addEventListener('deactivate', async () => {
+      if (deactivate) await deactivate();
 
-        EventLink.removeEventListener('deactivate');
-      });
-    }
+      EventLink.removeEventListener('deactivate');
+    });
   });
 }

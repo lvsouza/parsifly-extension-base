@@ -46,8 +46,8 @@ export class DiagnosticManager {
    * @template GResource The resource type being analyzed.
    * @param analyzer The analyzer instance to register.
    */
-  public register<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
-    analyzer.register(this.getContext());
+  public async register<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
+    await analyzer.register(this.getContext());
     this.#diagnosticAnalyzers.add(analyzer as DiagnosticAnalyzer);
   }
 
@@ -57,9 +57,8 @@ export class DiagnosticManager {
    * @template GResource The resource type being analyzed.
    * @param analyzer The analyzer instance to unregister.
    */
-  public unregister<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
-    analyzer.unregister();
+  public async unregister<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
+    await analyzer.unregister();
     this.#diagnosticAnalyzers.delete(analyzer as DiagnosticAnalyzer);
   }
-
 }

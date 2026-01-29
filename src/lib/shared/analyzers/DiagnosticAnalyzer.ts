@@ -41,8 +41,8 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
     this.execute = props.execute;
   }
 
-  public register(extensionContext: TExtensionContext) {
-    this.unregister();
+  public async register(extensionContext: TExtensionContext) {
+    await this.unregister();
 
     const controller = new AbortController();
     this.#registrationController = controller;
@@ -75,9 +75,9 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
           }
         }
       })
-      .then((unsubscribeFn) => {
+      .then(async (unsubscribeFn) => {
         if (controller.signal.aborted) {
-          unsubscribeFn().catch(console.error);
+          await unsubscribeFn().catch(console.error);
           return;
         }
 
@@ -88,7 +88,7 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
       });
   }
 
-  public unregister() {
+  public async unregister() {
     this.#diagnostics.forEach(diagnostic => diagnostic.unregister());
     this.#diagnostics.clear();
 
@@ -96,7 +96,7 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
     this.#registrationController = null;
 
     if (this.#queryUnsubscribe) {
-      this.#queryUnsubscribe().catch(console.error);
+      await this.#queryUnsubscribe().catch(console.error);
       this.#queryUnsubscribe = null;
     }
   }
