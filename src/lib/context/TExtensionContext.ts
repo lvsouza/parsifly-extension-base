@@ -1,4 +1,5 @@
 import { PlatformActionManager } from './managers/PlatformActionManager';
+import { LocalStorageManager } from './managers/LocalStorageManager';
 import { CompletionManager } from './managers/CompletionManager';
 import { DiagnosticManager } from './managers/DiagnosticManager';
 import { StatusBarManager } from './managers/StatusBarManager';
@@ -26,5 +27,6 @@ export type TExtensionContext = {
   completions: CompletionManager;
   diagnostics: DiagnosticManager;
   statusBarItems: StatusBarManager;
+  localStorage: LocalStorageManager;
   platformActions: PlatformActionManager;
 };

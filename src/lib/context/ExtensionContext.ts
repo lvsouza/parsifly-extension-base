@@ -1,4 +1,5 @@
 import { PlatformActionManager } from './managers/PlatformActionManager';
+import { LocalStorageManager } from './managers/LocalStorageManager';
 import { CompletionManager } from './managers/CompletionManager';
 import { DiagnosticManager } from './managers/DiagnosticManager';
 import { StatusBarManager } from './managers/StatusBarManager';
@@ -29,6 +30,7 @@ export const defineExtensionContext = (): TExtensionContext => {
     quickPick: new QuickPickManager(),
     completions: new CompletionManager(),
     statusBarItems: new StatusBarManager(),
+    localStorage: new LocalStorageManager(),
     platformActions: new PlatformActionManager(),
     diagnostics: new DiagnosticManager(() => context),
   };
