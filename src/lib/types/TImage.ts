@@ -9,6 +9,7 @@ export type TImageTypes =
   | 'action-global' | 'action-global-folder' | 'action-global-add'
   | 'variable-local' | 'variable-local-folder' | 'variable-local-add' | 'variable-local-attribute' | 'variable-local-substructure-attribute'
   | 'variable-global' | 'variable-global-folder' | 'variable-global-add' | 'variable-global-attribute' | 'variable-global-substructure-attribute'
+  | 'enum' | 'enum-folder' | 'enum-add' | 'enum-attribute' | 'enum-value'
   | 'structure' | 'structure-folder' | 'structure-add' | 'structure-attribute' | 'structure-substructure-attribute'
   | 'shared' | 'shared-folder'
   | 'integrations' | 'integrations-folder'
