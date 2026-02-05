@@ -26,7 +26,7 @@ export class DataManager {
    * @param query The query object to be executed.
    * @returns {Promise<TQueryResults>} A promise resolving to the query results.
    */
-  public async execute(query: TQuery): Promise<TQueryResults> {
+  public async execute<T = Record<string, any>>(query: TQuery<T>): Promise<TQueryResults<T>> {
     const result: any = await EventLink.sendEvent('data:execute', query);
     if ('severity' in result) throw new DatabaseError(result);
     return result;

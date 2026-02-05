@@ -8,33 +8,50 @@ export type TAnalyzerMode = 'perResource' | 'collection';
 
 export type TAnalyzerResource = Record<string, any>;
 
-export type TExecutionProps<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource> =
-  & { addDiagnostic: (diagnostic: DiagnosticViewItem) => void }
-  & (
-    GMode extends 'perResource'
-    ? { resource: GResource }
-    : { resources: GResource[] }
-  )
+export type TBaseExecutionProps = {
+  addDiagnostic: (diagnostic: DiagnosticViewItem) => void;
+};
 
-export interface IDiagnosticAnalyzerProps<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource> {
+export type TPerResourceExecutionProps<GResource extends TAnalyzerResource> = TBaseExecutionProps & {
+  resource: GResource;
+  resources: GResource[];
+};
+
+export type TCollectionExecutionProps<GResource extends TAnalyzerResource> = TBaseExecutionProps & {
+  resources: GResource[];
+};
+
+export type TPerResourceDiagnosticAnalyzerProps<GResource extends TAnalyzerResource> = {
   key: string;
-  mode: GMode;
-  query: TQuery;
-  execute: (props: TExecutionProps<GMode, GResource>) => Promise<void>;
-}
+  mode: 'perResource';
+  query: TQuery<GResource>;
+  execute: (props: TPerResourceExecutionProps<GResource>) => Promise<void>;
+};
 
-export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GResource extends TAnalyzerResource = TAnalyzerResource> {
+export type TCollectionDiagnosticAnalyzerProps<GResource extends TAnalyzerResource> = {
+  key: string;
+  mode: 'collection';
+  query: TQuery<GResource>;
+  execute: (props: TCollectionExecutionProps<GResource>) => Promise<void>;
+};
+
+export type TDiagnosticAnalyzerProps<GResource extends TAnalyzerResource> =
+  | TPerResourceDiagnosticAnalyzerProps<GResource>
+  | TCollectionDiagnosticAnalyzerProps<GResource>;
+
+
+export class DiagnosticAnalyzer<GResource extends TAnalyzerResource> {
   public readonly type = 'analyzer';
-  public readonly key: IDiagnosticAnalyzerProps<GMode, GResource>['key'];
-  public readonly mode: IDiagnosticAnalyzerProps<GMode, GResource>['mode'];
-  public readonly query: IDiagnosticAnalyzerProps<GMode, GResource>['query'];
-  public readonly execute: IDiagnosticAnalyzerProps<GMode, GResource>['execute'];
+  public readonly key: string;
+  public readonly mode: TAnalyzerMode;
+  public readonly query: TQuery<GResource>;
+  public readonly execute: TDiagnosticAnalyzerProps<GResource>['execute'];
 
   #diagnostics = new Set<DiagnosticViewItem>();
   #queryUnsubscribe: (() => Promise<void>) | null = null;
   #registrationController: AbortController | null = null;
 
-  constructor(props: IDiagnosticAnalyzerProps<GMode, GResource>) {
+  constructor(props: TDiagnosticAnalyzerProps<GResource>) {
     this.key = props.key;
     this.mode = props.mode;
     this.query = props.query;
@@ -54,17 +71,20 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
         listener: async (data) => {
           if (controller.signal.aborted) return;
 
-          const addDiagnostic = (diagnostic: DiagnosticViewItem) => { this.#diagnostics.add(diagnostic); }
+          const addDiagnostic = (diagnostic: DiagnosticViewItem) => { this.#diagnostics.add(diagnostic); };
+
           this.#diagnostics.forEach(diagnostic => diagnostic.unregister());
           this.#diagnostics.clear();
 
           try {
             if (this.mode === 'collection') {
-              await this.execute({ resources: data.rows, addDiagnostic } as unknown as TExecutionProps<GMode, GResource>);
+              const executeFn = this.execute as (props: TCollectionExecutionProps<GResource>) => Promise<void>;
+              await executeFn({ resources: data.rows, addDiagnostic });
             } else {
+              const executeFn = this.execute as (props: TPerResourceExecutionProps<GResource>) => Promise<void>;
               await Promise.all(
                 data.rows.map(row => (
-                  this.execute({ resource: row, addDiagnostic } as unknown as TExecutionProps<GMode, GResource>)
+                  executeFn({ resource: row, resources: data.rows, addDiagnostic })
                 )),
               );
             }
@@ -102,6 +122,6 @@ export class DiagnosticAnalyzer<GMode extends TAnalyzerMode = TAnalyzerMode, GRe
   }
 
   public diagnostics() {
-    return Array.from(this.#diagnostics.values()).map(diagnostic => diagnostic.serialize())
+    return Array.from(this.#diagnostics.values()).map(diagnostic => diagnostic.serialize());
   }
 }

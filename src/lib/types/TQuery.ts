@@ -6,13 +6,13 @@ export type TQueryResults<T = Record<string, any>> = {
   fields: { name: string; dataTypeID: number; }[];
 };
 
-export type TQuery = {
+export type TQuery<_GResult = unknown> = {
   sql: string;
   parameters: ReadonlyArray<unknown>
 }
 
 export type TWatchQuery<T extends Record<string, any>> = {
-  query: TQuery;
+  query: TQuery<T>;
   listener: (data: TQueryResults<T>) => Promise<void>;
 }
 

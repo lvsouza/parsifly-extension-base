@@ -1,12 +1,12 @@
 import { TSerializableDiagnosticViewItem } from '../../shared/components/diagnostic-view-item/TDiagnosticViewItem';
-import { DiagnosticAnalyzer, TAnalyzerMode, TAnalyzerResource } from '../../shared/analyzers/DiagnosticAnalyzer';
+import { DiagnosticAnalyzer, TAnalyzerResource } from '../../shared/analyzers/DiagnosticAnalyzer';
 import { EventLink } from '../../shared/services/EventLink';
 import { TExtensionContext } from '../TExtensionContext';
 
 
 export class DiagnosticManager {
   #diagnostics: Set<((diagnostics: Record<string, TSerializableDiagnosticViewItem[]>) => void)> = new Set();
-  #diagnosticAnalyzers: Set<DiagnosticAnalyzer> = new Set([]);
+  #diagnosticAnalyzers: Set<DiagnosticAnalyzer<TAnalyzerResource>> = new Set([]);
 
 
   constructor(private getContext: () => TExtensionContext) {
@@ -46,9 +46,9 @@ export class DiagnosticManager {
    * @template GResource The resource type being analyzed.
    * @param analyzer The analyzer instance to register.
    */
-  public async register<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
+  public async register<GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GResource>) {
     await analyzer.register(this.getContext());
-    this.#diagnosticAnalyzers.add(analyzer as DiagnosticAnalyzer);
+    this.#diagnosticAnalyzers.add(analyzer as DiagnosticAnalyzer<TAnalyzerResource>);
   }
 
   /**
@@ -57,8 +57,8 @@ export class DiagnosticManager {
    * @template GResource The resource type being analyzed.
    * @param analyzer The analyzer instance to unregister.
    */
-  public async unregister<GMode extends TAnalyzerMode, GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GMode, GResource>) {
+  public async unregister<GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GResource>) {
     await analyzer.unregister();
-    this.#diagnosticAnalyzers.delete(analyzer as DiagnosticAnalyzer);
+    this.#diagnosticAnalyzers.delete(analyzer as DiagnosticAnalyzer<TAnalyzerResource>);
   }
 }
