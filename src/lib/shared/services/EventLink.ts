@@ -40,7 +40,9 @@ export class EventLink {
     const result = await this.#STUDIO.callEvent<GParams, GReturn>(key, ...params);
 
     if (result instanceof Error) {
-      return undefined as GReturn;
+      if (result.message.includes('KEY_NOT_FOUND')) return undefined as GReturn
+
+      throw result;
     }
 
     return result;
