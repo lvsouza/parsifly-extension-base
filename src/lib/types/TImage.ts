@@ -3,6 +3,7 @@
 export type TImageTypes =
   | 'folder' | 'folder-add' | 'delete'
   | 'project' | 'project-folder' | 'project-folder-add'
+  | 'router'
   | 'page' | 'page-folder' | 'page-add'
   | 'component' | 'component-folder' | 'component-add'
   | 'action-local' | 'action-local-folder' | 'action-local-add'
