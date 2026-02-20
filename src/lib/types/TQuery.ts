@@ -1,19 +1,20 @@
 
 
-export type TQueryResults<T = Record<string, any>> = {
-  rows: T[];
+export type TQueryResults<T extends Record<string, any>, GQueryMode extends 'array' | 'object' = 'object'> = {
+  rows: GQueryMode extends 'object' ? T[] : T[string][][];
   affectedRows?: number;
   fields: { name: string; dataTypeID: number; }[];
 };
 
-export type TQuery<_GResult = unknown> = {
+export type TQuery<_GResult = unknown, GQueryMode extends 'array' | 'object' = 'object'> = {
   sql: string;
-  parameters: ReadonlyArray<unknown>
+  mode?: GQueryMode;
+  parameters: ReadonlyArray<unknown>;
 }
 
-export type TWatchQuery<T extends Record<string, any>> = {
-  query: TQuery<T>;
-  listener: (data: TQueryResults<T>) => Promise<void>;
+export type TWatchQuery<T extends Record<string, any>, GQueryMode extends 'array' | 'object' = 'object'> = {
+  query: TQuery<T, GQueryMode>;
+  listener: (data: TQueryResults<T, GQueryMode>) => Promise<void>;
 }
 
 export class DatabaseError {

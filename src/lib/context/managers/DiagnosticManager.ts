@@ -9,7 +9,7 @@ export class DiagnosticManager {
   #diagnosticAnalyzers: Set<DiagnosticAnalyzer<TAnalyzerResource>> = new Set([]);
 
 
-  constructor(private getContext: () => TExtensionContext) {
+  constructor(_getContext: () => TExtensionContext) {
     EventLink.addEventListener('diagnostics:subscription', async (diagnostic) => this.#diagnostics.forEach(listener => listener(diagnostic as Record<string, TSerializableDiagnosticViewItem[]>)));
     EventLink.addEventListener('diagnostics:get', async () => {
       return Array
@@ -47,7 +47,7 @@ export class DiagnosticManager {
    * @param analyzer The analyzer instance to register.
    */
   public async register<GResource extends TAnalyzerResource>(analyzer: DiagnosticAnalyzer<GResource>) {
-    await analyzer.register(this.getContext());
+    await analyzer.register();
     this.#diagnosticAnalyzers.add(analyzer as DiagnosticAnalyzer<TAnalyzerResource>);
   }
 

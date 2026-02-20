@@ -1,4 +1,5 @@
 import { TImage } from '../../types/TImage';
+import { TQuery } from '../../types/TQuery';
 
 
 export type TModelProperty = {
@@ -18,7 +19,7 @@ export type TMigration = {
   id: string;
   order: number;
   description: string;
-  upQuery: () => { sql: string, parameters: ReadonlyArray<unknown> };
+  upQuery: () => TQuery;
 }
 
 export type TSerializableMigration = {
@@ -105,6 +106,7 @@ export class ProjectDescriptor {
           order: migration.order,
           description: migration.description,
           sql: query.sql,
+          mode: query.mode,
           parameters: query.parameters as [],
         };
       }),

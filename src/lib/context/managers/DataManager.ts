@@ -26,7 +26,7 @@ export class DataManager {
    * @param query The query object to be executed.
    * @returns {Promise<TQueryResults>} A promise resolving to the query results.
    */
-  public async execute<T = Record<string, any>>(query: TQuery<T>): Promise<TQueryResults<T>> {
+  public async execute<T extends Record<string, any>, GQueryMode extends 'array' | 'object' = 'object'>(query: TQuery<T, GQueryMode>): Promise<TQueryResults<T, GQueryMode>> {
     const result: any = await EventLink.sendEvent('data:execute', query);
     if ('severity' in result) throw new DatabaseError(result);
     return result;
@@ -38,7 +38,7 @@ export class DataManager {
    * @param props The watch query configuration.
    * @returns {Promise<() => Promise<void>>} A promise resolving to an unsubscribe function.
    */
-  public async subscribe<T extends Record<string, any>>({ query, listener }: TWatchQuery<T>): Promise<() => Promise<void>> {
+  public async subscribe<T extends Record<string, any>, GQueryMode extends 'array' | 'object'>({ query, listener }: TWatchQuery<T, GQueryMode>): Promise<() => Promise<void>> {
     const key = createDeterministicKey(query.sql, query.parameters as []);
 
     const listeners = this.#data.get(key);
